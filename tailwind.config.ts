@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Message types colors based on the image
+				'message-type': {
+					'welcome': '#21a56e',
+					'promotion': '#9747FF',
+					'confirmation': '#1177dd',
+					'thanks': '#ff8000',
+					'notification': '#dd3344',
+					'instructions': '#4466dd',
+					'personalized': '#666666',
 				}
 			},
 			borderRadius: {
