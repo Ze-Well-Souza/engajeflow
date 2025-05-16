@@ -1,11 +1,8 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { RefreshCw, Download, FileText } from "lucide-react";
+import LogsPageHeader from "@/components/admin/activity-logs/LogsPageHeader";
 import LogsFilter from "@/components/admin/activity-logs/LogsFilter";
-import { LogsTable } from "@/components/admin/activity-logs/LogsTable";
-import LogsPagination from "@/components/admin/activity-logs/LogsPagination";
+import LogsContent from "@/components/admin/activity-logs/LogsContent";
 import LogsExport from "@/components/admin/activity-logs/LogsExport";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
 import { usePagination } from "@/hooks/usePagination";
@@ -59,25 +56,11 @@ const ActivityLogsPage = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Logs de Atividades</h2>
-          <p className="text-muted-foreground">
-            Visualize todas as atividades realizadas pelos usuários no sistema
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
-          <Button variant="outline" onClick={handleExportOpen}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-        </div>
-      </div>
+      <LogsPageHeader 
+        onRefresh={handleRefresh}
+        onExportOpen={handleExportOpen}
+        isLoading={isLoading}
+      />
       
       <LogsFilter 
         searchTerm={searchTerm}
@@ -96,26 +79,13 @@ const ActivityLogsPage = () => {
         onResetFilters={resetFilters}
       />
       
-      <Card>
-        <CardContent className="p-0">
-          {logs.length > 0 ? (
-            <LogsTable data={currentItems} />
-          ) : (
-            <div className="py-8 text-center text-muted-foreground">
-              <FileText className="mx-auto h-12 w-12 mb-2" />
-              <p>Nenhum log encontrado para os filtros selecionados.</p>
-            </div>
-          )}
-          
-          {logs.length > 10 && (
-            <LogsPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              setCurrentPage={setCurrentPage}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <LogsContent 
+        logs={logs}
+        currentItems={currentItems}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+      />
 
       {showExportModal && (
         <LogsExport 

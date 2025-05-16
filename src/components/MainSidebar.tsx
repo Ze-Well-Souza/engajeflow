@@ -63,7 +63,7 @@ const MainSidebar: React.FC = () => {
           >
             {group.items.map((item) => {
               const isActive = currentPath.startsWith(item.href);
-              const Icon = item.icon as LucideIcon;
+              const IconComponent = item.icon as React.ComponentType<{ className?: string }>;
               
               return (
                 <NavigationItem
@@ -71,7 +71,7 @@ const MainSidebar: React.FC = () => {
                   to={item.href}
                   active={isActive}
                   collapsed={isCollapsed}
-                  icon={<Icon className="h-4 w-4" />}
+                  icon={<IconComponent className="h-4 w-4" />}
                 >
                   {item.title}
                 </NavigationItem>

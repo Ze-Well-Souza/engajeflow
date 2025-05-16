@@ -1,31 +1,28 @@
 
 import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { flexRender } from "@tanstack/react-table";
+import { HeaderGroup } from "@tanstack/react-table";
+import { TableHead, TableHeader as UITableHeader, TableRow } from "@/components/ui/table";
 
 interface TableHeaderProps<T> {
-  headerGroups: ReturnType<ReturnType<typeof getHeaderGroups<T>>["getHeaderGroups"]>;
+  headerGroups: HeaderGroup<T>[];
 }
 
-const getHeaderGroups = <T,>() => ({ getHeaderGroups: () => [] as any });
-
-const TableHeader = <T,>({ headerGroups }: TableHeaderProps<T>) => {
+const LogsTableHeader = <T,>({ headerGroups }: TableHeaderProps<T>) => {
   return (
-    <TableHeader>
+    <UITableHeader>
       {headerGroups.map((headerGroup) => (
         <TableRow key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
             <TableHead key={header.id}>
               {header.isPlaceholder
                 ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
+                : header.column.columnDef.header}
             </TableHead>
           ))}
         </TableRow>
       ))}
-    </TableHeader>
+    </UITableHeader>
   );
 };
 
-export default TableHeader;
+export default LogsTableHeader;

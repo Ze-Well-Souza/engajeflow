@@ -12,7 +12,7 @@ import {
 import { ActivityLog } from "@/types";
 import LogDetailsModal from "./LogDetailsModal";
 import useLogsTableColumns from "./useLogsTableColumns";
-import TableHeader from "./TableHeader";
+import LogsTableHeader from "./TableHeader";
 import TableRows from "./TableRows";
 import EmptyLogs from "./EmptyLogs";
 
@@ -44,7 +44,7 @@ export function LogsTable({ data }: LogsTableProps) {
     <>
       <Table>
         <TableCaption>Logs de Atividades</TableCaption>
-        <TableHeader headerGroups={table.getHeaderGroups()} />
+        <LogsTableHeader headerGroups={table.getHeaderGroups()} />
         <TableRows 
           rowModel={table.getRowModel()} 
           columns={columns} 
