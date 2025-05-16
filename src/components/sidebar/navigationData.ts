@@ -23,7 +23,10 @@ import {
   Youtube,
   Instagram,
   Facebook,
-  Mail
+  Mail,
+  TrendingUp,
+  ChartLine,
+  ChartBar
 } from "lucide-react";
 
 // Tipos para os itens de navegação
@@ -56,8 +59,6 @@ export const navigationItems: NavigationGroup[] = [
       { icon: Bot, label: "Bot de Vendas", path: "/bot-vendas" },
       { icon: FileText, label: "Templates", path: "/templates" },
       { icon: Server, label: "Gateway", path: "/gateway" },
-      { icon: BarChart2, label: "Relatórios", path: "/relatorios" },
-      { icon: TicketCheck, label: "Tickets", path: "/tickets" },
       { icon: Mail, label: "Funil de Vendas", path: "/funil-vendas", badge: "Novo" },
     ]
   },
@@ -69,6 +70,15 @@ export const navigationItems: NavigationGroup[] = [
       { icon: ImageIcon, label: "Catálogo Social", path: "/catalogo-produtos", badge: "Novo" },
       { icon: ListChecks, label: "Categorias", path: "/categorias" },
       { icon: Users, label: "Clientes", path: "/clientes" },
+    ]
+  },
+  { 
+    group: "Análises", 
+    items: [
+      { icon: BarChart2, label: "Relatórios", path: "/relatorios" },
+      { icon: TrendingUp, label: "Desempenho Social", path: "/relatorios/social", badge: "Novo" },
+      { icon: ChartLine, label: "Conversões", path: "/relatorios/conversoes" },
+      { icon: ChartBar, label: "Relatórios Personalizados", path: "/relatorios/personalizados" },
     ]
   },
   { 

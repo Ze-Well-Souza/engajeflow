@@ -15,6 +15,9 @@ import TemplatesPage from "@/pages/templates/TemplatesPage";
 import GatewayPage from "@/pages/gateway/GatewayPage";
 import GatewayIntegrationsPage from "@/pages/gateway/GatewayIntegrationsPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
+import SocialMediaPerformancePage from "@/pages/reports/SocialMediaPerformancePage";
+import ConversionsReportPage from "@/pages/reports/ConversionsReportPage";
+import CustomReportsPage from "@/pages/reports/CustomReportsPage";
 import TicketsPage from "@/pages/tickets/TicketsPage";
 // Store pages
 import VendasPage from "@/pages/store/VendasPage";
@@ -53,6 +56,9 @@ const App = () => (
             <Route path="gateway" element={<GatewayPage />} />
             <Route path="gateway/integracoes" element={<GatewayIntegrationsPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
+            <Route path="relatorios/social" element={<SocialMediaPerformancePage />} />
+            <Route path="relatorios/conversoes" element={<ConversionsReportPage />} />
+            <Route path="relatorios/personalizados" element={<CustomReportsPage />} />
             <Route path="tickets" element={<TicketsPage />} />
             <Route path="funil-vendas" element={<FunilVendasPage />} />
             

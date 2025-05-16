@@ -1,185 +1,159 @@
 
-import React from 'react';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import React from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CaptureFormValues, useCaptureForm } from "@/hooks/useCaptureForm";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { useCaptureForm } from "@/hooks/useCaptureForm";
 
-interface LeadCaptureFormProps {
-  title?: string;
-  description?: string;
+type LeadCaptureFormProps = {
+  title: string;
+  description: string;
   imageSrc?: string;
-  onSuccess?: (data: CaptureFormValues) => void;
-  origem?: string;
-}
+  embedded?: boolean;
+  origin?: string;
+};
 
-const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ 
-  title = "Receba conteúdo exclusivo",
-  description = "Preencha o formulário abaixo para receber nossas dicas e promoções especiais.",
+const formSchema = z.object({
+  name: z.string().min(2, { message: "Nome deve ter pelo menos 2 caracteres" }),
+  email: z.string().email({ message: "Email inválido" }),
+  phone: z.string().optional(),
+  interesse: z.string().min(1, { message: "Selecione um interesse" }),
+  consentimento: z.boolean().refine(val => val === true, {
+    message: "Você precisa concordar com os termos",
+  }),
+});
+
+const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
+  title,
+  description,
   imageSrc,
-  onSuccess,
-  origem = "website"
+  embedded = false,
+  origin = "website",
 }) => {
   const { form, isSubmitting, handleSubmit } = useCaptureForm();
 
-  const onSubmitSuccess = (data: CaptureFormValues) => {
-    if (onSuccess) {
-      onSuccess(data);
-    }
+  // Esta função será chamada quando o usuário enviar o formulário
+  const onSubmitForm = async () => {
+    // Aqui usamos o hook customizado para processar o envio
+    // O hook já gerencia o estado de carregamento e exibe as notificações
+    return await handleSubmit();
   };
 
   return (
-    <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+    <Card className={`bg-gray-800 border-gray-700 max-w-md mx-auto ${embedded ? "shadow-none" : "shadow-xl"}`}>
+      {imageSrc && (
+        <div className="relative overflow-hidden rounded-t-lg h-48">
+          <img 
+            src={imageSrc} 
+            alt={title} 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
       <CardHeader>
         <CardTitle className="text-xl">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-
-      {imageSrc && (
-        <div className="px-6">
-          <img 
-            src={imageSrc} 
-            alt="Imagem de destaque" 
-            className="w-full h-48 object-cover rounded-md mb-4"
-          />
-        </div>
-      )}
-
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => {
-            // Adicionamos a origem automaticamente
-            const enrichedData = { ...data, origem };
-            handleSubmit(enrichedData).then(success => {
-              if (success) onSubmitSuccess(enrichedData);
-            });
-          })} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome completo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite seu nome" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome</Label>
+            <Input
+              id="name"
+              placeholder="Seu nome completo"
+              {...form.register("name")}
             />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>E-mail</FormLabel>
-                  <FormControl>
-                    <Input placeholder="seu@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            {form.formState.errors.name && (
+              <p className="text-xs text-red-500">
+                {form.formState.errors.name.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              {...form.register("email")}
             />
-            
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone (opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(00) 00000-0000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            {form.formState.errors.email && (
+              <p className="text-xs text-red-500">
+                {form.formState.errors.email.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefone (opcional)</Label>
+            <Input
+              id="phone"
+              placeholder="(00) 00000-0000"
+              {...form.register("phone")}
             />
-            
-            <FormField
-              control={form.control}
-              name="interesse"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Qual seu principal interesse?</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma opção" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="produtos">Produtos</SelectItem>
-                      <SelectItem value="servicos">Serviços</SelectItem>
-                      <SelectItem value="conteudo">Conteúdo educativo</SelectItem>
-                      <SelectItem value="promocoes">Promoções</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="interesse">Qual seu interesse?</Label>
+            <Select
+              onValueChange={(value) => form.setValue("interesse", value)}
+              defaultValue={form.getValues("interesse")}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma opção" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="produto">Conhecer produtos</SelectItem>
+                <SelectItem value="precos">Informações de preços</SelectItem>
+                <SelectItem value="suporte">Suporte técnico</SelectItem>
+                <SelectItem value="parceria">Parcerias</SelectItem>
+                <SelectItem value="outro">Outro</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.interesse && (
+              <p className="text-xs text-red-500">
+                {form.formState.errors.interesse.message}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox 
+              id="consentimento" 
+              checked={form.getValues("consentimento")}
+              onCheckedChange={(checked) => form.setValue("consentimento", checked === true)}
             />
-            
-            <FormField
-              control={form.control}
-              name="consentimento"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
-                  <FormControl>
-                    <Checkbox 
-                      checked={field.value} 
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="text-xs text-gray-400">
-                      Concordo em receber comunicações e aceito a política de privacidade
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+            <label
+              htmlFor="consentimento"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Concordo em receber comunicações por email
+            </label>
+          </div>
+          {form.formState.errors.consentimento && (
+            <p className="text-xs text-red-500">
+              {form.formState.errors.consentimento.message}
+            </p>
+          )}
+        </form>
       </CardContent>
-
       <CardFooter>
         <Button
+          type="submit"
           className="w-full"
-          onClick={form.handleSubmit((data) => {
-            const enrichedData = { ...data, origem };
-            handleSubmit(enrichedData).then(success => {
-              if (success) onSubmitSuccess(enrichedData);
-            });
-          })}
           disabled={isSubmitting}
+          onClick={form.handleSubmit(onSubmitForm)}
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-              Enviando...
-            </>
-          ) : (
-            <>
-              Quero receber <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
+          {isSubmitting ? "Processando..." : "Receber conteúdo"}
         </Button>
       </CardFooter>
     </Card>
