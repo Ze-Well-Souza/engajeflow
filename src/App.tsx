@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { LocalizationProvider } from "./contexts/LocalizationContext";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import DashboardLayout from "./components/DashboardLayout";
@@ -21,37 +22,41 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdvancedAnalyticsPage from "./pages/reports/AdvancedAnalyticsPage";
 import GatewayPage from "./pages/gateway/GatewayPage";
 import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
+import CompliancePage from "./pages/compliance/CompliancePage";
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <DashboardLayout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="agendamentos" element={<AgendamentosPage />} />
-            <Route path="social-media" element={<SocialMediaPage />} />
-            <Route path="relatorios" element={<RelatoriosPage />} />
-            <Route path="relatorios/advanced-analytics" element={<AdvancedAnalyticsPage />} />
-            <Route path="templates" element={<TemplatesPage />} />
-            <Route path="store" element={<CatalogoProdutosPage />} />
-            <Route path="admin" element={<AdminDashboardPage />} />
-            <Route path="content-assistant" element={<ContentAssistantPage />} />
-            <Route path="gateway" element={<GatewayPage />} />
-            <Route path="gateway/integrations" element={<GatewayIntegrationsPage />} />
-          </Route>
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <LocalizationProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <DashboardLayout />
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<DashboardPage />} />
+              <Route path="agendamentos" element={<AgendamentosPage />} />
+              <Route path="social-media" element={<SocialMediaPage />} />
+              <Route path="relatorios" element={<RelatoriosPage />} />
+              <Route path="relatorios/advanced-analytics" element={<AdvancedAnalyticsPage />} />
+              <Route path="templates" element={<TemplatesPage />} />
+              <Route path="store" element={<CatalogoProdutosPage />} />
+              <Route path="admin" element={<AdminDashboardPage />} />
+              <Route path="content-assistant" element={<ContentAssistantPage />} />
+              <Route path="gateway" element={<GatewayPage />} />
+              <Route path="gateway/integrations" element={<GatewayIntegrationsPage />} />
+              <Route path="compliance" element={<CompliancePage />} />
+            </Route>
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </LocalizationProvider>
   );
 };
 

@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLocalization } from "@/contexts/LocalizationContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { toast } from "sonner";
 import { AlertCircle, Loader2 } from "lucide-react";
+import LocaleSwitcher from "@/components/LocaleSwitcher";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { login, currentUser } = useAuth();
+  const { t } = useLocalization();
   const navigate = useNavigate();
 
   // Redirecionar se já estiver logado
@@ -34,9 +36,9 @@ const LoginPage: React.FC = () => {
     } catch (error: any) {
       console.error("Erro no login:", error);
       if (error.message?.includes("Invalid login credentials")) {
-        setErrorMessage("Email ou senha inválidos. Por favor, verifique suas credenciais.");
+        setErrorMessage(t('auth.invalidCredentials'));
       } else {
-        setErrorMessage(error.message || "Falha no login. Tente novamente mais tarde.");
+        setErrorMessage(error.message || t('auth.loginError'));
       }
     } finally {
       setIsLoading(false);
@@ -46,10 +48,14 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="w-full max-w-md">
+        <div className="absolute top-4 right-4">
+          <LocaleSwitcher variant="icon" />
+        </div>
+        
         <Card className="border-gray-700">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center font-bold">TechCare</CardTitle>
-            <p className="text-center text-gray-400">Entre na sua conta para continuar</p>
+            <p className="text-center text-gray-400">{t('auth.loginTitle')}</p>
           </CardHeader>
           <CardContent>
             {errorMessage && (
@@ -61,11 +67,11 @@ const LoginPage: React.FC = () => {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">Email</label>
+                <label htmlFor="email" className="text-sm font-medium">{t('common.email')}</label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder={t('common.enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
@@ -75,9 +81,9 @@ const LoginPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm font-medium">Senha</label>
+                  <label htmlFor="password" className="text-sm font-medium">{t('common.password')}</label>
                   <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-                    Esqueceu a senha?
+                    {t('common.forgotPassword')}
                   </Link>
                 </div>
                 <Input
@@ -95,19 +101,19 @@ const LoginPage: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Entrando...
+                    {t('common.loading')}
                   </>
                 ) : (
-                  "Entrar"
+                  t('common.login')
                 )}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-gray-400">
-              Não tem uma conta?{" "}
+              {t('common.dontHaveAccount')}{" "}
               <Link to="/register" className="text-primary hover:underline">
-                Registre-se
+                {t('common.register')}
               </Link>
             </p>
           </CardFooter>
@@ -115,10 +121,10 @@ const LoginPage: React.FC = () => {
 
         {/* Credenciais de teste para facilitar o acesso */}
         <div className="mt-4 p-4 bg-gray-800 rounded-md border border-gray-700">
-          <h3 className="text-sm font-medium text-gray-300 mb-2">Credenciais de Teste:</h3>
+          <h3 className="text-sm font-medium text-gray-300 mb-2">{t('auth.testCredentials')}:</h3>
           <div className="space-y-1">
-            <p className="text-xs text-gray-400">Admin: admin@techcare.com / senha123</p>
-            <p className="text-xs text-gray-400">Usuário: user@test.com / senha123</p>
+            <p className="text-xs text-gray-400">{t('auth.admin')}: admin@techcare.com / senha123</p>
+            <p className="text-xs text-gray-400">{t('auth.user')}: user@test.com / senha123</p>
           </div>
         </div>
       </div>

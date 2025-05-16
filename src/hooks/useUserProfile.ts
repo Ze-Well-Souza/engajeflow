@@ -9,11 +9,13 @@ export const useUserProfile = (session: Session | null) => {
 
   useEffect(() => {
     if (!session?.user) {
+      console.log("No session user, resetting profile to null");
       setUserProfile(null);
       return;
     }
     
     const { id, email } = session.user;
+    console.log("Fetching profile for user:", id, email);
     
     // Criar um perfil básico do usuário
     const basicProfile: UserProfile = {
@@ -24,11 +26,12 @@ export const useUserProfile = (session: Session | null) => {
     // Buscar informações adicionais do perfil
     const fetchProfile = async () => {
       try {
+        console.log("Querying profiles table for user:", id);
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", id)
-          .maybeSingle();
+          .single();
           
         if (error) {
           console.error("Error fetching user profile:", error);
@@ -36,11 +39,13 @@ export const useUserProfile = (session: Session | null) => {
           return;
         }
         
+        console.log("Profile data retrieved:", data);
+        
         if (data) {
           setUserProfile({
             ...basicProfile,
             name: data.full_name,
-            is_admin: data.is_admin
+            is_admin: data.is_admin || false
           });
         } else {
           setUserProfile(basicProfile);

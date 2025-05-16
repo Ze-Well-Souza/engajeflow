@@ -9,7 +9,7 @@ export interface NavigationItemProps {
   active: boolean;
   collapsed: boolean;
   icon: LucideIcon;
-  children?: ReactNode;
+  children: ReactNode;
 }
 
 const NavigationItem: React.FC<NavigationItemProps> = ({
