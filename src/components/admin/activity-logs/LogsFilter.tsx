@@ -6,8 +6,8 @@ import {
   Select, SelectContent, SelectItem, 
   SelectTrigger, SelectValue 
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
-import { actionTypes, moduleTypes } from "./mock-data";
+import { Search, Filter } from "lucide-react";
+import { actionTypes, moduleTypes, userList } from "./mock-data";
 
 interface LogsFilterProps {
   searchTerm: string;
@@ -18,6 +18,8 @@ interface LogsFilterProps {
   setSelectedModule: (value: string) => void;
   selectedStatus: string;
   setSelectedStatus: (value: string) => void;
+  selectedUser: string;
+  setSelectedUser: (value: string) => void;
 }
 
 const LogsFilter: React.FC<LogsFilterProps> = ({
@@ -29,14 +31,18 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
   setSelectedModule,
   selectedStatus,
   setSelectedStatus,
+  selectedUser,
+  setSelectedUser,
 }) => {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Filtros</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl flex items-center gap-2">
+          <Filter className="h-5 w-5" /> Filtros
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -46,6 +52,20 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
               className="pl-8"
             />
           </div>
+          
+          <Select value={selectedUser} onValueChange={setSelectedUser}>
+            <SelectTrigger>
+              <SelectValue placeholder="Usuário" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos os Usuários</SelectItem>
+              {userList.map(user => (
+                <SelectItem key={user.id} value={user.email}>
+                  {user.email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Select value={selectedAction} onValueChange={setSelectedAction}>
             <SelectTrigger>
