@@ -6,40 +6,20 @@ import { useUserProfile } from "./useUserProfile";
 
 export const useAuthState = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);  // Definido como false para evitar o carregamento
   
-  const currentUser = useUserProfile(session);
+  // Modo de bypass de autenticação - não usa o perfil real do usuário
+  const currentUser = {
+    id: "test-user-id",
+    email: "test@techze.com",
+    name: "Usuário de Teste",
+    is_admin: true
+  };
 
+  // Desativando as chamadas ao Supabase
   useEffect(() => {
-    console.log("Setting up auth state listeners");
-    
-    // Verificar sessão atual ao iniciar
-    const checkSession = async () => {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Initial session check:", currentSession ? "Session exists" : "No session");
-        setSession(currentSession);
-      } catch (error) {
-        console.error("Error checking session:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Configurar listener para alterações no estado de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, updatedSession) => {
-        console.log("Auth state changed:", event, updatedSession ? "Session exists" : "No session");
-        setSession(updatedSession);
-      }
-    );
-
-    checkSession();
-
-    return () => {
-      console.log("Cleaning up auth state listeners");
-      subscription.unsubscribe();
-    };
+    console.log("Modo de bypass de autenticação ativado");
+    // Não há chamadas ao Supabase neste modo
   }, []);
 
   return { currentUser, session, loading };

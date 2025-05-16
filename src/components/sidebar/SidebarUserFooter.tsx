@@ -12,24 +12,20 @@ type SidebarUserFooterProps = {
 };
 
 const SidebarUserFooter: React.FC<SidebarUserFooterProps> = ({ isCollapsed }) => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    }
+  // Removido o handleLogout pois estamos em modo de teste sem autenticação
+  const handleLogout = () => {
+    navigate("/");
   };
   
   const userInitials = currentUser?.name 
     ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
-    : currentUser?.email?.substring(0, 2).toUpperCase() || 'TC';
+    : currentUser?.email?.substring(0, 2).toUpperCase() || 'TZ';
   
-  const userDisplayName = currentUser?.name || currentUser?.email || 'Usuário';
-  const isAdmin = currentUser?.is_admin ? 'Admin' : 'Usuário';
+  const userDisplayName = currentUser?.name || currentUser?.email || 'Usuário de Teste';
+  const userRole = currentUser?.is_admin ? 'Administrador' : 'Usuário';
   
   if (isCollapsed) {
     return (
@@ -60,7 +56,7 @@ const SidebarUserFooter: React.FC<SidebarUserFooterProps> = ({ isCollapsed }) =>
           </Avatar>
           <div className="flex flex-col">
             <span className="text-sm font-medium text-sidebar-foreground">{userDisplayName}</span>
-            <span className="text-xs text-sidebar-foreground/60">{isAdmin}</span>
+            <span className="text-xs text-sidebar-foreground/60">{userRole}</span>
           </div>
         </div>
         <Button 

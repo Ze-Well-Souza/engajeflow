@@ -23,6 +23,15 @@ import AdvancedAnalyticsPage from "./pages/reports/AdvancedAnalyticsPage";
 import GatewayPage from "./pages/gateway/GatewayPage";
 import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
 import CompliancePage from "./pages/compliance/CompliancePage";
+import ApiDocumentationPage from "./pages/developer/ApiDocumentationPage";
+import PluginsPage from "./pages/developer/PluginsPage";
+import DataMigrationPage from "./pages/developer/DataMigrationPage";
+import WebhooksPage from "./pages/developer/WebhooksPage";
+import SentimentAnalysisPage from "./pages/ai/SentimentAnalysisPage";
+import ContentGeneratorPage from "./pages/ai/ContentGeneratorPage";
+import ProductRecommendationsPage from "./pages/ai/ProductRecommendationsPage";
+import SalesForecastPage from "./pages/ai/SalesForecastPage";
+import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage";
 
 const App: React.FC = () => {
   return (
@@ -30,15 +39,14 @@ const App: React.FC = () => {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            {/* Redirecionando a rota de login direto para o dashboard */}
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/register" element={<Navigate to="/" replace />} />
+            
+            {/* Todas as rotas agora usam BypassAuthRoute para permitir acesso direto sem autenticação */}
             <Route
               path="/"
-              element={
-                <PrivateRoute>
-                  <DashboardLayout />
-                </PrivateRoute>
-              }
+              element={<BypassAuthRoute><DashboardLayout /></BypassAuthRoute>}
             >
               <Route index element={<DashboardPage />} />
               <Route path="agendamentos" element={<AgendamentosPage />} />
@@ -52,6 +60,16 @@ const App: React.FC = () => {
               <Route path="gateway" element={<GatewayPage />} />
               <Route path="gateway/integrations" element={<GatewayIntegrationsPage />} />
               <Route path="compliance" element={<CompliancePage />} />
+              {/* Novas páginas para fase 5 e 6 */}
+              <Route path="developer/api" element={<ApiDocumentationPage />} />
+              <Route path="developer/plugins" element={<PluginsPage />} />
+              <Route path="developer/data-migration" element={<DataMigrationPage />} />
+              <Route path="developer/webhooks" element={<WebhooksPage />} />
+              <Route path="ai/sentiment-analysis" element={<SentimentAnalysisPage />} />
+              <Route path="ai/content-generator" element={<ContentGeneratorPage />} />
+              <Route path="ai/product-recommendations" element={<ProductRecommendationsPage />} />
+              <Route path="ai/sales-forecast" element={<SalesForecastPage />} />
+              <Route path="ai/campaign-analytics" element={<CampaignAnalyticsPage />} />
             </Route>
           </Routes>
         </Router>
@@ -60,6 +78,15 @@ const App: React.FC = () => {
   );
 };
 
+// Componente que permite acesso sem autenticação
+const BypassAuthRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  // Sem verificação de autenticação, permite acesso direto
+  return <>{children}</>;
+};
+
+// Mantemos a versão original do PrivateRoute caso seja necessário voltar a usá-lo
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {

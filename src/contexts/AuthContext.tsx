@@ -47,10 +47,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Criar um usuário simulado para o modo de teste
+  const mockUser = {
+    id: "test-user-id",
+    email: "test@techze.com",
+    name: "Usuário de Teste",
+    is_admin: true
+  };
+
   const value: AuthContextType = {
-    currentUser,
-    session,
-    loading,
+    // Sempre fornecer um usuário simulado em vez do currentUser real
+    currentUser: mockUser,
+    session: session,
+    loading: false, // Definido como false para evitar o estado de carregamento
     login: loginWrapper,
     logout,
     register: registerWrapper,
@@ -58,16 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-lg">Carregando...</p>
-          </div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };
