@@ -18,17 +18,26 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { currentUser, session, loading } = useAuthState();
   const { login, logout, register } = useAuthMethods();
+
+  // Garantir que as assinaturas dos métodos correspondam às esperadas no tipo AuthContextType
+  const loginWrapper = async (email: string, password: string): Promise<void> => {
+    await login(email, password);
+  };
+
+  const registerWrapper = async (email: string, password: string, name: string): Promise<void> => {
+    await register(email, password, name);
+  };
 
   const value: AuthContextType = {
     currentUser,
     session,
     loading,
-    login,
+    login: loginWrapper,
     logout,
-    register,
+    register: registerWrapper,
   };
 
   return (
