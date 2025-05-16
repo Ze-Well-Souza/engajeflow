@@ -6,7 +6,8 @@ import {
   Select, SelectContent, SelectItem, 
   SelectTrigger, SelectValue 
 } from "@/components/ui/select";
-import { Search, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Filter, X } from "lucide-react";
 import { User } from "./types";
 
 interface LogsFilterProps {
@@ -23,6 +24,7 @@ interface LogsFilterProps {
   actionTypes: string[];
   moduleTypes: string[];
   userList: User[];
+  onResetFilters?: () => void;
 }
 
 const LogsFilter: React.FC<LogsFilterProps> = ({
@@ -39,13 +41,28 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
   actionTypes,
   moduleTypes,
   userList,
+  onResetFilters
 }) => {
+  const hasActiveFilters = searchTerm || selectedAction || selectedModule || selectedStatus || selectedUser;
+  
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-xl flex items-center gap-2">
-          <Filter className="h-5 w-5" /> Filtros
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Filter className="h-5 w-5" /> Filtros
+          </CardTitle>
+          {hasActiveFilters && onResetFilters && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onResetFilters}
+              className="h-8 px-2 text-muted-foreground"
+            >
+              <X className="h-4 w-4 mr-1" /> Limpar Filtros
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">

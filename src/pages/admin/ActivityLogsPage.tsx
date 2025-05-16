@@ -8,12 +8,12 @@ import LogsTable from "@/components/admin/activity-logs/LogsTable";
 import LogsPagination from "@/components/admin/activity-logs/LogsPagination";
 import LogsExport from "@/components/admin/activity-logs/LogsExport";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
-import { useLogsFilters } from "@/hooks/useLogsFilters";
-import { useLogsExport } from "@/hooks/useLogsExport";
 import { usePagination } from "@/hooks/usePagination";
+import { useLogsExport } from "@/hooks/useLogsExport";
+import { useLogsFilterState } from "@/components/admin/activity-logs/useLogsFilterState";
 
 const ActivityLogsPage = () => {
-  // Hooks para filtros
+  // Hook para gerenciar o estado dos filtros
   const {
     searchTerm,
     setSearchTerm,
@@ -25,10 +25,11 @@ const ActivityLogsPage = () => {
     setSelectedStatus,
     selectedUser,
     setSelectedUser,
-    users,
-    actions,
-    modules
-  } = useLogsFilters();
+    userOptions,
+    actionOptions,
+    moduleOptions,
+    resetFilters
+  } = useLogsFilterState();
   
   // Hook para busca de logs
   const { logs, isLoading, handleRefresh } = useActivityLogs(
@@ -89,9 +90,10 @@ const ActivityLogsPage = () => {
         setSelectedStatus={setSelectedStatus}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
-        actionTypes={actions}
-        moduleTypes={modules}
-        userList={users}
+        actionTypes={actionOptions}
+        moduleTypes={moduleOptions}
+        userList={userOptions}
+        onResetFilters={resetFilters}
       />
       
       <Card>

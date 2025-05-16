@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useFilterOptions } from "@/hooks/useFilterOptions";
 
-export const useLogsFilters = () => {
+export const useLogsFilterState = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAction, setSelectedAction] = useState("");
   const [selectedModule, setSelectedModule] = useState("");
@@ -12,7 +12,16 @@ export const useLogsFilters = () => {
   // Buscar opções de filtro disponíveis
   const { users, actions, modules } = useFilterOptions();
   
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedAction("");
+    setSelectedModule("");
+    setSelectedStatus("");
+    setSelectedUser("");
+  };
+  
   return {
+    // Estado dos filtros
     searchTerm,
     setSearchTerm,
     selectedAction,
@@ -23,8 +32,13 @@ export const useLogsFilters = () => {
     setSelectedStatus,
     selectedUser,
     setSelectedUser,
-    users,
-    actions,
-    modules
+    
+    // Opções disponíveis para os filtros
+    userOptions: users,
+    actionOptions: actions,
+    moduleOptions: modules,
+    
+    // Funções auxiliares
+    resetFilters
   };
 };
