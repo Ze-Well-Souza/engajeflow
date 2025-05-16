@@ -1,50 +1,46 @@
 
-import React from "react";
-import { ChevronRight } from "lucide-react";
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-} from "@/components/ui/sidebar";
-import NavigationItem from "./NavigationItem";
-import { NavigationItemProps } from "./NavigationItem";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 
-export type NavigationGroupProps = {
-  group: string;
-  items: Omit<NavigationItemProps, "isCollapsed" | "isActive">[];
-  isCollapsed: boolean;
-  currentPath: string;
+type NavigationGroupProps = {
+  label: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
 };
 
 const NavigationGroup: React.FC<NavigationGroupProps> = ({ 
-  group, 
-  items, 
-  isCollapsed, 
-  currentPath 
+  label, 
+  children,
+  defaultOpen = false 
 }) => {
-  // Verifica se algum item do grupo está ativo
-  const isGroupActive = items.some(item => currentPath.startsWith(item.path));
+  const location = useLocation();
   
+  // Check if any child path matches the current location
+  const childPaths = React.Children.map(children, (child) => {
+    if (React.isValidElement(child) && child.props.to) {
+      return child.props.to;
+    }
+    return null;
+  });
+  
+  const isActive = childPaths?.some(path => path && location.pathname.startsWith(path));
+  const [isOpen, setIsOpen] = useState(defaultOpen || isActive);
+
   return (
-    <SidebarGroup open={isGroupActive}>
-      <SidebarGroupLabel className="flex items-center text-xs uppercase tracking-wider font-semibold text-sidebar-foreground/60">
-        {!isCollapsed && group}
-        {isCollapsed && <ChevronRight className="h-4 w-4" />}
-      </SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <NavigationItem 
-              key={item.path} 
-              isCollapsed={isCollapsed} 
-              isActive={currentPath.startsWith(item.path)}
-              {...item}
-            />
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <div className="mb-2">
+      <button 
+        className="flex items-center w-full text-sm font-medium text-gray-400 hover:text-gray-200 py-2"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="mr-2">{isOpen ? '▼' : '►'}</span>
+        {label}
+      </button>
+      {isOpen && (
+        <div className="ml-4 space-y-1 mt-1">
+          {children}
+        </div>
+      )}
+    </div>
   );
 };
 
