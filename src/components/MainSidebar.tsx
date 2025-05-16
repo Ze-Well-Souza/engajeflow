@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import NavigationGroup from "./sidebar/NavigationGroup";
+import NavigationItem from "./sidebar/NavigationItem";
 import SidebarUserFooter from "./sidebar/SidebarUserFooter";
 import { navigationItems } from "./sidebar/navigationData";
 
@@ -56,11 +57,26 @@ const MainSidebar: React.FC = () => {
         {navigationItems.map((group, index) => (
           <NavigationGroup 
             key={`${group.group}-${index}`}
-            group={group.group}
-            items={group.items}
-            isCollapsed={isCollapsed}
-            currentPath={currentPath}
-          />
+            title={group.group}
+            defaultOpen={group.items.some(item => currentPath.startsWith(item.href))}
+          >
+            {group.items.map((item) => {
+              const isActive = currentPath.startsWith(item.href);
+              const Icon = item.icon;
+              
+              return (
+                <NavigationItem
+                  key={item.title}
+                  to={item.href}
+                  active={isActive}
+                  collapsed={isCollapsed}
+                  icon={<Icon className="h-4 w-4" />}
+                >
+                  {item.title}
+                </NavigationItem>
+              );
+            })}
+          </NavigationGroup>
         ))}
       </SidebarContent>
       
