@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,15 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +35,9 @@ const RegisterPage: React.FC = () => {
 
     try {
       await register(email, password, name);
-      toast.success("Conta criada com sucesso!");
-      navigate("/");
+      // O redirecionamento será feito pelo useEffect quando currentUser for atualizado
     } catch (error) {
-      toast.error("Erro ao criar conta. Tente novamente.");
+      // Erro já é tratado na função register
       console.error("Erro no registro:", error);
     } finally {
       setIsLoading(false);

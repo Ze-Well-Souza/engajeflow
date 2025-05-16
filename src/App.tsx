@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -15,9 +16,8 @@ import SocialMediaPage from "./pages/SocialMediaPage";
 import RelatoriosPage from "./pages/RelatoriosPage";
 import TemplatesPage from "./pages/templates/TemplatesPage";
 import CatalogoProdutosPage from "./pages/store/CatalogoProdutosPage";
-
-// Adicione a importação da nova página
 import ContentAssistantPage from "./pages/content/ContentAssistantPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 
 const App: React.FC = () => {
   return (
@@ -40,9 +40,9 @@ const App: React.FC = () => {
             <Route path="relatorios" element={<RelatoriosPage />} />
             <Route path="templates" element={<TemplatesPage />} />
             <Route path="store" element={<CatalogoProdutosPage />} />
+            <Route path="admin" element={<AdminDashboardPage />} />
+            <Route path="content-assistant" element={<ContentAssistantPage />} />
           </Route>
-
-          <Route path="/content-assistant" element={<ContentAssistantPage />} />
         </Routes>
       </Router>
     </AuthProvider>
@@ -52,7 +52,12 @@ const App: React.FC = () => {
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Carregando...</div>;
+  }
+  
   return currentUser ? (
     children
   ) : (

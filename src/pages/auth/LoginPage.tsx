@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,15 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +27,9 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(email, password);
-      toast.success("Login realizado com sucesso!");
-      navigate("/");
+      // O redirecionamento será feito pelo useEffect quando currentUser for atualizado
     } catch (error) {
-      toast.error("Falha no login. Verifique suas credenciais.");
+      // Erro já é tratado na função login
       console.error("Erro no login:", error);
     } finally {
       setIsLoading(false);
@@ -81,6 +87,15 @@ const LoginPage: React.FC = () => {
             </p>
           </CardFooter>
         </Card>
+
+        {/* Credenciais de teste para facilitar o acesso */}
+        <div className="mt-4 p-4 bg-gray-800 rounded-md border border-gray-700">
+          <h3 className="text-sm font-medium text-gray-300 mb-2">Credenciais de Teste:</h3>
+          <div className="space-y-1">
+            <p className="text-xs text-gray-400">Admin: admin@techcare.com / senha123</p>
+            <p className="text-xs text-gray-400">Usuário: user@test.com / senha123</p>
+          </div>
+        </div>
       </div>
     </div>
   );
