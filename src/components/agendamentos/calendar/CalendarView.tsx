@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScheduledPost } from "@/hooks/useScheduledPosts";
 import { cn } from "@/lib/utils";
 import CalendarDayContent from "./CalendarDayContent";
 import DailyPostsList from "./DailyPostsList";
+import { useCalendarPosts } from "@/hooks/useCalendarPosts";
 
 interface CalendarViewProps {
   posts: ScheduledPost[];
@@ -18,27 +19,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   isLoading,
   onPostClick,
 }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-
-  // Função para agrupar posts por data
-  const getPostsByDate = (date: Date | undefined) => {
-    if (!date) return [];
-    
-    return posts.filter(post => {
-      const postDate = new Date(post.scheduledFor);
-      return (
-        postDate.getDate() === date.getDate() &&
-        postDate.getMonth() === date.getMonth() &&
-        postDate.getFullYear() === date.getFullYear()
-      );
-    });
-  };
-
-  // Posts correspondentes à data selecionada
-  const selectedDatePosts = getPostsByDate(selectedDate);
-
-  // Datas que possuem posts agendados
-  const datesWithPosts = posts.map(post => new Date(post.scheduledFor));
+  const { 
+    selectedDate, 
+    setSelectedDate,
+    selectedDatePosts,
+    datesWithPosts,
+    getPostsByDate
+  } = useCalendarPosts(posts);
 
   return (
     <Card>
