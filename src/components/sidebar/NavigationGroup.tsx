@@ -1,45 +1,61 @@
 
-import React, { useState } from "react";
+import React from "react";
+import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
+import NavigationItem from "./NavigationItem";
+import { LucideIcon } from "lucide-react";
 
-type NavigationGroupProps = {
-  label: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-};
+interface NavItem {
+  title: string;
+  icon: LucideIcon;
+  href: string;
+}
 
-const NavigationGroup: React.FC<NavigationGroupProps> = ({ 
-  label, 
-  children,
-  defaultOpen = false 
+interface NavigationGroupProps {
+  group: string;
+  items: NavItem[];
+  isCollapsed: boolean;
+  currentPath: string;
+}
+
+const NavigationGroup: React.FC<NavigationGroupProps> = ({
+  group,
+  items,
+  isCollapsed,
+  currentPath,
 }) => {
-  const location = useLocation();
-  
-  // Check if any child path matches the current location
-  const childPaths = React.Children.map(children, (child) => {
-    if (React.isValidElement(child) && child.props.to) {
-      return child.props.to;
-    }
-    return null;
-  });
-  
-  const isActive = childPaths?.some(path => path && location.pathname.startsWith(path));
-  const [isOpen, setIsOpen] = useState(defaultOpen || isActive);
+  // Verifica se algum item do grupo está ativo
+  const isGroupActive = items.some(
+    (item) => item.href && currentPath.startsWith(item.href)
+  );
 
   return (
-    <div className="mb-2">
-      <button 
-        className="flex items-center w-full text-sm font-medium text-gray-400 hover:text-gray-200 py-2"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="mr-2">{isOpen ? '▼' : '►'}</span>
-        {label}
-      </button>
-      {isOpen && (
-        <div className="ml-4 space-y-1 mt-1">
-          {children}
+    <div className="mb-4">
+      {!isCollapsed && (
+        <div className="px-3 mb-2">
+          <h4 className="text-xs font-semibold text-sidebar-foreground/50">
+            {group}
+          </h4>
         </div>
       )}
+      
+      <div className="space-y-1">
+        {items.map((item) => {
+          const isActive = currentPath.startsWith(item.href);
+          
+          return (
+            <NavigationItem
+              key={item.title}
+              to={item.href}
+              active={isActive}
+              collapsed={isCollapsed}
+              icon={<item.icon className="h-4 w-4" />}
+            >
+              {item.title}
+            </NavigationItem>
+          );
+        })}
+      </div>
     </div>
   );
 };
