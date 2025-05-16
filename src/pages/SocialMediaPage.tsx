@@ -5,6 +5,16 @@ import SocialMediaOverview from "@/components/reports/social-media/SocialMediaOv
 import SocialMediaEngagement from "@/components/reports/social-media/SocialMediaEngagement";
 import SocialMediaMetricCards from "@/components/reports/social-media/SocialMediaMetricCards";
 
+// Dados de exemplo para o SocialMediaEngagement
+const engagementData = [
+  { name: 'Jan', engagementRate: 4.2, comments: 432, shares: 123 },
+  { name: 'Fev', engagementRate: 3.8, comments: 321, shares: 98 },
+  { name: 'Mar', engagementRate: 5.1, comments: 543, shares: 211 },
+  { name: 'Abr', engagementRate: 4.8, comments: 459, shares: 187 },
+  { name: 'Mai', engagementRate: 4.3, comments: 401, shares: 143 },
+  { name: 'Jun', engagementRate: 5.2, comments: 587, shares: 231 }
+];
+
 const SocialMediaPage: React.FC = () => {
   return (
     <div className="space-y-6">
@@ -27,7 +37,7 @@ const SocialMediaPage: React.FC = () => {
             <CardTitle>Engajamento</CardTitle>
           </CardHeader>
           <CardContent>
-            <SocialMediaEngagement data={[]} />
+            <SocialMediaEngagement data={engagementData} />
           </CardContent>
         </Card>
       </div>

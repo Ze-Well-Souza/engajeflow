@@ -1,53 +1,54 @@
 
 import React from "react";
-import { Instagram, Facebook, Youtube } from "lucide-react";
-import SocialMediaChart from "@/components/reports/SocialMediaChart";
-import { Card, CardContent } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-interface SocialMediaOverviewProps {
+export interface SocialMediaOverviewProps {
   engagementData: any[];
   reachData: any[];
 }
 
-const SocialMediaOverview: React.FC<SocialMediaOverviewProps> = ({ engagementData, reachData }) => {
+// Dados de exemplo
+const mockEngagementData = [
+  { name: "Jan", instagram: 65, facebook: 48, youtube: 30 },
+  { name: "Fev", instagram: 59, facebook: 42, youtube: 31 },
+  { name: "Mar", instagram: 80, facebook: 35, youtube: 40 },
+  { name: "Abr", instagram: 81, facebook: 60, youtube: 41 },
+  { name: "Mai", instagram: 56, facebook: 45, youtube: 37 },
+  { name: "Jun", instagram: 55, facebook: 48, youtube: 39 },
+];
+
+const mockReachData = [
+  { name: "Jan", instagram: 4000, facebook: 2400, youtube: 1200 },
+  { name: "Fev", instagram: 3000, facebook: 1398, youtube: 2210 },
+  { name: "Mar", instagram: 2000, facebook: 9800, youtube: 2290 },
+  { name: "Abr", instagram: 2780, facebook: 3908, youtube: 2000 },
+  { name: "Mai", instagram: 1890, facebook: 4800, youtube: 2181 },
+  { name: "Jun", instagram: 2390, facebook: 3800, youtube: 2500 },
+];
+
+const SocialMediaOverview: React.FC<Partial<SocialMediaOverviewProps>> = ({
+  engagementData = mockEngagementData,
+  reachData = mockReachData
+}) => {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SocialMediaChart data={engagementData} title="Engajamento" />
-        <SocialMediaChart data={reachData} title="Alcance" />
+      <div className="h-72">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={engagementData}
+            margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" fontSize={12} />
+            <YAxis fontSize={12} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="instagram" fill="#8a3cf3" name="Instagram" />
+            <Bar dataKey="facebook" fill="#3b5998" name="Facebook" />
+            <Bar dataKey="youtube" fill="#c4302b" name="YouTube" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
-      
-      <Card className="bg-gray-800 border-gray-700">
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-medium mb-4">Principais Postagens</h3>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-3 p-3 bg-gray-900 rounded-md">
-                <div className="h-12 w-12 bg-gray-700 rounded-md flex items-center justify-center">
-                  {i === 1 ? (
-                    <Instagram className="h-6 w-6 text-pink-500" />
-                  ) : i === 2 ? (
-                    <Facebook className="h-6 w-6 text-blue-500" />
-                  ) : (
-                    <Youtube className="h-6 w-6 text-red-500" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium">
-                    {i === 1 ? "Nova coleção primavera" : i === 2 ? "Descontos exclusivos" : "Tutorial de uso"}
-                  </h4>
-                  <p className="text-sm text-gray-400">
-                    {i === 1 ? "2.5K curtidas • 150 comentários" : i === 2 ? "1.8K curtidas • 95 comentários" : "3.2K visualizações • 85 likes"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-green-500 font-medium text-sm">+{i === 1 ? "24%" : i === 2 ? "18%" : "32%"}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
