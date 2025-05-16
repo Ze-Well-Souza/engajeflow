@@ -1,3 +1,3 @@
 
 // Este arquivo é mantido para compatibilidade e apenas reexporta do novo local
-export * from "./chart";
+export * from "./chart/index";

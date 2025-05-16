@@ -8,14 +8,13 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent
-} from "@/components/ui/chart";
+} from "@/components/ui/chart/index";
 
 type SocialMediaMetric = {
   name: string;
