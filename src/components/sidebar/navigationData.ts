@@ -19,6 +19,7 @@ import {
   Server,
   Shield,
   UserCheck,
+  ImageIcon,
 } from "lucide-react";
 
 // Tipos para os itens de navegação
@@ -60,6 +61,7 @@ export const navigationItems: NavigationGroup[] = [
     items: [
       { icon: ShoppingCart, label: "Vendas", path: "/vendas" },
       { icon: Package, label: "Produtos", path: "/produtos" },
+      { icon: ImageIcon, label: "Catálogo Social", path: "/catalogo-produtos", badge: "Novo" },
       { icon: ListChecks, label: "Categorias", path: "/categorias" },
       { icon: Users, label: "Clientes", path: "/clientes" },
     ]

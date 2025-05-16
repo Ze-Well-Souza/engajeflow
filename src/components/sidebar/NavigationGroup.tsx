@@ -37,7 +37,6 @@ const NavigationGroup: React.FC<NavigationGroupProps> = ({
           {items.map((item) => (
             <NavigationItem 
               key={item.path} 
-              item={item} 
               isCollapsed={isCollapsed} 
               isActive={currentPath.startsWith(item.path)}
               {...item}

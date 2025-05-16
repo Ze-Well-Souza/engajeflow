@@ -19,6 +19,7 @@ import TicketsPage from "@/pages/tickets/TicketsPage";
 // Store pages
 import VendasPage from "@/pages/store/VendasPage";
 import ProdutosPage from "@/pages/store/ProdutosPage";
+import CatalogoProdutosPage from "@/pages/store/CatalogoProdutosPage";
 import CategoriasPage from "@/pages/store/CategoriasPage";
 import ClientesPage from "@/pages/store/ClientesPage";
 // System pages
@@ -55,6 +56,7 @@ const App = () => (
             {/* Loja Routes */}
             <Route path="vendas" element={<VendasPage />} />
             <Route path="produtos" element={<ProdutosPage />} />
+            <Route path="catalogo-produtos" element={<CatalogoProdutosPage />} />
             <Route path="categorias" element={<CategoriasPage />} />
             <Route path="clientes" element={<ClientesPage />} />
             
