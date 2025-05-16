@@ -3,11 +3,12 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ScheduledPost } from "@/hooks/useScheduledPosts";
 import { Button } from "@/components/ui/button";
-import { Calendar, Check, X, Edit, Trash, Instagram, Youtube, Facebook } from "lucide-react";
+import { Calendar, Check, X, Edit, Trash, Instagram, Youtube, Facebook, List, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import AgendamentosFilter from "./AgendamentosFilter";
+import CalendarView from "./CalendarView";
 
 interface AgendamentosListaProps {
   posts: ScheduledPost[];
@@ -30,6 +31,7 @@ const AgendamentosLista: React.FC<AgendamentosListaProps> = ({
   onPlatformFilterChange,
   onStatusFilterChange 
 }) => {
+  const [viewMode, setViewMode] = React.useState<'list' | 'calendar'>('list');
   
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -75,13 +77,43 @@ const AgendamentosLista: React.FC<AgendamentosListaProps> = ({
     return matchesPlatform && matchesStatus;
   });
 
+  // Função para lidar com cliques em posts no calendário
+  const handlePostClick = (post: ScheduledPost) => {
+    // Por enquanto apenas exibe detalhes no console
+    console.log("Post clicado:", post);
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Agendamentos Programados</CardTitle>
-        <CardDescription>
-          Gerencie seus posts agendados para redes sociais.
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <CardTitle>Agendamentos Programados</CardTitle>
+            <CardDescription>
+              Gerencie seus posts agendados para redes sociais.
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant={viewMode === 'list' ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="flex items-center gap-1"
+            >
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">Lista</span>
+            </Button>
+            <Button 
+              variant={viewMode === 'calendar' ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setViewMode('calendar')}
+              className="flex items-center gap-1"
+            >
+              <CalendarDays className="h-4 w-4" />
+              <span className="hidden sm:inline">Calendário</span>
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <AgendamentosFilter 
@@ -91,90 +123,98 @@ const AgendamentosLista: React.FC<AgendamentosListaProps> = ({
           onStatusFilterChange={onStatusFilterChange}
         />
         
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-              <p>Carregando agendamentos...</p>
-            </div>
-          ) : filteredPosts.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Nenhum agendamento encontrado.</p>
-              <Button 
-                variant="outline" 
-                onClick={onCreateNew} 
-                className="mt-2"
-              >
-                Criar agendamento
-              </Button>
-            </div>
-          ) : (
-            filteredPosts.map((post) => (
-              <div 
-                key={post.id} 
-                className={`p-4 border rounded-lg flex justify-between ${
-                  post.status === 'posted' ? 'border-green-700 bg-green-950/10' : 
-                  post.status === 'failed' ? 'border-red-700 bg-red-950/10' : 
-                  'border-gray-700 bg-gray-850'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center mr-4 ${
-                    post.platform === 'instagram' ? 'bg-pink-900/30 text-pink-500' : 
-                    post.platform === 'youtube' ? 'bg-red-900/30 text-red-500' : 
-                    post.platform === 'facebook' ? 'bg-blue-900/30 text-blue-500' :
-                    'bg-gray-900/30 text-gray-500'
-                  }`}>
-                    {getPlatformIcon(post.platform)}
-                  </div>
-                  <div>
-                    <h3 className="font-medium">{post.mediaTitle || 'Mídia sem título'}</h3>
-                    <div className="flex items-center gap-3 text-sm text-gray-400 mt-1">
-                      <span className="flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" /> {formatScheduledDate(post.scheduledFor)}
-                      </span>
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadgeClass(post.status)}`}>
-                        {post.status === 'pending' ? 'Pendente' : 
-                          post.status === 'processing' ? 'Processando' : 
-                          post.status === 'posted' ? 'Publicado' : 'Falha'}
-                      </span>
+        {viewMode === 'list' ? (
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p>Carregando agendamentos...</p>
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Nenhum agendamento encontrado.</p>
+                <Button 
+                  variant="outline" 
+                  onClick={onCreateNew} 
+                  className="mt-2"
+                >
+                  Criar agendamento
+                </Button>
+              </div>
+            ) : (
+              filteredPosts.map((post) => (
+                <div 
+                  key={post.id} 
+                  className={`p-4 border rounded-lg flex justify-between ${
+                    post.status === 'posted' ? 'border-green-700 bg-green-950/10' : 
+                    post.status === 'failed' ? 'border-red-700 bg-red-950/10' : 
+                    'border-gray-700 bg-gray-850'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center mr-4 ${
+                      post.platform === 'instagram' ? 'bg-pink-900/30 text-pink-500' : 
+                      post.platform === 'youtube' ? 'bg-red-900/30 text-red-500' : 
+                      post.platform === 'facebook' ? 'bg-blue-900/30 text-blue-500' :
+                      'bg-gray-900/30 text-gray-500'
+                    }`}>
+                      {getPlatformIcon(post.platform)}
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{post.mediaTitle || 'Mídia sem título'}</h3>
+                      <div className="flex items-center gap-3 text-sm text-gray-400 mt-1">
+                        <span className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" /> {formatScheduledDate(post.scheduledFor)}
+                        </span>
+                        <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadgeClass(post.status)}`}>
+                          {post.status === 'pending' ? 'Pendente' : 
+                            post.status === 'processing' ? 'Processando' : 
+                            post.status === 'posted' ? 'Publicado' : 'Falha'}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    {post.status === 'pending' && (
+                      <>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Marcar como concluído">
+                          <Check className="h-4 w-4 text-green-500" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Cancelar">
+                          <X className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </>
+                    )}
+                    {post.status === 'failed' && (
+                      <span className="text-xs text-red-400">
+                        {post.errorMessage || 'Erro de publicação'}
+                      </span>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Editar" 
+                      disabled={post.status === 'posted' || post.status === 'processing'}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0" 
+                      title="Excluir"
+                      onClick={() => onDeletePost(post.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {post.status === 'pending' && (
-                    <>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Marcar como concluído">
-                        <Check className="h-4 w-4 text-green-500" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Cancelar">
-                        <X className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </>
-                  )}
-                  {post.status === 'failed' && (
-                    <span className="text-xs text-red-400">
-                      {post.errorMessage || 'Erro de publicação'}
-                    </span>
-                  )}
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Editar" 
-                    disabled={post.status === 'posted' || post.status === 'processing'}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 w-8 p-0" 
-                    title="Excluir"
-                    onClick={() => onDeletePost(post.id)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <CalendarView 
+            posts={filteredPosts} 
+            isLoading={isLoading} 
+            onPostClick={handlePostClick} 
+          />
+        )}
       </CardContent>
     </Card>
   );
