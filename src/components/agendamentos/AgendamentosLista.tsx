@@ -7,19 +7,28 @@ import { Calendar, Check, X, Edit, Trash, Instagram, Youtube, Facebook } from "l
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import AgendamentosFilter from "./AgendamentosFilter";
 
 interface AgendamentosListaProps {
   posts: ScheduledPost[];
   isLoading: boolean;
   onCreateNew: () => void;
   onDeletePost: (id: string) => Promise<void>;
+  platformFilter: string;
+  statusFilter: string;
+  onPlatformFilterChange: (value: string) => void;
+  onStatusFilterChange: (value: string) => void;
 }
 
 const AgendamentosLista: React.FC<AgendamentosListaProps> = ({ 
   posts, 
   isLoading, 
   onCreateNew, 
-  onDeletePost 
+  onDeletePost,
+  platformFilter,
+  statusFilter,
+  onPlatformFilterChange,
+  onStatusFilterChange 
 }) => {
   
   const getPlatformIcon = (platform: string) => {
@@ -59,6 +68,13 @@ const AgendamentosLista: React.FC<AgendamentosListaProps> = ({
     }
   };
 
+  // Aplicar filtros
+  const filteredPosts = posts.filter((post) => {
+    const matchesPlatform = platformFilter === 'all' || post.platform === platformFilter;
+    const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
+    return matchesPlatform && matchesStatus;
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -68,13 +84,20 @@ const AgendamentosLista: React.FC<AgendamentosListaProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <AgendamentosFilter 
+          platformFilter={platformFilter}
+          statusFilter={statusFilter}
+          onPlatformFilterChange={onPlatformFilterChange}
+          onStatusFilterChange={onStatusFilterChange}
+        />
+        
         <div className="space-y-4">
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
               <p>Carregando agendamentos...</p>
             </div>
-          ) : posts.length === 0 ? (
+          ) : filteredPosts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>Nenhum agendamento encontrado.</p>
               <Button 
@@ -86,7 +109,7 @@ const AgendamentosLista: React.FC<AgendamentosListaProps> = ({
               </Button>
             </div>
           ) : (
-            posts.map((post) => (
+            filteredPosts.map((post) => (
               <div 
                 key={post.id} 
                 className={`p-4 border rounded-lg flex justify-between ${

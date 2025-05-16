@@ -21,9 +21,14 @@ export interface ScheduledPost {
   thumbnailPath?: string;
 }
 
+export interface PostFilters {
+  platform: string;
+  status: string;
+}
+
 export const useScheduledPosts = (clientId?: string) => {
   const { toast } = useToast();
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<PostFilters>({
     platform: 'all',
     status: 'all',
   });
@@ -100,7 +105,7 @@ export const useScheduledPosts = (clientId?: string) => {
     refetchOnWindowFocus: false,
   });
 
-  const deleteScheduledPost = async (id: string) => {
+  const deleteScheduledPost = async (id: string): Promise<void> => {
     try {
       const { error } = await supabase
         .from('scheduled_posts')
@@ -117,7 +122,7 @@ export const useScheduledPosts = (clientId?: string) => {
       });
 
       // Atualiza a lista após exclusão
-      return refetch();
+      await refetch();
     } catch (error) {
       console.error('Erro ao excluir agendamento:', error);
       toast({

@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useMediaUpload } from "@/hooks/useMediaUpload";
 import { useSchedulePost } from "@/hooks/useSchedulePost";
-import { useScheduledPosts } from "@/hooks/useScheduledPosts";
+import { useScheduledPosts, PostFilters } from "@/hooks/useScheduledPosts";
 
 // Componentes refatorados
 import AgendamentosHeader from "@/components/agendamentos/AgendamentosHeader";
@@ -34,7 +34,14 @@ const AgendamentosPage = () => {
   const { toast } = useToast();
   const { uploadMedia, isUploading, progress } = useMediaUpload(DEMO_CLIENT_ID);
   const { schedulePost, isSubmitting } = useSchedulePost();
-  const { posts, isLoading: isLoadingPosts, refetch, deleteScheduledPost } = useScheduledPosts(DEMO_CLIENT_ID);
+  const { 
+    posts, 
+    isLoading: isLoadingPosts, 
+    refetch, 
+    deleteScheduledPost,
+    filter,
+    setFilter
+  } = useScheduledPosts(DEMO_CLIENT_ID);
   
   // Função para lidar com o upload e agendamento
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +121,21 @@ const AgendamentosPage = () => {
       });
     }
   };
+  
+  // Handlers para os filtros
+  const handlePlatformFilterChange = (value: string) => {
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      platform: value
+    }));
+  };
+  
+  const handleStatusFilterChange = (value: string) => {
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      status: value
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -133,6 +155,10 @@ const AgendamentosPage = () => {
             isLoading={isLoadingPosts} 
             onCreateNew={() => setActiveTab("novo")}
             onDeletePost={deleteScheduledPost}
+            platformFilter={filter.platform}
+            statusFilter={filter.status}
+            onPlatformFilterChange={handlePlatformFilterChange}
+            onStatusFilterChange={handleStatusFilterChange}
           />
         </TabsContent>
         
