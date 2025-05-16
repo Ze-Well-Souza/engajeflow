@@ -27,7 +27,7 @@ const NavigationGroup: React.FC<NavigationGroupProps> = ({
   const isGroupActive = items.some(item => currentPath.startsWith(item.path));
   
   return (
-    <SidebarGroup defaultOpen={isGroupActive}>
+    <SidebarGroup open={isGroupActive}>
       <SidebarGroupLabel className="flex items-center text-xs uppercase tracking-wider font-semibold text-sidebar-foreground/60">
         {!isCollapsed && group}
         {isCollapsed && <ChevronRight className="h-4 w-4" />}
