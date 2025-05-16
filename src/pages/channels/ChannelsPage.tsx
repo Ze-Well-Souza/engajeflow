@@ -1,8 +1,24 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, Mail, Phone, MessageSquare, PlusCircle } from "lucide-react";
+import { 
+  MessageCircle, 
+  Mail, 
+  Phone, 
+  MessageSquare, 
+  PlusCircle, 
+  MoreVertical,
+  Calendar,
+  Bot
+} from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import CanalOptionsMenu from "@/components/channels/CanalOptionsMenu";
 
 const channels = [
   {
@@ -61,7 +77,10 @@ const ChannelsPage = () => {
                 {channel.type === "telegram" && <MessageSquare className="h-5 w-5 text-blue-400" />}
                 {channel.name}
               </CardTitle>
-              <StatusBadge status={channel.status as "ativo" | "inativo" | "recurring"} />
+              <div className="flex items-center gap-2">
+                <StatusBadge status={channel.status as "ativo" | "inativo" | "recurring"} />
+                <CanalOptionsMenu channel={channel} />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-xl font-bold">{channel.messages.toLocaleString()}</div>
