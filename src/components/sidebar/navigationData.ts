@@ -22,7 +22,8 @@ import {
   ImageIcon,
   Youtube,
   Instagram,
-  Facebook
+  Facebook,
+  Mail
 } from "lucide-react";
 
 // Tipos para os itens de navegação
@@ -57,6 +58,7 @@ export const navigationItems: NavigationGroup[] = [
       { icon: Server, label: "Gateway", path: "/gateway" },
       { icon: BarChart2, label: "Relatórios", path: "/relatorios" },
       { icon: TicketCheck, label: "Tickets", path: "/tickets" },
+      { icon: Mail, label: "Funil de Vendas", path: "/funil-vendas", badge: "Novo" },
     ]
   },
   { 

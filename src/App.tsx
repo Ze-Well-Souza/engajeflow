@@ -31,6 +31,8 @@ import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import AdminClientsPage from "@/pages/admin/ClientsPage";
 import PermissionsPage from "@/pages/admin/PermissionsPage";
 import ActivityLogsPage from "@/pages/admin/ActivityLogsPage";
+// Sales Funnel pages
+import FunilVendasPage from "@/pages/funnel/FunilVendasPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +54,7 @@ const App = () => (
             <Route path="gateway/integracoes" element={<GatewayIntegrationsPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
             <Route path="tickets" element={<TicketsPage />} />
+            <Route path="funil-vendas" element={<FunilVendasPage />} />
             
             {/* Loja Routes */}
             <Route path="vendas" element={<VendasPage />} />
