@@ -11,7 +11,7 @@ import {
   Trash,
   Instagram,
   Facebook,
-  TikTok,
+  Youtube,
   ImageIcon,
   Share2
 } from "lucide-react";
@@ -39,7 +39,7 @@ const templates = [
   { id: 'TPL001', nome: 'Promoção Instagram', plataforma: 'instagram', tipo: 'Story', imagem: 'https://placehold.co/270x480/8a3cf3/FFF?text=Instagram+Story' },
   { id: 'TPL002', nome: 'Post de Produto Instagram', plataforma: 'instagram', tipo: 'Feed', imagem: 'https://placehold.co/800x800/833cf3/FFF?text=Instagram+Post' },
   { id: 'TPL003', nome: 'Carrossel Facebook', plataforma: 'facebook', tipo: 'Feed', imagem: 'https://placehold.co/1200x630/3b5998/FFF?text=Facebook+Post' },
-  { id: 'TPL004', nome: 'Vídeo TikTok', plataforma: 'tiktok', tipo: 'Vídeo', imagem: 'https://placehold.co/1080x1920/000/FFF?text=TikTok+Video' },
+  { id: 'TPL004', nome: 'Vídeo YouTube', plataforma: 'youtube', tipo: 'Vídeo', imagem: 'https://placehold.co/1080x1920/000/FFF?text=YouTube+Video' },
   { id: 'TPL005', nome: 'Mini-catálogo Instagram', plataforma: 'instagram', tipo: 'Carousel', imagem: 'https://placehold.co/800x800/833cf3/FFF?text=Instagram+Carousel' },
   { id: 'TPL006', nome: 'Anúncio Facebook', plataforma: 'facebook', tipo: 'Ad', imagem: 'https://placehold.co/1200x628/3b5998/FFF?text=Facebook+Ad' },
 ];
@@ -137,8 +137,8 @@ const CatalogoProdutosPage = () => {
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TikTok className="h-4 w-4 text-red-500" />
-              Posts TikTok
+              <Youtube className="h-4 w-4 text-red-500" />
+              Posts YouTube
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -322,8 +322,8 @@ const CatalogoProdutosPage = () => {
                   className={!produtoSelecionado ? "opacity-50" : ""}
                   disabled={!produtoSelecionado}
                 >
-                  <TikTok className="h-4 w-4 mr-2" />
-                  TikTok
+                  <Youtube className="h-4 w-4 mr-2" />
+                  YouTube
                 </Button>
               </div>
             </CardHeader>
@@ -364,7 +364,7 @@ const CatalogoProdutosPage = () => {
                             <div className="flex items-center mt-1">
                               {template.plataforma === 'instagram' && <Instagram className="h-3 w-3 mr-1" />}
                               {template.plataforma === 'facebook' && <Facebook className="h-3 w-3 mr-1" />}
-                              {template.plataforma === 'tiktok' && <TikTok className="h-3 w-3 mr-1" />}
+                              {template.plataforma === 'youtube' && <Youtube className="h-3 w-3 mr-1" />}
                               <p className="text-xs capitalize text-gray-400">{template.plataforma}</p>
                             </div>
                           </div>

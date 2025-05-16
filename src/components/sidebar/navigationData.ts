@@ -20,6 +20,9 @@ import {
   Shield,
   UserCheck,
   ImageIcon,
+  Youtube,
+  Instagram,
+  Facebook
 } from "lucide-react";
 
 // Tipos para os itens de navegação
