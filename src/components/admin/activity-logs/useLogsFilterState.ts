@@ -4,20 +4,20 @@ import { useFilterOptions } from "@/hooks/useFilterOptions";
 
 export const useLogsFilterState = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAction, setSelectedAction] = useState("");
-  const [selectedModule, setSelectedModule] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedAction, setSelectedAction] = useState("all");
+  const [selectedModule, setSelectedModule] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedUser, setSelectedUser] = useState("all");
   
   // Buscar opções de filtro disponíveis
   const { users, actions, modules } = useFilterOptions();
   
   const resetFilters = () => {
     setSearchTerm("");
-    setSelectedAction("");
-    setSelectedModule("");
-    setSelectedStatus("");
-    setSelectedUser("");
+    setSelectedAction("all");
+    setSelectedModule("all");
+    setSelectedStatus("all");
+    setSelectedUser("all");
   };
   
   return {

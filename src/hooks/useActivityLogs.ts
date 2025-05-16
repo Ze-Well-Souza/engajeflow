@@ -26,19 +26,19 @@ export const useActivityLogs = (
         query = query.or(`user_email.ilike.%${searchTerm}%,details.ilike.%${searchTerm}%,ip.ilike.%${searchTerm}%`);
       }
       
-      if (selectedAction) {
+      if (selectedAction && selectedAction !== "all") {
         query = query.eq("action", selectedAction);
       }
       
-      if (selectedModule) {
+      if (selectedModule && selectedModule !== "all") {
         query = query.eq("module", selectedModule);
       }
       
-      if (selectedStatus) {
+      if (selectedStatus && selectedStatus !== "all") {
         query = query.eq("status", selectedStatus);
       }
       
-      if (selectedUser) {
+      if (selectedUser && selectedUser !== "all") {
         query = query.eq("user_email", selectedUser);
       }
       

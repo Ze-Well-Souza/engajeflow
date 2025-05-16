@@ -81,7 +81,7 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
               <SelectValue placeholder="Usuário" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os Usuários</SelectItem>
+              <SelectItem value="all">Todos os Usuários</SelectItem>
               {userList.map(user => (
                 <SelectItem key={user.id} value={user.email}>
                   {user.email}
@@ -95,7 +95,7 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
               <SelectValue placeholder="Tipo de Ação" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as Ações</SelectItem>
+              <SelectItem value="all">Todas as Ações</SelectItem>
               {actionTypes.map(action => (
                 <SelectItem key={action} value={action}>
                   {action}
@@ -109,7 +109,7 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
               <SelectValue placeholder="Módulo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os Módulos</SelectItem>
+              <SelectItem value="all">Todos os Módulos</SelectItem>
               {moduleTypes.map(module => (
                 <SelectItem key={module} value={module}>
                   {module}
@@ -123,7 +123,7 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os Status</SelectItem>
+              <SelectItem value="all">Todos os Status</SelectItem>
               <SelectItem value="success">Sucesso</SelectItem>
               <SelectItem value="error">Erro</SelectItem>
             </SelectContent>
