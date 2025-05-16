@@ -1,81 +1,72 @@
-
 import React from "react";
-import { format, parseISO } from "date-fns";
-import { 
-  Dialog, DialogContent, DialogDescription, 
-  DialogHeader, DialogTitle 
-} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { ActivityLog } from "./types";
+import { Button } from "@/components/ui/button";
 
 interface LogDetailsModalProps {
-  log: ActivityLog | null;
-  onClose: () => void;
+  log: any;
 }
 
-const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log, onClose }) => {
-  if (!log) return null;
+const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log }) => {
+  const getVariantFromAction = (action: string) => {
+    if (action === "create" || action === "login") {
+      return "default"; // Alterado de "success" para "default"
+    } else if (action === "delete") {
+      return "destructive";
+    } else {
+      return "outline";
+    }
+  };
 
   return (
-    <Dialog open={!!log} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Detalhes do Log</DialogTitle>
-          <DialogDescription>
-            Informações detalhadas sobre a atividade registrada
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">ID</p>
-              <p>{log.id}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <Badge variant={log.status === "success" ? "success" : "destructive"}>
-                {log.status === "success" ? "Sucesso" : "Erro"}
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost">Detalhes</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Detalhes do Log</AlertDialogTitle>
+          <AlertDialogDescription>
+            Informações detalhadas sobre a atividade.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 gap-2">
+            <div className="text-right font-bold">ID:</div>
+            <div className="col-span-3">{log.id}</div>
+
+            <div className="text-right font-bold">Usuário:</div>
+            <div className="col-span-3">{log.user_id}</div>
+
+            <div className="text-right font-bold">Ação:</div>
+            <div className="col-span-3">
+              <Badge variant={getVariantFromAction(log.action)}>
+                {log.action}
               </Badge>
             </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Usuário</p>
-              <p>{log.user_email}</p>
+
+            <div className="text-right font-bold">Timestamp:</div>
+            <div className="col-span-3">{log.created_at}</div>
+
+            <div className="text-right font-bold">Detalhes:</div>
+            <div className="col-span-3">
+              <pre>{JSON.stringify(log.details, null, 2)}</pre>
             </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">IP</p>
-              <p>{log.ip}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Ação</p>
-              <p>{log.action}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Módulo</p>
-              <p>{log.module}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-sm font-medium text-muted-foreground">Data/Hora</p>
-              <p>{format(parseISO(log.timestamp), "dd/MM/yyyy HH:mm:ss")}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-sm font-medium text-muted-foreground">Detalhes</p>
-              <p>{log.details}</p>
-            </div>
-            {log.metadata && (
-              <div className="col-span-2">
-                <p className="text-sm font-medium text-muted-foreground">Metadados</p>
-                <div className="bg-gray-800 p-2 rounded-md mt-1">
-                  <pre className="text-xs whitespace-pre-wrap">
-                    {JSON.stringify(log.metadata, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        <AlertDialogFooter>
+          <Button variant="secondary">Fechar</Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

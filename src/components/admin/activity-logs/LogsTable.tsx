@@ -1,113 +1,126 @@
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
 
-import React from "react";
-import { format, parseISO } from "date-fns";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
-} from "@/components/ui/table";
-import { FileSearch, Info } from "lucide-react";
-import { ActivityLog } from "./types";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLogDetails } from "@/hooks/useLogDetails";
-import LogDetailsModal from "./LogDetailsModal";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ActivityLog } from "@/types"
+import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
+import { LogDetailsModal } from "./LogDetailsModal"
+import { useState } from "react"
 
 interface LogsTableProps {
-  logs: ActivityLog[];
-  isLoading: boolean;
+  data: ActivityLog[]
 }
 
-const LogsTable: React.FC<LogsTableProps> = ({ logs, isLoading }) => {
-  const { selectedLog, handleShowDetails, handleCloseDetails } = useLogDetails();
+const renderActionColumn = (row: ActivityLog) => {
+  const variant = row.action === 'delete' ? 'destructive' : row.action === 'create' || row.action === 'login' ? 'default' : 'outline';
+  return (
+    <Badge variant={variant}>
+      {row.action}
+    </Badge>
+  )
+}
 
-  if (isLoading) {
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Usuário</TableHead>
-            <TableHead>Ação</TableHead>
-            <TableHead>Módulo</TableHead>
-            <TableHead>IP</TableHead>
-            <TableHead>Data/Hora</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Detalhes</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <TableRow key={index}>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-              <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
+const columns: ColumnDef<ActivityLog>[] = [
+  {
+    accessorKey: "createdAt",
+    header: "Date",
+    cell: ({ row }) => format(new Date(row.createdAt), "MMMM d, yyyy hh:mm a"),
+  },
+  {
+    accessorKey: "action",
+    header: "Action",
+    cell: ({ row }) => renderActionColumn(row),
+  },
+  {
+    accessorKey: "tableName",
+    header: "Table",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+]
+
+export function LogsTable({ data }: LogsTableProps) {
+  const [open, setOpen] = useState(false)
+  const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null)
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  const handleRowClick = (log: ActivityLog) => {
+    setSelectedLog(log)
+    setOpen(true)
   }
 
   return (
     <>
       <Table>
+        <TableCaption>Activity Logs</TableCaption>
         <TableHeader>
-          <TableRow>
-            <TableHead>Usuário</TableHead>
-            <TableHead>Ação</TableHead>
-            <TableHead>Módulo</TableHead>
-            <TableHead>IP</TableHead>
-            <TableHead>Data/Hora</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Detalhes</TableHead>
-          </TableRow>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                )
+              })}
+            </TableRow>
+          ))}
         </TableHeader>
         <TableBody>
-          {logs.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                <div className="flex flex-col items-center justify-center">
-                  <FileSearch className="h-8 w-8 mb-2" />
-                  Nenhum log encontrado para os filtros selecionados.
-                </div>
-              </TableCell>
-            </TableRow>
-          ) : (
-            logs.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell className="font-medium">{log.user_email}</TableCell>
-                <TableCell>{log.action}</TableCell>
-                <TableCell>{log.module}</TableCell>
-                <TableCell>{log.ip}</TableCell>
-                <TableCell>{format(parseISO(log.timestamp), "dd/MM/yyyy HH:mm:ss")}</TableCell>
-                <TableCell>
-                  <Badge variant={log.status === "success" ? "success" : "destructive"}>
-                    {log.status === "success" ? "Sucesso" : "Erro"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleShowDetails(log)}
-                    className="p-0 h-8 w-8"
-                  >
-                    <Info className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                onClick={() => handleRowClick(row.original)}
+                className="cursor-pointer"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
               </TableRow>
             ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
           )}
         </TableBody>
       </Table>
-
-      <LogDetailsModal log={selectedLog} onClose={handleCloseDetails} />
+      <LogDetailsModal
+        open={open}
+        setOpen={setOpen}
+        log={selectedLog}
+      />
     </>
-  );
-};
-
-export default LogsTable;
+  )
+}
