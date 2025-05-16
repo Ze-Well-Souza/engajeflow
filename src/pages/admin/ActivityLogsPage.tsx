@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, FileText } from "lucide-react";
 import LogsFilter from "@/components/admin/activity-logs/LogsFilter";
-import LogsTable from "@/components/admin/activity-logs/LogsTable";
+import { LogsTable } from "@/components/admin/activity-logs/LogsTable";
 import LogsPagination from "@/components/admin/activity-logs/LogsPagination";
 import LogsExport from "@/components/admin/activity-logs/LogsExport";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
@@ -99,7 +99,7 @@ const ActivityLogsPage = () => {
       <Card>
         <CardContent className="p-0">
           {logs.length > 0 ? (
-            <LogsTable logs={currentItems} isLoading={isLoading} />
+            <LogsTable data={currentItems} />
           ) : (
             <div className="py-8 text-center text-muted-foreground">
               <FileText className="mx-auto h-12 w-12 mb-2" />

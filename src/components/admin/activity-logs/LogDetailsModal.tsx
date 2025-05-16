@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   AlertDialog,
@@ -6,19 +7,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ActivityLog } from "@/types";
 
 interface LogDetailsModalProps {
-  log: any;
+  log: ActivityLog;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log }) => {
+const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log, open, setOpen }) => {
   const getVariantFromAction = (action: string) => {
     if (action === "create" || action === "login") {
-      return "default"; // Alterado de "success" para "default"
+      return "default";
     } else if (action === "delete") {
       return "destructive";
     } else {
@@ -26,11 +29,12 @@ const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log }) => {
     }
   };
 
+  if (!log) {
+    return null;
+  }
+
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost">Detalhes</Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Detalhes do Log</AlertDialogTitle>
@@ -44,7 +48,7 @@ const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log }) => {
             <div className="col-span-3">{log.id}</div>
 
             <div className="text-right font-bold">Usuário:</div>
-            <div className="col-span-3">{log.user_id}</div>
+            <div className="col-span-3">{log.user_email}</div>
 
             <div className="text-right font-bold">Ação:</div>
             <div className="col-span-3">
@@ -54,16 +58,16 @@ const LogDetailsModal: React.FC<LogDetailsModalProps> = ({ log }) => {
             </div>
 
             <div className="text-right font-bold">Timestamp:</div>
-            <div className="col-span-3">{log.created_at}</div>
+            <div className="col-span-3">{new Date(log.timestamp).toLocaleString()}</div>
 
             <div className="text-right font-bold">Detalhes:</div>
-            <div className="col-span-3">
-              <pre>{JSON.stringify(log.details, null, 2)}</pre>
+            <div className="col-span-3 max-h-40 overflow-auto">
+              <pre className="text-xs whitespace-pre-wrap">{log.details || "Sem detalhes disponíveis"}</pre>
             </div>
           </div>
         </div>
         <AlertDialogFooter>
-          <Button variant="secondary">Fechar</Button>
+          <Button variant="secondary" onClick={() => setOpen(false)}>Fechar</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

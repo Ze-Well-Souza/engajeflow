@@ -1,9 +1,10 @@
+
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -13,12 +14,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { ActivityLog } from "@/types"
-import { Badge } from "@/components/ui/badge"
-import { format } from "date-fns"
-import { LogDetailsModal } from "./LogDetailsModal"
-import { useState } from "react"
+} from "@/components/ui/table";
+import { ActivityLog } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import LogDetailsModal from "./LogDetailsModal";
+import { useState } from "react";
 
 interface LogsTableProps {
   data: ActivityLog[]
@@ -35,22 +36,22 @@ const renderActionColumn = (row: ActivityLog) => {
 
 const columns: ColumnDef<ActivityLog>[] = [
   {
-    accessorKey: "createdAt",
+    accessorKey: "timestamp",
     header: "Date",
-    cell: ({ row }) => format(new Date(row.createdAt), "MMMM d, yyyy hh:mm a"),
+    cell: ({ row }) => format(new Date(row.getValue("timestamp")), "MMMM d, yyyy hh:mm a"),
   },
   {
     accessorKey: "action",
     header: "Action",
-    cell: ({ row }) => renderActionColumn(row),
+    cell: ({ row }) => renderActionColumn(row.original),
   },
   {
-    accessorKey: "tableName",
-    header: "Table",
+    accessorKey: "module",
+    header: "Módulo",
   },
   {
-    accessorKey: "description",
-    header: "Description",
+    accessorKey: "details",
+    header: "Descrição",
   },
 ]
 
@@ -72,7 +73,7 @@ export function LogsTable({ data }: LogsTableProps) {
   return (
     <>
       <Table>
-        <TableCaption>Activity Logs</TableCaption>
+        <TableCaption>Logs de Atividades</TableCaption>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -110,17 +111,21 @@ export function LogsTable({ data }: LogsTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                Nenhum resultado.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      <LogDetailsModal
-        open={open}
-        setOpen={setOpen}
-        log={selectedLog}
-      />
+      {selectedLog && (
+        <LogDetailsModal
+          open={open}
+          setOpen={setOpen}
+          log={selectedLog}
+        />
+      )}
     </>
   )
 }
+
+export default LogsTable;
