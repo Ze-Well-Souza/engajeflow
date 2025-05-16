@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SocialMediaOverview from "@/components/reports/social-media/SocialMediaOverview";
-import SocialMediaEngagement from "@/components/reports/social-media/SocialMediaEngagement";
+import { default as SocialMediaEngagement } from "@/components/reports/social-media/SocialMediaEngagement";
 import SocialMediaMetricCards from "@/components/reports/social-media/SocialMediaMetricCards";
 
 // Dados de exemplo para o SocialMediaEngagement

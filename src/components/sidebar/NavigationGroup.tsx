@@ -1,63 +1,41 @@
 
 import React from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { useLocation } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 import NavigationItem from "./NavigationItem";
-import { LucideIcon } from "lucide-react";
 
-interface NavItem {
+type NavigationGroupProps = {
   title: string;
-  icon: LucideIcon;
-  href: string;
-}
+  icon?: React.ElementType;
+  children?: React.ReactNode;
+  defaultOpen?: boolean;
+};
 
-interface NavigationGroupProps {
-  group: string;
-  items: NavItem[];
-  isCollapsed: boolean;
-  currentPath: string;
-}
-
-const NavigationGroup: React.FC<NavigationGroupProps> = ({
-  group,
-  items,
-  isCollapsed,
-  currentPath,
-}) => {
-  // Verifica se algum item do grupo está ativo
-  const isGroupActive = items.some(
-    (item) => item.href && currentPath.startsWith(item.href)
-  );
-
+const NavigationGroup = ({
+  title,
+  icon: Icon,
+  children,
+  defaultOpen = false,
+}: NavigationGroupProps) => {
   return (
-    <div className="mb-4">
-      {!isCollapsed && (
-        <div className="px-3 mb-2">
-          <h4 className="text-xs font-semibold text-sidebar-foreground/50">
-            {group}
-          </h4>
+    <Collapsible defaultOpen={defaultOpen}>
+      <CollapsibleTrigger
+        className={cn(
+          "flex w-full items-center justify-between rounded-md px-3 py-2",
+          "text-muted-foreground hover:bg-accent hover:text-foreground"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          {Icon && <Icon className="h-4 w-4" />}
+          <span className="text-sm font-medium">{title}</span>
         </div>
-      )}
-      
-      <div className="space-y-1">
-        {items.map((item) => {
-          const isActive = currentPath.startsWith(item.href);
-          const Icon = item.icon;
-          
-          return (
-            <NavigationItem
-              key={item.title}
-              to={item.href}
-              active={isActive}
-              collapsed={isCollapsed}
-              icon={<Icon className="h-4 w-4" />}
-            >
-              {item.title}
-            </NavigationItem>
-          );
-        })}
-      </div>
-    </div>
+        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pl-3 pt-1">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
