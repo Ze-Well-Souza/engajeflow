@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,13 +53,17 @@ const ActivityLogsPage = () => {
       const { data, error } = await query;
       
       if (error) {
-        console.error("Error fetching logs:", error);
+        console.error("Erro ao buscar logs:", error);
         throw error;
       }
       
-      return data;
+      // Garantir que o status está corretamente tipado como "success" ou "error"
+      return data?.map(log => ({
+        ...log,
+        status: log.status === "success" ? "success" : "error"
+      })) as ActivityLog[] || [];
     } catch (error) {
-      console.error("Error in fetchLogs:", error);
+      console.error("Erro em fetchLogs:", error);
       toast({
         title: "Erro ao carregar logs",
         description: "Não foi possível carregar os logs de atividade.",
@@ -147,14 +150,14 @@ const ActivityLogsPage = () => {
       }
       
       // In a real app, this would handle the export based on format
-      console.log(`Exporting ${data.length} logs in ${format} format for period ${dateRange}`);
+      console.log(`Exportando ${data.length} logs no formato ${format} para o período ${dateRange}`);
       
       toast({
         title: "Exportação iniciada",
         description: `Exportando ${data.length} logs em formato ${format} para o período selecionado.`,
       });
     } catch (error) {
-      console.error("Error exporting logs:", error);
+      console.error("Erro ao exportar logs:", error);
       toast({
         title: "Erro na exportação",
         description: "Ocorreu um erro ao exportar os logs.",
@@ -180,7 +183,7 @@ const ActivityLogsPage = () => {
       const uniqueUsers = Array.from(new Set(data.map(log => log.user_email)));
       return uniqueUsers.map(email => ({ id: email, email }));
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Erro ao buscar usuários:", error);
       return [];
     }
   };
@@ -199,7 +202,7 @@ const ActivityLogsPage = () => {
       // Remove duplicates
       return Array.from(new Set(data.map(log => log.action)));
     } catch (error) {
-      console.error("Error fetching actions:", error);
+      console.error("Erro ao buscar ações:", error);
       return [];
     }
   };
@@ -218,7 +221,7 @@ const ActivityLogsPage = () => {
       // Remove duplicates
       return Array.from(new Set(data.map(log => log.module)));
     } catch (error) {
-      console.error("Error fetching modules:", error);
+      console.error("Erro ao buscar módulos:", error);
       return [];
     }
   };
