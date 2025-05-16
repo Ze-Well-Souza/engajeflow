@@ -7,7 +7,7 @@ import {
   SelectTrigger, SelectValue 
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
-import { actionTypes, moduleTypes, userList } from "./mock-data";
+import { User } from "./types";
 
 interface LogsFilterProps {
   searchTerm: string;
@@ -20,6 +20,9 @@ interface LogsFilterProps {
   setSelectedStatus: (value: string) => void;
   selectedUser: string;
   setSelectedUser: (value: string) => void;
+  actionTypes: string[];
+  moduleTypes: string[];
+  userList: User[];
 }
 
 const LogsFilter: React.FC<LogsFilterProps> = ({
@@ -33,6 +36,9 @@ const LogsFilter: React.FC<LogsFilterProps> = ({
   setSelectedStatus,
   selectedUser,
   setSelectedUser,
+  actionTypes,
+  moduleTypes,
+  userList,
 }) => {
   return (
     <Card>

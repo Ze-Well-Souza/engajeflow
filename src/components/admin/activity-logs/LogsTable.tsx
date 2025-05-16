@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { 
   Table, TableBody, TableCell, TableHead, 
   TableHeader, TableRow 
@@ -10,15 +10,17 @@ import {
   DialogHeader, DialogTitle 
 } from "@/components/ui/dialog";
 import { FileSearch, Info } from "lucide-react";
-import { ActivityLog } from "./mock-data";
+import { ActivityLog } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LogsTableProps {
   logs: ActivityLog[];
+  isLoading: boolean;
 }
 
-const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
+const LogsTable: React.FC<LogsTableProps> = ({ logs, isLoading }) => {
   const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null);
 
   const handleShowDetails = (log: ActivityLog) => {
@@ -28,6 +30,37 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
   const handleCloseDetails = () => {
     setSelectedLog(null);
   };
+
+  if (isLoading) {
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Usuário</TableHead>
+            <TableHead>Ação</TableHead>
+            <TableHead>Módulo</TableHead>
+            <TableHead>IP</TableHead>
+            <TableHead>Data/Hora</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Detalhes</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <TableRow key={index}>
+              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-36" /></TableCell>
+              <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+              <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  }
 
   return (
     <>
@@ -56,11 +89,11 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
           ) : (
             logs.map((log) => (
               <TableRow key={log.id}>
-                <TableCell className="font-medium">{log.user}</TableCell>
+                <TableCell className="font-medium">{log.user_email}</TableCell>
                 <TableCell>{log.action}</TableCell>
                 <TableCell>{log.module}</TableCell>
                 <TableCell>{log.ip}</TableCell>
-                <TableCell>{format(log.timestamp, "dd/MM/yyyy HH:mm:ss")}</TableCell>
+                <TableCell>{format(parseISO(log.timestamp), "dd/MM/yyyy HH:mm:ss")}</TableCell>
                 <TableCell>
                   <Badge variant={log.status === "success" ? "success" : "destructive"}>
                     {log.status === "success" ? "Sucesso" : "Erro"}
@@ -106,7 +139,7 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Usuário</p>
-                  <p>{selectedLog.user}</p>
+                  <p>{selectedLog.user_email}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">IP</p>
@@ -122,7 +155,7 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
                 </div>
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-muted-foreground">Data/Hora</p>
-                  <p>{format(selectedLog.timestamp, "dd/MM/yyyy HH:mm:ss")}</p>
+                  <p>{format(parseISO(selectedLog.timestamp), "dd/MM/yyyy HH:mm:ss")}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-muted-foreground">Detalhes</p>
