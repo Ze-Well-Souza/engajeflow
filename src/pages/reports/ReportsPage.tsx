@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart2, PieChart, LineChart, Calendar, Download, Filter } from "lucide-react";
+import { BarChart2, PieChart, LineChart, Calendar, Download, Filter, Users } from "lucide-react";
 
 const ReportsPage = () => {
   return (

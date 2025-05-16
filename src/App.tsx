@@ -15,6 +15,15 @@ import TemplatesPage from "@/pages/templates/TemplatesPage";
 import GatewayPage from "@/pages/gateway/GatewayPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
 import TicketsPage from "@/pages/tickets/TicketsPage";
+// Store pages
+import VendasPage from "@/pages/store/VendasPage";
+import ProdutosPage from "@/pages/store/ProdutosPage";
+import CategoriasPage from "@/pages/store/CategoriasPage";
+import ClientesPage from "@/pages/store/ClientesPage";
+// System pages
+import NotificacoesPage from "@/pages/system/NotificacoesPage";
+import AgendamentosPage from "@/pages/system/AgendamentosPage";
+import ConfiguracoesPage from "@/pages/system/ConfiguracoesPage";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +44,18 @@ const App = () => (
             <Route path="gateway" element={<GatewayPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
             <Route path="tickets" element={<TicketsPage />} />
+            
+            {/* Loja Routes */}
+            <Route path="vendas" element={<VendasPage />} />
+            <Route path="produtos" element={<ProdutosPage />} />
+            <Route path="categorias" element={<CategoriasPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
+            
+            {/* Sistema Routes */}
+            <Route path="notificacoes" element={<NotificacoesPage />} />
+            <Route path="agendamentos" element={<AgendamentosPage />} />
+            <Route path="configuracoes" element={<ConfiguracoesPage />} />
+            
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
