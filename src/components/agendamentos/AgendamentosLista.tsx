@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ScheduledPost } from "@/hooks/useScheduledPosts";
 import AgendamentosFilter from "./AgendamentosFilter";
-import CalendarView from "./CalendarView";
+import CalendarView from "./calendar/CalendarView";
 import ViewModeSelector from "./ViewModeSelector";
 import AgendamentosListView from "./AgendamentosListView";
 
