@@ -22,6 +22,7 @@ import {
   Server,
   Shield,
   UserCheck,
+  ChevronRight,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,13 +35,17 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
   useSidebar,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 // Tipos para os itens de navegação
 type NavigationItem = {
   icon: React.ElementType;
   label: string;
   path: string;
+  badge?: string;
 };
 
 type NavigationGroup = {
@@ -59,7 +64,7 @@ const navigationItems: NavigationGroup[] = [
   { 
     group: "Comunicação", 
     items: [
-      { icon: MessageCircle, label: "Mensagens", path: "/mensagens" },
+      { icon: MessageCircle, label: "Mensagens", path: "/mensagens", badge: "3" },
       { icon: Layers, label: "Canais", path: "/canais" },
       { icon: Zap, label: "Automação", path: "/automacao" },
       { icon: Bot, label: "Bot de Vendas", path: "/bot-vendas" },
@@ -81,7 +86,7 @@ const navigationItems: NavigationGroup[] = [
   { 
     group: "Sistema", 
     items: [
-      { icon: Bell, label: "Notificações", path: "/notificacoes" },
+      { icon: Bell, label: "Notificações", path: "/notificacoes", badge: "5" },
       { icon: Calendar, label: "Agendamentos", path: "/agendamentos" },
       { icon: Settings, label: "Configurações", path: "/configuracoes" },
     ]
@@ -103,41 +108,13 @@ const navigationItems: NavigationGroup[] = [
   },
 ];
 
-// Componente para renderizar um grupo de navegação
-const NavigationGroup: React.FC<{
-  group: NavigationGroup;
-  isCollapsed: boolean;
-  currentPath: string;
-}> = ({ group, isCollapsed, currentPath }) => {
-  // Verifica se algum item do grupo está ativo
-  const isGroupActive = group.items.some(item => currentPath === item.path);
-  
-  return (
-    <SidebarGroup defaultOpen={isGroupActive}>
-      <SidebarGroupLabel>{group.group}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {group.items.map((item) => (
-            <NavigationItem 
-              key={item.path} 
-              item={item} 
-              isCollapsed={isCollapsed} 
-              isActive={currentPath === item.path}
-            />
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-};
-
 // Componente para renderizar um item de navegação
 const NavigationItem: React.FC<{
   item: NavigationItem;
   isCollapsed: boolean;
   isActive: boolean;
 }> = ({ item, isCollapsed, isActive }) => {
-  const { icon: Icon, label, path } = item;
+  const { icon: Icon, label, path, badge } = item;
   
   return (
     <SidebarMenuItem>
@@ -150,32 +127,86 @@ const NavigationItem: React.FC<{
           to={path}
           className={({ isActive }) =>
             cn(
-              "flex items-center py-2 px-4 rounded-md",
+              "flex items-center py-2 px-3 rounded-md sidebar-item-hover",
               isActive
                 ? "bg-sidebar-accent text-white font-medium"
-                : "text-gray-300 hover:bg-sidebar-accent/50 hover:text-white"
+                : "text-sidebar-foreground/80 hover:text-sidebar-foreground"
             )
           }
         >
-          <Icon className="h-5 w-5 mr-3" />
-          {!isCollapsed && <span>{label}</span>}
+          <Icon className="h-5 w-5 flex-shrink-0" />
+          {!isCollapsed && <span className="ml-3 flex-1">{label}</span>}
+          {badge && !isCollapsed && (
+            <Badge 
+              className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground hover-scale"
+              variant="default"
+            >
+              {badge}
+            </Badge>
+          )}
         </NavLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 };
 
-// Componente para o rodapé do sidebar
-const SidebarFooter: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
-  if (isCollapsed) return null;
+// Componente para renderizar um grupo de navegação
+const NavigationGroup: React.FC<{
+  group: NavigationGroup;
+  isCollapsed: boolean;
+  currentPath: string;
+}> = ({ group, isCollapsed, currentPath }) => {
+  // Verifica se algum item do grupo está ativo
+  const isGroupActive = group.items.some(item => currentPath.startsWith(item.path));
   
   return (
-    <div className="mt-auto mb-4 px-4 text-center">
-      <div className="flex items-center text-xs text-gray-400">
-        <span>Admin</span>
-        <span className="ml-1 text-gray-500">admin@techcare.com</span>
+    <SidebarGroup defaultOpen={isGroupActive}>
+      <SidebarGroupLabel className="flex items-center text-xs uppercase tracking-wider font-semibold text-sidebar-foreground/60">
+        {!isCollapsed && group.group}
+        {isCollapsed && <ChevronRight className="h-4 w-4" />}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {group.items.map((item) => (
+            <NavigationItem 
+              key={item.path} 
+              item={item} 
+              isCollapsed={isCollapsed} 
+              isActive={currentPath.startsWith(item.path)}
+            />
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+};
+
+// Componente para o rodapé do sidebar
+const SidebarUserFooter: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
+  if (isCollapsed) {
+    return (
+      <SidebarFooter className="px-2 pt-2 pb-4 flex justify-center">
+        <Avatar className="h-8 w-8 border-2 border-sidebar-accent cursor-pointer hover-scale">
+          <AvatarImage src="https://github.com/shadcn.png" alt="User" />
+          <AvatarFallback>TC</AvatarFallback>
+        </Avatar>
+      </SidebarFooter>
+    );
+  }
+  
+  return (
+    <SidebarFooter className="p-4 mt-auto border-t border-sidebar-border/30">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-10 w-10 border-2 border-sidebar-accent cursor-pointer hover-scale">
+          <AvatarImage src="https://github.com/shadcn.png" alt="User" />
+          <AvatarFallback>TC</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-sidebar-foreground">Admin</span>
+          <span className="text-xs text-sidebar-foreground/60">admin@techcare.com</span>
+        </div>
       </div>
-    </div>
+    </SidebarFooter>
   );
 };
 
@@ -189,17 +220,36 @@ const MainSidebar: React.FC = () => {
   const isCollapsed = state === "collapsed";
   
   return (
-    <Sidebar className={isCollapsed ? "w-14" : "w-60"} collapsible="icon">
-      <SidebarTrigger className="m-2 self-end" />
+    <Sidebar 
+      className={cn(
+        isCollapsed ? "w-16" : "w-64",
+        "transition-all duration-300 ease-in-out border-r border-sidebar-border/20"
+      )} 
+      collapsible="icon"
+    >
+      <SidebarTrigger className="m-2 self-end text-sidebar-foreground/60 hover:text-sidebar-foreground" />
       
-      <div className={cn("flex items-center px-2 py-4", isCollapsed ? "justify-center" : "px-4")}>
-        {!isCollapsed && (
-          <span className="text-xl font-semibold text-white">TechCare</span>
+      <div className={cn(
+        "flex items-center px-3 py-5 mb-2", 
+        isCollapsed ? "justify-center" : "px-4"
+      )}>
+        {!isCollapsed ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold bg-gradient-to-r from-sidebar-primary to-purple-400 bg-clip-text text-transparent">
+              TechCare
+            </span>
+            <Badge variant="outline" className="text-xs font-normal text-sidebar-foreground/60 border-sidebar-border/30">
+              v1.0
+            </Badge>
+          </div>
+        ) : (
+          <div className="h-8 w-8 rounded-md bg-sidebar-primary flex items-center justify-center text-white font-bold text-lg">
+            T
+          </div>
         )}
-        {isCollapsed && <ShoppingCart className="h-6 w-6" />}
       </div>
 
-      <SidebarContent>
+      <SidebarContent className="px-2">
         {navigationItems.map((group, index) => (
           <NavigationGroup 
             key={`${group.group}-${index}`}
@@ -210,7 +260,7 @@ const MainSidebar: React.FC = () => {
         ))}
       </SidebarContent>
       
-      <SidebarFooter isCollapsed={isCollapsed} />
+      <SidebarUserFooter isCollapsed={isCollapsed} />
     </Sidebar>
   );
 };
