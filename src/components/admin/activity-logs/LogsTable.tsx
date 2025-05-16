@@ -1,19 +1,17 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { format, parseISO } from "date-fns";
 import { 
   Table, TableBody, TableCell, TableHead, 
   TableHeader, TableRow 
 } from "@/components/ui/table";
-import { 
-  Dialog, DialogContent, DialogDescription, 
-  DialogHeader, DialogTitle 
-} from "@/components/ui/dialog";
 import { FileSearch, Info } from "lucide-react";
 import { ActivityLog } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLogDetails } from "@/hooks/useLogDetails";
+import LogDetailsModal from "./LogDetailsModal";
 
 interface LogsTableProps {
   logs: ActivityLog[];
@@ -21,15 +19,7 @@ interface LogsTableProps {
 }
 
 const LogsTable: React.FC<LogsTableProps> = ({ logs, isLoading }) => {
-  const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null);
-
-  const handleShowDetails = (log: ActivityLog) => {
-    setSelectedLog(log);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedLog(null);
-  };
+  const { selectedLog, handleShowDetails, handleCloseDetails } = useLogDetails();
 
   if (isLoading) {
     return (
@@ -115,67 +105,7 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs, isLoading }) => {
         </TableBody>
       </Table>
 
-      <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Log</DialogTitle>
-            <DialogDescription>
-              Informações detalhadas sobre a atividade registrada
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedLog && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">ID</p>
-                  <p>{selectedLog.id}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Status</p>
-                  <Badge variant={selectedLog.status === "success" ? "success" : "destructive"}>
-                    {selectedLog.status === "success" ? "Sucesso" : "Erro"}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Usuário</p>
-                  <p>{selectedLog.user_email}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">IP</p>
-                  <p>{selectedLog.ip}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Ação</p>
-                  <p>{selectedLog.action}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Módulo</p>
-                  <p>{selectedLog.module}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm font-medium text-muted-foreground">Data/Hora</p>
-                  <p>{format(parseISO(selectedLog.timestamp), "dd/MM/yyyy HH:mm:ss")}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm font-medium text-muted-foreground">Detalhes</p>
-                  <p>{selectedLog.details}</p>
-                </div>
-                {selectedLog.metadata && (
-                  <div className="col-span-2">
-                    <p className="text-sm font-medium text-muted-foreground">Metadados</p>
-                    <div className="bg-gray-800 p-2 rounded-md mt-1">
-                      <pre className="text-xs whitespace-pre-wrap">
-                        {JSON.stringify(selectedLog.metadata, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <LogDetailsModal log={selectedLog} onClose={handleCloseDetails} />
     </>
   );
 };

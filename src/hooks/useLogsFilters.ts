@@ -1,30 +1,7 @@
 
-import { useState } from "react";
-import { useFilterOptions } from "@/hooks/useFilterOptions";
+// Este arquivo está sendo removido para evitar duplicação, já que
+// criamos o src/components/admin/activity-logs/useLogsFilterState.ts
+// que tem a mesma função mas com funcionalidades adicionais
 
-export const useLogsFilters = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAction, setSelectedAction] = useState("");
-  const [selectedModule, setSelectedModule] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedUser, setSelectedUser] = useState("");
-  
-  // Buscar opções de filtro disponíveis
-  const { users, actions, modules } = useFilterOptions();
-  
-  return {
-    searchTerm,
-    setSearchTerm,
-    selectedAction,
-    setSelectedAction,
-    selectedModule,
-    setSelectedModule,
-    selectedStatus,
-    setSelectedStatus,
-    selectedUser,
-    setSelectedUser,
-    users,
-    actions,
-    modules
-  };
-};
+// Redirecionando exportações para manter compatibilidade com código existente
+export { useLogsFilterState as useLogsFilters } from "@/components/admin/activity-logs/useLogsFilterState";
