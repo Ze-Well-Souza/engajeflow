@@ -56,7 +56,7 @@ const MainSidebar: React.FC = () => {
         {navigationItems.map((group, index) => (
           <NavigationGroup 
             key={`${group.group}-${index}`}
-            groupName={group.group}
+            group={group.group}
             items={group.items}
             isCollapsed={isCollapsed}
             currentPath={currentPath}

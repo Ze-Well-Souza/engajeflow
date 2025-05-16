@@ -13,7 +13,8 @@ import {
   Facebook,
   Youtube,
   ImageIcon,
-  Share2
+  Share2,
+  Sparkles
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import ProductContentButton from "@/components/content-assistant/ProductContentButton";
+import ContentAssistantModal from "@/components/content-assistant/ContentAssistantModal";
+import { GeneratedContent } from "@/hooks/useAiContentGenerator";
 
 // Dados simulados de produtos
 const produtos = [
@@ -49,6 +53,7 @@ const CatalogoProdutosPage = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState<any>(null);
   const [filtro, setFiltro] = useState("");
   const [categoria, setCategoria] = useState("todas");
+  const [isContentAssistantOpen, setIsContentAssistantOpen] = useState(false);
   
   // Filtra produtos com base nos critérios
   const produtosFiltrados = produtos.filter(produto => {
@@ -75,6 +80,21 @@ const CatalogoProdutosPage = () => {
     
     toast.success(`Gerando ${template.tipo} para ${template.plataforma} usando o produto "${produtoSelecionado.nome}"`);
     // Aqui seria a lógica para gerar o conteúdo
+  };
+  
+  // Abrir assistente de IA para o produto
+  const abrirAssistenteIA = (produto: any) => {
+    setProdutoSelecionado(produto);
+    setIsContentAssistantOpen(true);
+  };
+  
+  // Salvar conteúdo gerado
+  const salvarConteudo = (content: GeneratedContent) => {
+    if (!produtoSelecionado) return;
+    
+    toast.success("Conteúdo gerado com IA salvo!", {
+      description: `Conteúdo criado para ${produtoSelecionado.nome}`
+    });
   };
 
   return (
@@ -241,14 +261,25 @@ const CatalogoProdutosPage = () => {
                           <Trash className="h-4 w-4" />
                         </Button>
                       </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => selecionarParaDesign(produto)}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        <Share2 className="h-4 w-4 mr-1" />
-                        Conteúdo
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => abrirAssistenteIA(produto)}
+                          className="h-8"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          IA
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          onClick={() => selecionarParaDesign(produto)}
+                          className="bg-purple-600 hover:bg-purple-700 h-8"
+                        >
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Conteúdo
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}
@@ -387,6 +418,19 @@ const CatalogoProdutosPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Modal do Assistente de Conteúdo */}
+      <ContentAssistantModal 
+        open={isContentAssistantOpen}
+        onOpenChange={setIsContentAssistantOpen}
+        productInfo={produtoSelecionado ? {
+          id: produtoSelecionado.id,
+          name: produtoSelecionado.nome,
+          description: produtoSelecionado.descricao || undefined,
+          imageUrl: produtoSelecionado.imagem
+        } : undefined}
+        onSaveContent={salvarConteudo}
+      />
     </div>
   );
 };
