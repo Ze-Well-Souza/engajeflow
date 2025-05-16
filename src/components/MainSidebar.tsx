@@ -20,6 +20,9 @@ import {
   Layers,
   FileText,
   Server,
+  Shield,
+  UserCheck,
+  FileText as FileTextIcon
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,6 +61,14 @@ const navigationItems = [
     { icon: Bell, label: "Notificações", path: "/notificacoes" },
     { icon: Calendar, label: "Agendamentos", path: "/agendamentos" },
     { icon: Settings, label: "Configurações", path: "/configuracoes" },
+  ]},
+  { group: "Administração", items: [
+    { icon: Shield, label: "Admin Dashboard", path: "/admin" },
+    { icon: UserCheck, label: "Gestão de Clientes", path: "/admin/clientes" },
+    { icon: Shield, label: "Permissões", path: "/admin/permissoes" },
+    { icon: FileTextIcon, label: "Logs de Atividade", path: "/admin/logs" },
+  ]},
+  { group: "Conta", items: [
     { icon: LogOut, label: "Sair", path: "/sair" },
   ]},
 ];
@@ -79,7 +90,7 @@ const MainSidebar = () => {
       
       <div className={cn("flex items-center px-2 py-4", isCollapsed ? "justify-center" : "px-4")}>
         {!isCollapsed && (
-          <span className="text-xl font-semibold text-white">Bot Vendas</span>
+          <span className="text-xl font-semibold text-white">TechCare</span>
         )}
         {isCollapsed && <ShoppingCart className="h-6 w-6" />}
       </div>

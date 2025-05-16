@@ -25,6 +25,11 @@ import ClientesPage from "@/pages/store/ClientesPage";
 import NotificacoesPage from "@/pages/system/NotificacoesPage";
 import AgendamentosPage from "@/pages/system/AgendamentosPage";
 import ConfiguracoesPage from "@/pages/system/ConfiguracoesPage";
+// Admin pages
+import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
+import AdminClientsPage from "@/pages/admin/ClientsPage";
+import PermissionsPage from "@/pages/admin/PermissionsPage";
+import ActivityLogsPage from "@/pages/admin/ActivityLogsPage";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +62,12 @@ const App = () => (
             <Route path="notificacoes" element={<NotificacoesPage />} />
             <Route path="agendamentos" element={<AgendamentosPage />} />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
+            
+            {/* Admin Routes */}
+            <Route path="admin" element={<AdminDashboardPage />} />
+            <Route path="admin/clientes" element={<AdminClientsPage />} />
+            <Route path="admin/permissoes" element={<PermissionsPage />} />
+            <Route path="admin/logs" element={<ActivityLogsPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Route>
