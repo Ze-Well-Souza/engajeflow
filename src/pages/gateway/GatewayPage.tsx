@@ -1,101 +1,58 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Server, Activity, AlertCircle, ArrowUpDown, Check, ArrowRight } from "lucide-react";
-import StatusBadge from "@/components/StatusBadge";
-
-const providers = [
-  {
-    id: "whatsapp",
-    name: "WhatsApp Business API",
-    status: "ativo",
-    messagesPerDay: 2450,
-    responseTime: "1.2s",
-    failureRate: 0.8,
-  },
-  {
-    id: "email",
-    name: "SendGrid",
-    status: "ativo",
-    messagesPerDay: 1850,
-    responseTime: "0.8s",
-    failureRate: 0.5,
-  },
-  {
-    id: "sms",
-    name: "Twilio SMS",
-    status: "ativo",
-    messagesPerDay: 980,
-    responseTime: "1.5s",
-    failureRate: 0.3,
-  },
-  {
-    id: "telegram",
-    name: "Telegram Bot API",
-    status: "inativo",
-    messagesPerDay: 0,
-    responseTime: "0.0s",
-    failureRate: 0,
-  },
-];
-
-const recentLogs = [
-  { time: "12:45:23", status: "success", message: "Mensagem WhatsApp enviada para +5511999999999" },
-  { time: "12:44:15", status: "success", message: "Email enviado para cliente@example.com" },
-  { time: "12:42:30", status: "error", message: "Falha no envio de SMS para +5511988888888" },
-  { time: "12:40:12", status: "success", message: "Mensagem WhatsApp enviada para +5511977777777" },
-  { time: "12:38:45", status: "warning", message: "Atraso no envio de email para suporte@example.com" },
-];
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { Server, Globe, Zap, MessageCircle, Database, ArrowUp, ShoppingCart } from "lucide-react";
 
 const GatewayPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gateway de Mensagens</h1>
-        <div className="flex items-center space-x-2">
-          <StatusBadge status="ativo" />
-          <span className="text-sm">Sistema operacional</span>
-        </div>
+        <h1 className="text-2xl font-bold">Gateway de Integração</h1>
+        <Link to="/gateway/integracoes" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2">
+          <Server className="h-4 w-4" /> Ver Integrações
+        </Link>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Server className="h-4 w-4 text-blue-500" />
-              Provedores Conectados
+              <MessageCircle className="h-4 w-4 text-blue-500" />
+              Canais Conectados
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{providers.filter(p => p.status === "ativo").length}</div>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-sm text-gray-400">WhatsApp, SMS, Email</p>
           </CardContent>
         </Card>
         
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-green-500" />
-              Mensagens Hoje
+              <Zap className="h-4 w-4 text-yellow-500" />
+              Taxa de Entrega
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {providers.reduce((sum, provider) => sum + provider.messagesPerDay, 0).toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold">98.7%</div>
+            <p className="text-xs text-green-500 flex items-center">
+              <ArrowUp className="h-3 w-3 mr-1" /> 2.1% que o mês anterior
+            </p>
           </CardContent>
         </Card>
         
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-yellow-500" />
-              Taxa de Falhas
+              <Database className="h-4 w-4 text-purple-500" />
+              Integrações Ativas
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {(providers.reduce((sum, provider) => sum + provider.failureRate, 0) / providers.length).toFixed(1)}%
-            </div>
+            <div className="text-2xl font-bold">6</div>
+            <p className="text-sm text-gray-400">CRMs, Pagamentos, APIs</p>
           </CardContent>
         </Card>
       </div>
@@ -103,61 +60,115 @@ const GatewayPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle>Provedores de Serviço</CardTitle>
+            <CardTitle>Resumo de Status</CardTitle>
+            <CardDescription>Status dos serviços do gateway</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {providers.map((provider) => (
-                <div 
-                  key={provider.id} 
-                  className="flex items-center justify-between p-3 bg-gray-750 rounded-md border border-gray-700"
-                >
-                  <div className="flex items-center">
-                    <div className="mr-3">
-                      <StatusBadge status={provider.status as "ativo" | "inativo" | "recurring"} className="w-auto" />
-                    </div>
-                    <div>
-                      <div className="font-medium">{provider.name}</div>
-                      <div className="text-xs text-gray-400">
-                        {provider.messagesPerDay.toLocaleString()} msg/dia • {provider.responseTime} tempo resp.
-                      </div>
-                    </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
+                    <MessageCircle className="h-4 w-4" />
                   </div>
-                  <button className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">
-                    Configurar
-                  </button>
+                  <span>API de Mensagens</span>
                 </div>
-              ))}
+                <div>
+                  <span className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-700/50">
+                    Operacional
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
+                    <Database className="h-4 w-4" />
+                  </div>
+                  <span>Serviço de Webhook</span>
+                </div>
+                <div>
+                  <span className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-700/50">
+                    Operacional
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-yellow-800/30 text-yellow-500 rounded-full flex items-center justify-center mr-3">
+                    <ShoppingCart className="h-4 w-4" />
+                  </div>
+                  <span>Gateway de Pagamento</span>
+                </div>
+                <div>
+                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-400 text-xs rounded-full border border-yellow-800/50">
+                    Degradado
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
+                    <Globe className="h-4 w-4" />
+                  </div>
+                  <span>Sincronização CRM</span>
+                </div>
+                <div>
+                  <span className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-700/50">
+                    Operacional
+                  </span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
         
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle>Logs Recentes</CardTitle>
+            <CardTitle>Tráfego de API</CardTitle>
+            <CardDescription>Volume de requisições nas últimas 24h</CardDescription>
           </CardHeader>
-          <CardContent className="max-h-64 overflow-y-auto">
-            <div className="space-y-2">
-              {recentLogs.map((log, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-start p-2 text-sm border-l-2 rounded-r-md bg-gray-750"
-                  style={{ 
-                    borderLeftColor: 
-                      log.status === "success" ? "#10B981" : 
-                      log.status === "warning" ? "#F59E0B" : 
-                      "#EF4444"
-                  }}
-                >
-                  <div className="text-gray-400 mr-2">{log.time}</div>
-                  <div>
-                    {log.status === "success" && <Check className="inline h-3 w-3 text-green-500 mr-1" />}
-                    {log.status === "warning" && <AlertCircle className="inline h-3 w-3 text-yellow-500 mr-1" />}
-                    {log.status === "error" && <AlertCircle className="inline h-3 w-3 text-red-500 mr-1" />}
-                    {log.message}
+          <CardContent>
+            <div className="h-64 flex items-center justify-center">
+              <div className="space-y-4 w-full">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>WhatsApp API</span>
+                    <span>5,234 requisições</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-600 rounded-full" style={{ width: "65%" }}></div>
                   </div>
                 </div>
-              ))}
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Email API</span>
+                    <span>2,841 requisições</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-600 rounded-full" style={{ width: "35%" }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>SMS API</span>
+                    <span>1,652 requisições</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-yellow-600 rounded-full" style={{ width: "20%" }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>CRM API</span>
+                    <span>876 requisições</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-purple-600 rounded-full" style={{ width: "10%" }}></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -165,60 +176,45 @@ const GatewayPage = () => {
       
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
-          <CardTitle>Configuração de Gateway</CardTitle>
+          <CardTitle>Configuração Rápida</CardTitle>
+          <CardDescription>Acesso rápido às configurações do gateway</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">URL do Gateway</label>
-                <input 
-                  type="text" 
-                  value="https://api.techcare.com/gateway" 
-                  className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link to="/gateway/integracoes" className="p-4 bg-gray-750 border border-gray-700 rounded-lg hover:border-blue-500/50 cursor-pointer transition-all">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-blue-800/30 text-blue-500 rounded-full flex items-center justify-center mr-3">
+                  <Server className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Gerenciar Integrações</h3>
+                  <p className="text-xs text-gray-400 mt-1">Adicionar ou remover serviços</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Chave API</label>
-                <input 
-                  type="password" 
-                  value="••••••••••••••••" 
-                  className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2"
-                />
-              </div>
-            </div>
+            </Link>
             
-            <div>
-              <label className="block text-sm font-medium mb-1">Política de Fallback</label>
-              <div className="flex items-center bg-gray-900 p-4 rounded-md border border-gray-700">
-                <div className="p-2 bg-gray-750 border border-gray-600 rounded-md text-sm">
-                  WhatsApp
+            <div className="p-4 bg-gray-750 border border-gray-700 rounded-lg hover:border-blue-500/50 cursor-pointer transition-all">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
+                  <Zap className="h-4 w-4" />
                 </div>
-                <ArrowRight className="mx-3 h-4 w-4 text-gray-500" />
-                <div className="p-2 bg-gray-750 border border-gray-600 rounded-md text-sm">
-                  SMS
-                </div>
-                <ArrowRight className="mx-3 h-4 w-4 text-gray-500" />
-                <div className="p-2 bg-gray-750 border border-gray-600 rounded-md text-sm">
-                  Email
+                <div>
+                  <h3 className="font-medium">Fluxos de Trabalho</h3>
+                  <p className="text-xs text-gray-400 mt-1">Configurar automações</p>
                 </div>
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium mb-1">Balanceamento de Carga</label>
-              <select className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2">
-                <option>Round Robin</option>
-                <option>Least Connections</option>
-                <option>Weighted</option>
-              </select>
-            </div>
-            
-            <div className="flex justify-end">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2">
-                <ArrowUpDown className="h-4 w-4" />
-                Testar Conexão
-              </button>
+            <div className="p-4 bg-gray-750 border border-gray-700 rounded-lg hover:border-blue-500/50 cursor-pointer transition-all">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-purple-800/30 text-purple-500 rounded-full flex items-center justify-center mr-3">
+                  <Globe className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Logs e Eventos</h3>
+                  <p className="text-xs text-gray-400 mt-1">Monitorar atividade</p>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

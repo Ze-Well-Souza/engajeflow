@@ -13,6 +13,7 @@ import AutomationPage from "@/pages/automation/AutomationPage";
 import SalesBotPage from "@/pages/salesbot/SalesBotPage";
 import TemplatesPage from "@/pages/templates/TemplatesPage";
 import GatewayPage from "@/pages/gateway/GatewayPage";
+import GatewayIntegrationsPage from "@/pages/gateway/GatewayIntegrationsPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
 import TicketsPage from "@/pages/tickets/TicketsPage";
 // Store pages
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="bot-vendas" element={<SalesBotPage />} />
             <Route path="templates" element={<TemplatesPage />} />
             <Route path="gateway" element={<GatewayPage />} />
+            <Route path="gateway/integracoes" element={<GatewayIntegrationsPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
             <Route path="tickets" element={<TicketsPage />} />
             

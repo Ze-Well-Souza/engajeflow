@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingCart, QrCode, Calendar, Download, Banknote, TrendingUp } from "lucide-react";
+import { ShoppingCart, QrCode, Calendar, Download, Banknote, TrendingUp, PieChart } from "lucide-react";
 
 const VendasPage = () => {
   return (
