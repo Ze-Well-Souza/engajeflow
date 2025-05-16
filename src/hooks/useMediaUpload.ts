@@ -2,21 +2,13 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { v4 as uuidv4 } from 'uuid';
 
-export type MediaType = 'video' | 'image' | 'carousel';
-
-export interface MediaUploadResult {
+export interface UploadMediaResult {
   id: string;
   title: string;
-  description: string | null;
-  mediaType: MediaType;
   storagePath: string;
-  originalFilename: string;
-  duration?: number;
-  size: number;
   thumbnailPath?: string;
-  dimensions?: { width: number; height: number };
+  mediaType: string;
 }
 
 export const useMediaUpload = (clientId: string) => {
@@ -26,143 +18,92 @@ export const useMediaUpload = (clientId: string) => {
 
   const uploadMedia = async (
     file: File,
-    mediaType: MediaType,
+    mediaType: 'video' | 'image' | 'carousel',
     title: string,
     description?: string
-  ): Promise<MediaUploadResult | null> => {
+  ): Promise<UploadMediaResult | null> => {
+    if (!file) {
+      toast({
+        title: 'Erro no upload',
+        description: 'Nenhum arquivo selecionado.',
+        variant: 'destructive',
+      });
+      return null;
+    }
+
     try {
       setIsUploading(true);
       setProgress(0);
 
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-
-      if (!userId) {
-        toast({
-          title: 'Erro no upload',
-          description: 'Você precisa estar autenticado para fazer upload de mídia.',
-          variant: 'destructive',
-        });
-        return null;
+      // Primeiro verifica se o usuário está autenticado
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !userData.user) {
+        throw new Error('Usuário não autenticado');
       }
 
-      // Criar caminho no storage
+      const userId = userData.user.id;
       const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
 
-      // Upload do arquivo para o storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // Upload do arquivo
+      const { error: uploadError, data } = await supabase.storage
         .from('social_media')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          onUploadProgress: (progress) => {
-            setProgress((progress.loaded / progress.total) * 100);
-          },
+          // Removendo a opção onUploadProgress que não existe no tipo FileOptions
         });
 
       if (uploadError) {
-        console.error('Erro no upload:', uploadError);
-        toast({
-          title: 'Erro no upload',
-          description: 'Não foi possível fazer upload do arquivo.',
-          variant: 'destructive',
-        });
-        return null;
+        throw uploadError;
       }
 
-      // Extrair informações sobre o arquivo
-      const size = file.size;
-      let dimensions: { width: number; height: number } | undefined;
-      let duration: number | undefined;
-
-      // Para imagens e vídeos, obter dimensões
-      if (mediaType === 'image' || mediaType === 'video') {
-        if (mediaType === 'image') {
-          const img = new Image();
-          img.src = URL.createObjectURL(file);
-          await new Promise((resolve) => {
-            img.onload = resolve;
-          });
-          dimensions = {
-            width: img.width,
-            height: img.height,
-          };
-        } else if (mediaType === 'video') {
-          const video = document.createElement('video');
-          video.preload = 'metadata';
-          video.src = URL.createObjectURL(file);
-          await new Promise((resolve) => {
-            video.onloadedmetadata = resolve;
-          });
-          dimensions = {
-            width: video.videoWidth,
-            height: video.videoHeight,
-          };
-          duration = Math.round(video.duration);
-        }
-      }
-
-      // Gerar URL pública do arquivo
-      const storagePath = uploadData.path;
-
-      // Salvar metadados no banco de dados
+      // Criar entrada no banco de dados
       const { data: mediaData, error: mediaError } = await supabase
         .from('social_media')
         .insert({
           user_id: userId,
           client_id: clientId,
-          title,
-          description,
+          title: title,
+          description: description || null,
           media_type: mediaType,
-          storage_path: storagePath,
+          storage_path: filePath,
           original_filename: file.name,
-          duration,
-          size,
-          dimensions: dimensions ? dimensions : null,
-          thumbnail_path: null, // Será gerado posteriormente
+          size: file.size,
+          // Adicione dimensões para imagens ou duração para vídeos se necessário
         })
         .select()
         .single();
 
       if (mediaError) {
-        console.error('Erro ao salvar metadados:', mediaError);
-        toast({
-          title: 'Erro ao salvar',
-          description: 'O upload foi feito, mas não foi possível salvar os metadados.',
-          variant: 'destructive',
-        });
-        return null;
+        throw mediaError;
       }
 
       toast({
         title: 'Upload concluído',
-        description: 'O arquivo foi enviado com sucesso.',
+        description: 'Arquivo enviado com sucesso.',
       });
 
       return {
         id: mediaData.id,
         title: mediaData.title,
-        description: mediaData.description,
-        mediaType: mediaData.media_type as MediaType,
-        storagePath: mediaData.storage_path,
-        originalFilename: mediaData.original_filename || file.name,
-        duration: mediaData.duration || undefined,
-        size: mediaData.size || file.size,
+        storagePath: filePath,
         thumbnailPath: mediaData.thumbnail_path || undefined,
-        dimensions: mediaData.dimensions as any,
+        mediaType: mediaData.media_type,
       };
     } catch (error) {
-      console.error('Erro no processo de upload:', error);
+      console.error('Erro no upload:', error);
       toast({
         title: 'Erro no upload',
-        description: 'Ocorreu um erro inesperado durante o upload.',
+        description: 'Não foi possível enviar o arquivo.',
         variant: 'destructive',
       });
       return null;
     } finally {
       setIsUploading(false);
-      setProgress(0);
+      setProgress(100); // Considerando upload concluído
     }
   };
 
