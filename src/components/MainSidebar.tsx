@@ -13,7 +13,6 @@ import NavigationGroup from "./sidebar/NavigationGroup";
 import NavigationItem from "./sidebar/NavigationItem";
 import SidebarUserFooter from "./sidebar/SidebarUserFooter";
 import { navigationItems } from "./sidebar/navigationData";
-import { LucideIcon } from "lucide-react";
 
 // Componente principal da sidebar
 const MainSidebar: React.FC = () => {
@@ -63,7 +62,6 @@ const MainSidebar: React.FC = () => {
           >
             {group.items.map((item) => {
               const isActive = currentPath.startsWith(item.href);
-              const IconComponent = item.icon as React.ComponentType<{ className?: string }>;
               
               return (
                 <NavigationItem
@@ -71,7 +69,7 @@ const MainSidebar: React.FC = () => {
                   to={item.href}
                   active={isActive}
                   collapsed={isCollapsed}
-                  icon={<IconComponent className="h-4 w-4" />}
+                  icon={item.icon}
                 >
                   {item.title}
                 </NavigationItem>

@@ -1,111 +1,119 @@
 
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import LogsContent from "@/components/admin/activity-logs/LogsContent";
-import { ActivityLog } from "@/types";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import LogsContent from '../../../components/admin/activity-logs/LogsContent';
+import { ActivityLog } from '../../../components/admin/activity-logs/types';
+import TestsWrapper from '../../../components/TestsWrapper';
 
-// Mock das dependências
-jest.mock("@/components/admin/activity-logs/LogsTable", () => ({
-  LogsTable: ({ data }: { data: ActivityLog[] }) => (
-    <div data-testid="logs-table">{data.length} logs na tabela</div>
-  ),
-}));
+// Mock dos dados de logs para testes
+const mockLogs: ActivityLog[] = [
+  {
+    id: '1',
+    user_email: 'admin@test.com',
+    action: 'login',
+    module: 'auth',
+    timestamp: '2025-04-10T15:30:00Z',
+    ip: '192.168.1.1',
+    status: 'success',
+    details: 'Login successful',
+    metadata: {}
+  },
+  {
+    id: '2',
+    user_email: 'user@test.com',
+    action: 'create',
+    module: 'clients',
+    timestamp: '2025-04-10T14:20:00Z',
+    ip: '192.168.1.2',
+    status: 'success',
+    details: 'Created new client',
+    metadata: {}
+  }
+];
 
-jest.mock("@/components/admin/activity-logs/LogsPagination", () => ({
-  __esModule: true,
-  default: ({ currentPage, totalPages }: { currentPage: number, totalPages: number }) => (
-    <div data-testid="logs-pagination">Página {currentPage} de {totalPages}</div>
-  ),
-}));
-
-jest.mock("@/components/admin/activity-logs/EmptyLogs", () => ({
-  __esModule: true,
-  default: () => <div data-testid="empty-logs">Nenhum log encontrado</div>,
-}));
-
-describe("LogsContent Component", () => {
-  const mockSetCurrentPage = jest.fn();
+describe('LogsContent', () => {
+  it('renderiza a tabela de logs corretamente', () => {
+    render(
+      <TestsWrapper>
+        <LogsContent 
+          logs={mockLogs}
+          isLoading={false}
+          totalLogs={2}
+          currentPage={1}
+          pageSize={10}
+          onPageChange={() => {}}
+        />
+      </TestsWrapper>
+    );
+    
+    expect(screen.getByText('admin@test.com')).toBeInTheDocument();
+    expect(screen.getByText('user@test.com')).toBeInTheDocument();
+    expect(screen.getByText('login')).toBeInTheDocument();
+    expect(screen.getByText('create')).toBeInTheDocument();
+  });
   
-  const mockLogs: ActivityLog[] = [
-    {
-      id: "1",
-      user_email: "user@example.com",
-      action: "login",
-      module: "auth",
-      timestamp: new Date().toISOString(),
-      ip: "127.0.0.1",
-      status: "success",
-      details: "Login bem-sucedido"
-    }
-  ];
-
-  it("renders the logs table when logs are available", () => {
+  it('mostra mensagem quando não há logs', () => {
     render(
-      <LogsContent 
-        logs={mockLogs}
-        currentItems={mockLogs}
-        currentPage={1}
-        totalPages={1}
-        setCurrentPage={mockSetCurrentPage}
-      />
+      <TestsWrapper>
+        <LogsContent 
+          logs={[]}
+          isLoading={false}
+          totalLogs={0}
+          currentPage={1}
+          pageSize={10}
+          onPageChange={() => {}}
+        />
+      </TestsWrapper>
     );
     
-    expect(screen.getByTestId("logs-table")).toBeInTheDocument();
-    expect(screen.queryByTestId("empty-logs")).not.toBeInTheDocument();
+    expect(screen.getByText('Nenhum log encontrado')).toBeInTheDocument();
   });
-
-  it("renders empty state when no logs are available", () => {
+  
+  it('mostra indicador de carregamento', () => {
     render(
-      <LogsContent 
-        logs={[]}
-        currentItems={[]}
-        currentPage={1}
-        totalPages={0}
-        setCurrentPage={mockSetCurrentPage}
-      />
+      <TestsWrapper>
+        <LogsContent 
+          logs={[]}
+          isLoading={true}
+          totalLogs={0}
+          currentPage={1}
+          pageSize={10}
+          onPageChange={() => {}}
+        />
+      </TestsWrapper>
     );
     
-    expect(screen.queryByTestId("logs-table")).not.toBeInTheDocument();
-    expect(screen.getByTestId("empty-logs")).toBeInTheDocument();
+    expect(screen.getByText('Carregando logs...')).toBeInTheDocument();
   });
-
-  it("shows pagination when there are more than 10 logs", () => {
-    // Criar um array com 11 logs
-    const manyLogs: ActivityLog[] = Array(11).fill(0).map((_, i) => ({
-      id: `${i + 1}`,
-      user_email: "user@example.com",
-      action: "login",
-      module: "auth",
-      timestamp: new Date().toISOString(),
-      ip: "127.0.0.1",
-      status: "success",
-      details: `Log ${i + 1}`
+  
+  it('renderiza a paginação corretamente', () => {
+    const mockLogsMany: ActivityLog[] = Array.from({ length: 10 }, (_, i) => ({
+      id: `${i+1}`,
+      user_email: `user${i+1}@test.com`,
+      action: 'view',
+      module: 'dashboard',
+      timestamp: '2025-04-10T15:30:00Z',
+      ip: '192.168.1.1',
+      status: 'success',
+      details: 'Viewed dashboard',
+      metadata: {}
     }));
     
     render(
-      <LogsContent 
-        logs={manyLogs}
-        currentItems={manyLogs.slice(0, 10)}
-        currentPage={1}
-        totalPages={2}
-        setCurrentPage={mockSetCurrentPage}
-      />
+      <TestsWrapper>
+        <LogsContent 
+          logs={mockLogsMany}
+          isLoading={false}
+          totalLogs={25}
+          currentPage={1}
+          pageSize={10}
+          onPageChange={() => {}}
+        />
+      </TestsWrapper>
     );
     
-    expect(screen.getByTestId("logs-pagination")).toBeInTheDocument();
-  });
-
-  it("hides pagination when there are 10 or fewer logs", () => {
-    render(
-      <LogsContent 
-        logs={mockLogs}
-        currentItems={mockLogs}
-        currentPage={1}
-        totalPages={1}
-        setCurrentPage={mockSetCurrentPage}
-      />
-    );
-    
-    expect(screen.queryByTestId("logs-pagination")).not.toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
   });
 });

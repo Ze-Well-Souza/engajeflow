@@ -19,6 +19,8 @@ import CatalogoProdutosPage from "./pages/store/CatalogoProdutosPage";
 import ContentAssistantPage from "./pages/content/ContentAssistantPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdvancedAnalyticsPage from "./pages/reports/AdvancedAnalyticsPage";
+import GatewayPage from "./pages/gateway/GatewayPage";
+import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
 
 const App: React.FC = () => {
   return (
@@ -44,6 +46,8 @@ const App: React.FC = () => {
             <Route path="store" element={<CatalogoProdutosPage />} />
             <Route path="admin" element={<AdminDashboardPage />} />
             <Route path="content-assistant" element={<ContentAssistantPage />} />
+            <Route path="gateway" element={<GatewayPage />} />
+            <Route path="gateway/integrations" element={<GatewayIntegrationsPage />} />
           </Route>
         </Routes>
       </Router>

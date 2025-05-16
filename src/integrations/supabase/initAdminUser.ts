@@ -3,75 +3,81 @@ import { supabase } from "./client";
 
 export const createAdminUserIfNotExists = async () => {
   try {
-    // Verificar se o usuário admin já existe
-    const { data: existingUser, error: searchError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', 'admin@techcare.com')
-      .single();
+    console.log("Verificando se usuários de teste já existem...");
     
-    if (searchError && searchError.code !== 'PGRST116') {
-      console.error("Erro ao verificar usuário admin:", searchError);
+    // Checar se o admin já existe pelo email diretamente na auth
+    const { data: existingAdminAuth, error: adminAuthError } = await supabase.auth.admin.listUsers();
+    
+    if (adminAuthError) {
+      console.error("Erro ao verificar usuários existentes:", adminAuthError);
+      // Continuar mesmo com erro para tentar criar os usuários
+    }
+    
+    const adminExists = existingAdminAuth?.users?.some(user => 
+      user.email === 'admin@techcare.com'
+    );
+    
+    const userExists = existingAdminAuth?.users?.some(user => 
+      user.email === 'user@test.com'
+    );
+
+    // Se ambos usuários existem, não fazer nada
+    if (adminExists && userExists) {
+      console.log("Usuários admin e teste já existem");
       return;
     }
     
-    // Se o usuário já existe, não fazer nada
-    if (existingUser) {
-      console.log("Usuário admin já existe");
-      return;
-    }
-    
-    // Criar usuário admin
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: 'admin@techcare.com',
-      password: 'senha123',
-      options: {
-        data: {
-          full_name: 'Administrador TechCare',
+    // Criar usuário admin se não existir
+    if (!adminExists) {
+      console.log("Tentando criar usuário admin...");
+      const { data: adminData, error: adminError } = await supabase.auth.signUp({
+        email: 'admin@techcare.com',
+        password: 'senha123',
+        options: {
+          data: {
+            full_name: 'Administrador TechCare',
+          }
+        }
+      });
+      
+      if (adminError) {
+        console.error("Erro ao criar usuário admin:", adminError);
+      } else {
+        console.log("Usuário admin criado com sucesso", adminData);
+        
+        // Definir usuário como admin
+        if (adminData.user) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ is_admin: true })
+            .eq('id', adminData.user.id);
+          
+          if (updateError) {
+            console.error("Erro ao atualizar perfil do admin:", updateError);
+          }
         }
       }
-    });
-    
-    if (authError) {
-      console.error("Erro ao criar usuário admin:", authError);
-      return;
     }
     
-    if (!authData.user) {
-      console.error("Falha ao criar usuário admin: dados de usuário não retornados");
-      return;
-    }
-    
-    // Atualizar perfil para ser admin
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ is_admin: true })
-      .eq('id', authData.user.id);
-    
-    if (updateError) {
-      console.error("Erro ao atualizar perfil do admin:", updateError);
-      return;
-    }
-    
-    console.log("Usuário admin criado com sucesso");
-    
-    // Criar também um usuário comum para teste
-    const { data: userData, error: userError } = await supabase.auth.signUp({
-      email: 'user@test.com',
-      password: 'senha123',
-      options: {
-        data: {
-          full_name: 'Usuário Teste',
+    // Criar usuário teste se não existir
+    if (!userExists) {
+      console.log("Tentando criar usuário de teste...");
+      const { data: userData, error: userError } = await supabase.auth.signUp({
+        email: 'user@test.com',
+        password: 'senha123',
+        options: {
+          data: {
+            full_name: 'Usuário Teste',
+          }
         }
+      });
+      
+      if (userError) {
+        console.error("Erro ao criar usuário teste:", userError);
+      } else {
+        console.log("Usuário teste criado com sucesso", userData);
       }
-    });
-    
-    if (userError) {
-      console.error("Erro ao criar usuário teste:", userError);
-      return;
     }
-    
-    console.log("Usuário teste criado com sucesso");
     
   } catch (error) {
     console.error("Erro ao criar usuários para teste:", error);

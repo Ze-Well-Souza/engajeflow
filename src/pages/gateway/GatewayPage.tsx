@@ -1,224 +1,192 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Server, Globe, Zap, MessageCircle, Database, ArrowUp, ShoppingCart } from "lucide-react";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import GatewayStatus from '@/components/gateway/GatewayStatus';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ArrowUpDown, Layers, RefreshCw, Zap } from 'lucide-react';
 
-const GatewayPage = () => {
+const GatewayPage: React.FC = () => {
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 p-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gateway de Integração</h1>
-        <Link to="/gateway/integracoes" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2">
-          <Server className="h-4 w-4" /> Ver Integrações
-        </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Gateway Aprimorado</h1>
+          <p className="text-muted-foreground">Gerencie e monitore seu sistema de gateway de API</p>
+        </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-blue-500" />
-              Canais Conectados
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Retry Inteligente
             </CardTitle>
+            <RefreshCw className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-sm text-gray-400">WhatsApp, SMS, Email</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-yellow-500" />
-              Taxa de Entrega
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">98.7%</div>
-            <p className="text-xs text-green-500 flex items-center">
-              <ArrowUp className="h-3 w-3 mr-1" /> 2.1% que o mês anterior
+            <div className="text-2xl font-bold">98.5%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Taxa de resolução automática
             </p>
           </CardContent>
         </Card>
-        
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Database className="h-4 w-4 text-purple-500" />
-              Integrações Ativas
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Load Balancing
             </CardTitle>
+            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">6</div>
-            <p className="text-sm text-gray-400">CRMs, Pagamentos, APIs</p>
+            <div className="text-2xl font-bold">99.9%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Disponibilidade do serviço
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Cache Inteligente
+            </CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">72ms</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tempo médio de resposta
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Integrações Críticas
+            </CardTitle>
+            <Layers className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">100%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Taxa de entrega prioritária
+            </p>
           </CardContent>
         </Card>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle>Resumo de Status</CardTitle>
-            <CardDescription>Status dos serviços do gateway</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
-                    <MessageCircle className="h-4 w-4" />
-                  </div>
-                  <span>API de Mensagens</span>
-                </div>
-                <div>
-                  <span className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-700/50">
-                    Operacional
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
-                    <Database className="h-4 w-4" />
-                  </div>
-                  <span>Serviço de Webhook</span>
-                </div>
-                <div>
-                  <span className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-700/50">
-                    Operacional
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-yellow-800/30 text-yellow-500 rounded-full flex items-center justify-center mr-3">
-                    <ShoppingCart className="h-4 w-4" />
-                  </div>
-                  <span>Gateway de Pagamento</span>
-                </div>
-                <div>
-                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-400 text-xs rounded-full border border-yellow-800/50">
-                    Degradado
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-gray-750 rounded-md">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
-                    <Globe className="h-4 w-4" />
-                  </div>
-                  <span>Sincronização CRM</span>
-                </div>
-                <div>
-                  <span className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-700/50">
-                    Operacional
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="metrics">Métricas</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
+          <TabsTrigger value="settings">Configurações</TabsTrigger>
+        </TabsList>
         
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle>Tráfego de API</CardTitle>
-            <CardDescription>Volume de requisições nas últimas 24h</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 flex items-center justify-center">
-              <div className="space-y-4 w-full">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>WhatsApp API</span>
-                    <span>5,234 requisições</span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-600 rounded-full" style={{ width: "65%" }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Email API</span>
-                    <span>2,841 requisições</span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-600 rounded-full" style={{ width: "35%" }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>SMS API</span>
-                    <span>1,652 requisições</span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-yellow-600 rounded-full" style={{ width: "20%" }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>CRM API</span>
-                    <span>876 requisições</span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-600 rounded-full" style={{ width: "10%" }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card className="bg-gray-800 border-gray-700">
-        <CardHeader>
-          <CardTitle>Configuração Rápida</CardTitle>
-          <CardDescription>Acesso rápido às configurações do gateway</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link to="/gateway/integracoes" className="p-4 bg-gray-750 border border-gray-700 rounded-lg hover:border-blue-500/50 cursor-pointer transition-all">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-blue-800/30 text-blue-500 rounded-full flex items-center justify-center mr-3">
-                  <Server className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Gerenciar Integrações</h3>
-                  <p className="text-xs text-gray-400 mt-1">Adicionar ou remover serviços</p>
-                </div>
-              </div>
-            </Link>
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GatewayStatus />
             
-            <div className="p-4 bg-gray-750 border border-gray-700 rounded-lg hover:border-blue-500/50 cursor-pointer transition-all">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-green-800/30 text-green-500 rounded-full flex items-center justify-center mr-3">
-                  <Zap className="h-4 w-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle>Requisições por API</CardTitle>
+                <CardDescription>
+                  Volume de tráfego por endpoint nas últimas 24h
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                {/* Visualização simulada de gráfico */}
+                <div className="h-full w-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-md flex items-center justify-center">
+                  <p className="text-sm text-gray-500">Gráfico de Requisições</p>
                 </div>
-                <div>
-                  <h3 className="font-medium">Fluxos de Trabalho</h3>
-                  <p className="text-xs text-gray-400 mt-1">Configurar automações</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4 bg-gray-750 border border-gray-700 rounded-lg hover:border-blue-500/50 cursor-pointer transition-all">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-purple-800/30 text-purple-500 rounded-full flex items-center justify-center mr-3">
-                  <Globe className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Logs e Eventos</h3>
-                  <p className="text-xs text-gray-400 mt-1">Monitorar atividade</p>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Logs do Sistema</CardTitle>
+              <CardDescription>
+                Registros de atividade recentes do gateway
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[200px] w-full">
+                <div className="space-y-2 text-sm">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="flex gap-2 text-xs border-b pb-2">
+                      <div className="text-gray-500 w-24 flex-shrink-0">
+                        {new Date(Date.now() - i * 600000).toLocaleTimeString()}
+                      </div>
+                      <div className={`px-1 rounded ${i % 3 === 0 ? "bg-yellow-100 text-yellow-800" : i % 2 === 0 ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}>
+                        {i % 3 === 0 ? "AVISO" : i % 2 === 0 ? "INFO" : "DEBUG"}
+                      </div>
+                      <div>
+                        {i % 5 === 0 ? "Circuit breaker mudou para half-open após tempo limite" :
+                         i % 4 === 0 ? "Cache invalidado para API de pagamentos" :
+                         i % 3 === 0 ? "Retry bem-sucedido após 2 tentativas" :
+                         i % 2 === 0 ? "Balanceador redirecionou tráfego para endpoint secundário" :
+                         "Nova configuração de priorização aplicada para APIs críticas"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="metrics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Métricas de Desempenho</CardTitle>
+              <CardDescription>
+                Análise detalhada de métricas do gateway
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-10">
+                <p className="text-muted-foreground">Painel de métricas detalhadas</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="logs">
+          <Card>
+            <CardHeader>
+              <CardTitle>Logs do Sistema</CardTitle>
+              <CardDescription>
+                Histórico completo de operações do gateway
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-10">
+                <p className="text-muted-foreground">Visualização completa de logs</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações do Gateway</CardTitle>
+              <CardDescription>
+                Ajuste os parâmetros do sistema de gateway
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-10">
+                <p className="text-muted-foreground">Configurações do sistema</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

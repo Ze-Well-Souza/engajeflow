@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const useAuthMethods = () => {
   const login = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Tentando fazer login com:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -16,7 +17,9 @@ export const useAuthMethods = () => {
         throw error;
       }
       
+      console.log("Login bem-sucedido:", data);
       toast.success("Login realizado com sucesso!");
+      return data;
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       throw error;
@@ -42,7 +45,8 @@ export const useAuthMethods = () => {
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Tentando registrar:", email, name);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -58,7 +62,9 @@ export const useAuthMethods = () => {
         throw error;
       }
       
-      toast.success("Conta criada com sucesso!");
+      console.log("Registro bem-sucedido:", data);
+      toast.success("Conta criada com sucesso! Verifique seu email.");
+      return data;
     } catch (error) {
       console.error("Erro ao registrar:", error);
       toast.error("Falha no registro. Tente novamente.");

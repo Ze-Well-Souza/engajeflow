@@ -16,7 +16,9 @@ const LogsTableHeader = <T,>({ headerGroups }: TableHeaderProps<T>) => {
             <TableHead key={header.id}>
               {header.isPlaceholder
                 ? null
-                : header.column.columnDef.header}
+                : header.column.columnDef.header && typeof header.column.columnDef.header === 'string'
+                  ? header.column.columnDef.header
+                  : null}
             </TableHead>
           ))}
         </TableRow>
