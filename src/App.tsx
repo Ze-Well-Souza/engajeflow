@@ -18,6 +18,7 @@ import TemplatesPage from "./pages/templates/TemplatesPage";
 import CatalogoProdutosPage from "./pages/store/CatalogoProdutosPage";
 import ContentAssistantPage from "./pages/content/ContentAssistantPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdvancedAnalyticsPage from "./pages/reports/AdvancedAnalyticsPage";
 
 const App: React.FC = () => {
   return (
@@ -38,6 +39,7 @@ const App: React.FC = () => {
             <Route path="agendamentos" element={<AgendamentosPage />} />
             <Route path="social-media" element={<SocialMediaPage />} />
             <Route path="relatorios" element={<RelatoriosPage />} />
+            <Route path="relatorios/advanced-analytics" element={<AdvancedAnalyticsPage />} />
             <Route path="templates" element={<TemplatesPage />} />
             <Route path="store" element={<CatalogoProdutosPage />} />
             <Route path="admin" element={<AdminDashboardPage />} />

@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { toast } from "sonner";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { login, currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -24,13 +26,18 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       await login(email, password);
       // O redirecionamento será feito pelo useEffect quando currentUser for atualizado
-    } catch (error) {
-      // Erro já é tratado na função login
+    } catch (error: any) {
       console.error("Erro no login:", error);
+      if (error.message?.includes("Invalid login credentials")) {
+        setErrorMessage("Email ou senha inválidos. Por favor, verifique suas credenciais.");
+      } else {
+        setErrorMessage(error.message || "Falha no login. Tente novamente mais tarde.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -45,6 +52,13 @@ const LoginPage: React.FC = () => {
             <p className="text-center text-gray-400">Entre na sua conta para continuar</p>
           </CardHeader>
           <CardContent>
+            {errorMessage && (
+              <div className="bg-destructive/20 text-destructive flex items-center gap-2 p-3 rounded-md mb-4">
+                <AlertCircle size={16} />
+                <p className="text-sm">{errorMessage}</p>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -54,7 +68,9 @@ const LoginPage: React.FC = () => {
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                   required
+                  className="bg-background"
                 />
               </div>
               <div className="space-y-2">
@@ -70,11 +86,20 @@ const LoginPage: React.FC = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                   required
+                  className="bg-background"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Entrando..." : "Entrar"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  "Entrar"
+                )}
               </Button>
             </form>
           </CardContent>

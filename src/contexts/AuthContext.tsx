@@ -41,32 +41,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Set up auth state listener
   useEffect(() => {
-    // Set up listener for auth changes
+    // Configurar listener para alterações no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event, updatedSession) => {
         console.log("Auth state changed:", event);
-        setSession(session);
+        setSession(updatedSession);
         
-        if (session?.user) {
-          const { id, email } = session.user;
+        if (updatedSession?.user) {
+          const { id, email } = updatedSession.user;
           
-          // Criar um perfil básico do usuario
+          // Criar um perfil básico do usuário
           const userProfile: UserProfile = {
             id,
             email: email || "",
           };
           
-          // Buscar informações adicionais do perfil
+          // Buscar informações adicionais do perfil sem criar recursão
+          // Usando setTimeout para prevenir bloqueios no loop de eventos
           setTimeout(async () => {
             try {
               const { data, error } = await supabase
                 .from("profiles")
                 .select("*")
                 .eq("id", id)
-                .single();
+                .maybeSingle();
                 
               if (error) {
                 console.error("Error fetching user profile:", error);
+                setCurrentUser(userProfile);
               } else if (data) {
                 setCurrentUser({
                   ...userProfile,
@@ -88,11 +90,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     );
 
     // Verificar sessão atual ao iniciar
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
       
-      if (session?.user) {
-        const { id, email } = session.user;
+      if (currentSession?.user) {
+        const { id, email } = currentSession.user;
         
         // Criar um perfil básico do usuario
         const userProfile: UserProfile = {
@@ -105,7 +107,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           .from("profiles")
           .select("*")
           .eq("id", id)
-          .single()
+          .maybeSingle()
           .then(({ data, error }) => {
             if (error) {
               console.error("Error fetching user profile:", error);
@@ -148,7 +150,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       toast.success("Login realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-      toast.error("Falha no login. Verifique suas credenciais.");
       throw error;
     }
   };
