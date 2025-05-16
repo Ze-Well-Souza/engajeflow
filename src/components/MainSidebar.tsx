@@ -13,6 +13,7 @@ import NavigationGroup from "./sidebar/NavigationGroup";
 import NavigationItem from "./sidebar/NavigationItem";
 import SidebarUserFooter from "./sidebar/SidebarUserFooter";
 import { navigationItems } from "./sidebar/navigationData";
+import { LucideIcon } from "lucide-react";
 
 // Componente principal da sidebar
 const MainSidebar: React.FC = () => {
@@ -62,7 +63,7 @@ const MainSidebar: React.FC = () => {
           >
             {group.items.map((item) => {
               const isActive = currentPath.startsWith(item.href);
-              const Icon = item.icon;
+              const Icon = item.icon as LucideIcon;
               
               return (
                 <NavigationItem
