@@ -42,6 +42,7 @@ const NavigationGroup: React.FC<NavigationGroupProps> = ({
       <div className="space-y-1">
         {items.map((item) => {
           const isActive = currentPath.startsWith(item.href);
+          const Icon = item.icon;
           
           return (
             <NavigationItem
@@ -49,7 +50,7 @@ const NavigationGroup: React.FC<NavigationGroupProps> = ({
               to={item.href}
               active={isActive}
               collapsed={isCollapsed}
-              icon={<item.icon className="h-4 w-4" />}
+              icon={<Icon className="h-4 w-4" />}
             >
               {item.title}
             </NavigationItem>

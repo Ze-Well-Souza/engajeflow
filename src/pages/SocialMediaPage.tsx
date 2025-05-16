@@ -1,9 +1,9 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SocialMediaOverview } from "@/components/reports/social-media/SocialMediaOverview";
-import { SocialMediaEngagement } from "@/components/reports/social-media/SocialMediaEngagement";
-import { SocialMediaMetricCards } from "@/components/reports/social-media/SocialMediaMetricCards";
+import SocialMediaOverview from "@/components/reports/social-media/SocialMediaOverview";
+import SocialMediaEngagement from "@/components/reports/social-media/SocialMediaEngagement";
+import SocialMediaMetricCards from "@/components/reports/social-media/SocialMediaMetricCards";
 
 const SocialMediaPage: React.FC = () => {
   return (
@@ -27,7 +27,7 @@ const SocialMediaPage: React.FC = () => {
             <CardTitle>Engajamento</CardTitle>
           </CardHeader>
           <CardContent>
-            <SocialMediaEngagement />
+            <SocialMediaEngagement data={[]} />
           </CardContent>
         </Card>
       </div>
