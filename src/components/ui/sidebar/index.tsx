@@ -1,9 +1,10 @@
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { SidebarProvider as OriginalSidebarProvider, useSidebar } from "./context";
 
 // Re-export all components
-export { useSidebar, SidebarProvider } from "./context";
+export { useSidebar } from "./context";
 export { 
   Sidebar, 
   SidebarTrigger, 
@@ -38,11 +39,11 @@ export {
 } from "./sidebar-menu-utils";
 
 // Adapt SidebarProvider to include TooltipProvider
-const EnhancedSidebarProvider: typeof SidebarProvider = (props) => {
+const SidebarProvider = (props: React.ComponentProps<typeof OriginalSidebarProvider>) => {
   const { children, className, ...restProps } = props;
   
   return (
-    <SidebarProvider
+    <OriginalSidebarProvider
       className={cn(
         "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
         className
@@ -52,9 +53,9 @@ const EnhancedSidebarProvider: typeof SidebarProvider = (props) => {
       <TooltipProvider delayDuration={0}>
         {children}
       </TooltipProvider>
-    </SidebarProvider>
+    </OriginalSidebarProvider>
   );
 };
 
-// Override the original export with the enhanced one
-export { EnhancedSidebarProvider as SidebarProvider };
+// Export the enhanced SidebarProvider
+export { SidebarProvider };
