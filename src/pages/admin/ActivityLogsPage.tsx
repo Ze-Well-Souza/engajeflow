@@ -151,7 +151,7 @@ const ActivityLogsPage = () => {
                 <SelectValue placeholder="Tipo de Ação" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as Ações</SelectItem>
+                <SelectItem value="all">Todas as Ações</SelectItem>
                 {actionTypes.map(action => (
                   <SelectItem key={action} value={action}>
                     {action}
@@ -165,7 +165,7 @@ const ActivityLogsPage = () => {
                 <SelectValue placeholder="Módulo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os Módulos</SelectItem>
+                <SelectItem value="all">Todos os Módulos</SelectItem>
                 {moduleTypes.map(module => (
                   <SelectItem key={module} value={module}>
                     {module}
@@ -179,7 +179,7 @@ const ActivityLogsPage = () => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os Status</SelectItem>
+                <SelectItem value="all">Todos os Status</SelectItem>
                 <SelectItem value="success">Sucesso</SelectItem>
                 <SelectItem value="error">Erro</SelectItem>
               </SelectContent>
@@ -239,10 +239,14 @@ const ActivityLogsPage = () => {
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    />
+                    {/* Fixed: Removed disabled prop and added conditional rendering */}
+                    {currentPage === 1 ? (
+                      <span className="opacity-50 cursor-not-allowed">
+                        <PaginationPrevious />
+                      </span>
+                    ) : (
+                      <PaginationPrevious onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} />
+                    )}
                   </PaginationItem>
                   
                   {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
@@ -290,10 +294,14 @@ const ActivityLogsPage = () => {
                   )}
                   
                   <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    />
+                    {/* Fixed: Removed disabled prop and added conditional rendering */}
+                    {currentPage === totalPages ? (
+                      <span className="opacity-50 cursor-not-allowed">
+                        <PaginationNext />
+                      </span>
+                    ) : (
+                      <PaginationNext onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} />
+                    )}
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
