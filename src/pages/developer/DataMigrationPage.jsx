@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,9 +56,9 @@ const DataMigrationPage = () => {
   const { toast } = useToast();
   const { t } = useLocalization();
   const [history, setHistory] = useState(migrationHistory);
-  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importFile, setImportFile] = useState(null); // Removida a anotação de tipo
   const [exportOptions, setExportOptions] = useState({
-    dataTypes: [] as string[],
+    dataTypes: [], // Removida a anotação de tipo
     format: "json"
   });
   const [isExporting, setIsExporting] = useState(false);
@@ -167,13 +166,13 @@ const DataMigrationPage = () => {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e) => { // Removida a anotação de tipo do parâmetro
     if (e.target.files && e.target.files[0]) {
       setImportFile(e.target.files[0]);
     }
   };
 
-  const toggleDataType = (type: string) => {
+  const toggleDataType = (type) => { // Removida a anotação de tipo do parâmetro
     if (exportOptions.dataTypes.includes(type)) {
       setExportOptions({
         ...exportOptions,
