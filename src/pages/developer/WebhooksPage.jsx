@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ const WebhooksPage = () => {
   const [webhooks, setWebhooks] = useState(exampleWebhooks);
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState([]);
 
   const handleToggleWebhook = (id, currentStatus) => {
     setWebhooks(webhooks.map(webhook => 
