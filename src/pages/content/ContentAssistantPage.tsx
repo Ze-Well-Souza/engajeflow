@@ -13,8 +13,27 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Sparkles, MessageSquare, BarChart, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { 
+  Loader2, 
+  Sparkles, 
+  MessageSquare, 
+  BarChart, 
+  Send, 
+  Image,
+  Type,
+  Hash,
+  CalendarCheck,
+  Copy
+} from "lucide-react";
+import { useAiContentGenerator } from "@/hooks/useAiContentGenerator";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+
+interface GeneratedContentResult {
+  title: string;
+  content: string;
+  hashtags: string[];
+}
 
 interface SentimentAnalysisResult {
   text: string;
@@ -24,12 +43,6 @@ interface SentimentAnalysisResult {
   summary: string;
 }
 
-interface ContentGenerationResult {
-  title: string;
-  content: string;
-  hashtags: string[];
-}
-
 const ContentAssistantPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("gerador");
   const [contentType, setContentType] = useState<string>("post");
@@ -37,11 +50,13 @@ const ContentAssistantPage: React.FC = () => {
   const [tone, setTone] = useState<string>("profissional");
   const [keywords, setKeywords] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generatedContent, setGeneratedContent] = useState<ContentGenerationResult | null>(null);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContentResult | null>(null);
 
   const [messageText, setMessageText] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisResult, setAnalysisResult] = useState<SentimentAnalysisResult | null>(null);
+
+  const { generateContent, isGenerating: isAiGenerating, progress } = useAiContentGenerator();
 
   const handleGenerateContent = async () => {
     if (!topic) {
@@ -53,23 +68,29 @@ const ContentAssistantPage: React.FC = () => {
     setGeneratedContent(null);
 
     try {
-      // Simulando chamada à API de IA (OpenAI ou similar)
-      // Em um ambiente real, isso seria uma chamada a uma edge function do Supabase
-      setTimeout(() => {
-        // Conteúdo de exemplo simulando resposta da IA
-        const mockAIResponse: ContentGenerationResult = {
+      // Usando o hook useAiContentGenerator para gerar conteúdo
+      const content = await generateContent(
+        topic,
+        keywords,
+        undefined,
+        ["caption", "hashtags", "description"]
+      );
+      
+      if (content) {
+        // Converta o formato retornado pelo hook para o formato usado neste componente
+        const formattedContent: GeneratedContentResult = {
           title: `${topic.charAt(0).toUpperCase() + topic.slice(1)}: O que você precisa saber`,
-          content: `O ${topic} se tornou um tema essencial para empresas que buscam se destacar no mercado atual. Com as novas tendências e tecnologias emergentes, é fundamental entender como aplicar estratégias eficientes para maximizar resultados.\n\nTrês fatores são cruciais para o sucesso: planejamento estratégico, implementação consistente e análise contínua de desempenho. Empresas que adotam uma abordagem estruturada tendem a obter melhores resultados a longo prazo.`,
-          hashtags: ["#" + topic.replace(/\s+/g, ""), "#estratégiasdigitais", "#marketingconteúdo", "#tendências2025"]
+          content: content.caption || content.description || "",
+          hashtags: content.hashtags || []
         };
-
-        setGeneratedContent(mockAIResponse);
-        setIsGenerating(false);
+        
+        setGeneratedContent(formattedContent);
         toast.success("Conteúdo gerado com sucesso!");
-      }, 2000);
+      }
     } catch (error) {
       console.error("Erro ao gerar conteúdo:", error);
       toast.error("Falha ao gerar conteúdo. Tente novamente.");
+    } finally {
       setIsGenerating(false);
     }
   };
@@ -112,17 +133,22 @@ const ContentAssistantPage: React.FC = () => {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Conteúdo copiado para a área de transferência");
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-6xl py-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Assistente de IA</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mt-1">
           Use inteligência artificial para gerar conteúdo e analisar sentimento de mensagens
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="gerador" className="flex items-center gap-2">
             <Sparkles size={16} />
             Gerador de Conteúdo
@@ -134,167 +160,243 @@ const ContentAssistantPage: React.FC = () => {
         </TabsList>
 
         <TabsContent value="gerador" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerador de Conteúdo com IA</CardTitle>
-              <CardDescription>
-                Crie conteúdos de alta qualidade para suas redes sociais com auxílio de inteligência artificial
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tipo de Conteúdo</label>
-                  <Select value={contentType} onValueChange={setContentType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="post">Post para Redes Sociais</SelectItem>
-                      <SelectItem value="email">Email Marketing</SelectItem>
-                      <SelectItem value="blog">Artigo de Blog</SelectItem>
-                      <SelectItem value="anuncio">Texto para Anúncio</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configurações</CardTitle>
+                  <CardDescription>
+                    Configure as opções para geração de conteúdo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tipo de Conteúdo</label>
+                    <Select value={contentType} onValueChange={setContentType}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="post">Post para Redes Sociais</SelectItem>
+                        <SelectItem value="email">Email Marketing</SelectItem>
+                        <SelectItem value="blog">Artigo de Blog</SelectItem>
+                        <SelectItem value="anuncio">Texto para Anúncio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tom de Voz</label>
-                  <Select value={tone} onValueChange={setTone}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="profissional">Profissional</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                      <SelectItem value="entusiasmado">Entusiasmado</SelectItem>
-                      <SelectItem value="informativo">Informativo</SelectItem>
-                      <SelectItem value="humoristico">Humorístico</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tom de Voz</label>
+                    <Select value={tone} onValueChange={setTone}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="profissional">Profissional</SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="entusiasmado">Entusiasmado</SelectItem>
+                        <SelectItem value="informativo">Informativo</SelectItem>
+                        <SelectItem value="humoristico">Humorístico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Tópico Principal</label>
-                <Input 
-                  value={topic} 
-                  onChange={(e) => setTopic(e.target.value)} 
-                  placeholder="Ex: marketing digital, vendas online, atendimento ao cliente"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tópico Principal</label>
+                    <Input 
+                      value={topic} 
+                      onChange={(e) => setTopic(e.target.value)} 
+                      placeholder="Ex: marketing digital, vendas online"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Palavras-chave (opcionais)</label>
-                <Input 
-                  value={keywords} 
-                  onChange={(e) => setKeywords(e.target.value)} 
-                  placeholder="Separe palavras-chave com vírgulas"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Palavras-chave (opcionais)</label>
+                    <Input 
+                      value={keywords} 
+                      onChange={(e) => setKeywords(e.target.value)} 
+                      placeholder="Separe palavras-chave com vírgulas"
+                    />
+                  </div>
 
-              <Button 
-                onClick={handleGenerateContent} 
-                className="w-full" 
-                disabled={isGenerating || !topic}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando conteúdo...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Gerar Conteúdo
-                  </>
-                )}
-              </Button>
+                  <Button 
+                    onClick={handleGenerateContent} 
+                    className="w-full" 
+                    disabled={isGenerating || !topic || isAiGenerating}
+                  >
+                    {isGenerating || isAiGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Gerando conteúdo... {progress > 0 ? `${progress}%` : ''}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Gerar Conteúdo
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
 
-              {generatedContent && (
-                <Card className="mt-6 border-green-600/20 bg-green-50/10">
-                  <CardHeader>
-                    <CardTitle>{generatedContent.title}</CardTitle>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dicas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 text-sm">
+                    <div className="flex gap-2">
+                      <div className="bg-primary/10 text-primary p-2 rounded-md">
+                        <Type size={16} />
+                      </div>
+                      <div>
+                        <p className="font-medium">Seja específico</p>
+                        <p className="text-muted-foreground">Quanto mais detalhes você fornecer, melhor será o conteúdo gerado.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="bg-primary/10 text-primary p-2 rounded-md">
+                        <Hash size={16} />
+                      </div>
+                      <div>
+                        <p className="font-medium">Use palavras-chave</p>
+                        <p className="text-muted-foreground">Adicione palavras-chave para guiar a geração de conteúdo.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="bg-primary/10 text-primary p-2 rounded-md">
+                        <CalendarCheck size={16} />
+                      </div>
+                      <div>
+                        <p className="font-medium">Planeje seu conteúdo</p>
+                        <p className="text-muted-foreground">Use o conteúdo gerado como base e faça adaptações conforme necessário.</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="md:col-span-2">
+              {generatedContent ? (
+                <Card className="border-primary/20">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{generatedContent.title}</CardTitle>
+                      <Button variant="ghost" size="icon" onClick={() => copyToClipboard(`${generatedContent.title}\n\n${generatedContent.content}\n\n${generatedContent.hashtags.join(' ')}`)}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <CardDescription>
                       Conteúdo gerado para {contentType === "post" ? "post em redes sociais" : 
                         contentType === "email" ? "email marketing" : 
                         contentType === "blog" ? "artigo de blog" : 
-                        "texto de anúncio"}
+                        "texto de anúncio"} com tom {tone}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="whitespace-pre-wrap">{generatedContent.content}</div>
-                    
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {generatedContent.hashtags.map((tag, index) => (
-                        <div key={index} className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm">
-                          {tag}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <Type className="h-4 w-4" /> Conteúdo
+                        </h3>
+                        <div className="bg-muted p-3 rounded-md">
+                          <p className="whitespace-pre-wrap">{generatedContent.content}</p>
                         </div>
-                      ))}
-                    </div>
-                    
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => {
-                        navigator.clipboard.writeText(
-                          `${generatedContent.title}\n\n${generatedContent.content}\n\n${generatedContent.hashtags.join(' ')}`
-                        );
-                        toast.success("Conteúdo copiado para a área de transferência");
-                      }}>
-                        Copiar
-                      </Button>
-                      <Button>Agendar Publicação</Button>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <Hash className="h-4 w-4" /> Hashtags
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {generatedContent.hashtags.map((tag, index) => (
+                            <Badge key={index} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Separator />
+                      
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setGeneratedContent(null)}>
+                          Novo Conteúdo
+                        </Button>
+                        <Button>
+                          Agendar Publicação
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center border rounded-lg border-dashed min-h-[500px] py-10">
+                  <div className="text-center space-y-4">
+                    <div className="bg-primary/10 p-4 rounded-full inline-flex">
+                      <Sparkles className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-medium">Gerador de Conteúdo com IA</h3>
+                    <p className="text-muted-foreground max-w-sm">
+                      Configure as opções e clique em "Gerar Conteúdo" para criar textos, legendas e hashtags para suas redes sociais.
+                    </p>
+                  </div>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="sentimento" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Análise de Sentimento</CardTitle>
-              <CardDescription>
-                Entenda o sentimento e a intenção das mensagens dos seus clientes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Mensagem do Cliente</label>
-                <Textarea 
-                  value={messageText} 
-                  onChange={(e) => setMessageText(e.target.value)} 
-                  placeholder="Cole aqui a mensagem do cliente para análise"
-                  rows={5}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Análise de Sentimento</CardTitle>
+                <CardDescription>
+                  Entenda o sentimento e a intenção das mensagens dos seus clientes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Mensagem do Cliente</label>
+                  <Textarea 
+                    value={messageText} 
+                    onChange={(e) => setMessageText(e.target.value)} 
+                    placeholder="Cole aqui a mensagem do cliente para análise"
+                    rows={8}
+                    className="resize-none"
+                  />
+                </div>
 
-              <div className="flex items-center">
-                <Button 
-                  onClick={handleAnalyzeSentiment} 
-                  className="ml-auto" 
-                  disabled={isAnalyzing || !messageText}
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Analisando...
-                    </>
-                  ) : (
-                    <>
-                      <BarChart className="mr-2 h-4 w-4" />
-                      Analisar Sentimento
-                    </>
-                  )}
-                </Button>
-              </div>
+                <div className="flex items-center">
+                  <Button 
+                    onClick={handleAnalyzeSentiment} 
+                    className="ml-auto" 
+                    disabled={isAnalyzing || !messageText}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Analisando...
+                      </>
+                    ) : (
+                      <>
+                        <BarChart className="mr-2 h-4 w-4" />
+                        Analisar Sentimento
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-              {analysisResult && (
-                <Card className={`mt-6 border-opacity-20 ${
-                  analysisResult.sentiment === 'positivo' ? 'border-green-600 bg-green-50/10' : 
-                  analysisResult.sentiment === 'neutro' ? 'border-blue-600 bg-blue-50/10' : 
-                  'border-red-600 bg-red-50/10'
+            <div>
+              {analysisResult ? (
+                <Card className={`border-opacity-20 ${
+                  analysisResult.sentiment === 'positivo' ? 'border-green-600 bg-green-50/5' : 
+                  analysisResult.sentiment === 'neutro' ? 'border-blue-600 bg-blue-50/5' : 
+                  'border-red-600 bg-red-50/5'
                 }`}>
                   <CardHeader>
                     <div className="flex justify-between items-center">
@@ -320,9 +422,9 @@ const ContentAssistantPage: React.FC = () => {
                       <h4 className="font-medium mb-1">Palavras-chave Detectadas:</h4>
                       <div className="flex flex-wrap gap-2">
                         {analysisResult.keywords.map((keyword, index) => (
-                          <div key={index} className="bg-muted px-2 py-1 rounded-md text-sm">
+                          <Badge key={index} variant="secondary">
                             {keyword}
-                          </div>
+                          </Badge>
                         ))}
                       </div>
                     </div>
@@ -341,7 +443,13 @@ const ContentAssistantPage: React.FC = () => {
                       
                       <div className="flex justify-end mt-2">
                         <Button variant="outline" size="sm" onClick={() => {
-                          toast.success("Resposta copiada para a área de transferência");
+                          const responseText = analysisResult.sentiment === 'positivo' ? 
+                            "Obrigado pelo seu feedback positivo! Ficamos felizes em saber que sua experiência foi satisfatória. Estamos sempre trabalhando para melhorar ainda mais nossos serviços." :
+                            analysisResult.sentiment === 'neutro' ?
+                            "Agradecemos seu contato. Entendemos sua solicitação e estamos à disposição para mais esclarecimentos ou informações adicionais que possam ser necessárias." :
+                            "Lamentamos por sua experiência. Gostaríamos de entender melhor a situação para resolver seu problema da melhor forma possível. Poderia nos fornecer mais detalhes para que possamos ajudá-lo(a) adequadamente?";
+                          
+                          copyToClipboard(responseText);
                         }}>
                           <Send className="h-3.5 w-3.5 mr-1" />
                           Usar Resposta
@@ -350,9 +458,21 @@ const ContentAssistantPage: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center border rounded-lg border-dashed min-h-[400px] py-10">
+                  <div className="text-center space-y-4">
+                    <div className="bg-primary/10 p-4 rounded-full inline-flex">
+                      <MessageSquare className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-medium">Análise de Sentimento</h3>
+                    <p className="text-muted-foreground max-w-sm">
+                      Cole uma mensagem do cliente e clique em "Analisar Sentimento" para entender o tom da comunicação e obter sugestões de resposta.
+                    </p>
+                  </div>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
