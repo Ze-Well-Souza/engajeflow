@@ -2,7 +2,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LogsContent from '@/components/admin/activity-logs/LogsContent';
-import { Table } from "@tanstack/react-table";
 
 // Mock para as props do LogsContent
 const mockLogsContentProps = {
@@ -24,8 +23,30 @@ describe('LogsContent', () => {
     const propsWithData = {
       ...mockLogsContentProps,
       currentItems: [
-        { id: '1', userId: '1', action: 'login', timestamp: '2025-05-10T14:30:00Z', details: { ip: '192.168.1.1' } },
-        { id: '2', userId: '2', action: 'update', timestamp: '2025-05-11T10:15:00Z', details: { resource: 'product' } },
+        { 
+          id: '1', 
+          userId: '1', 
+          user_email: 'user1@example.com',
+          action: 'login', 
+          timestamp: '2025-05-10T14:30:00Z', 
+          details: { ip: '192.168.1.1' },
+          status: 'success',
+          ip: '192.168.1.1',
+          module: 'auth',
+          metadata: {}
+        },
+        { 
+          id: '2', 
+          userId: '2', 
+          user_email: 'user2@example.com',
+          action: 'update', 
+          timestamp: '2025-05-11T10:15:00Z', 
+          details: { resource: 'product' },
+          status: 'success',
+          ip: '192.168.1.2',
+          module: 'product',
+          metadata: {}
+        },
       ],
     };
 

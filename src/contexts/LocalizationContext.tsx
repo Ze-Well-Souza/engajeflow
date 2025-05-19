@@ -1,108 +1,93 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { DefaultLocale, SupportedLocale, translations } from "@/i18n/translations";
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { translations, SupportedLocale, DefaultLocale } from '@/i18n/translations';
+
+type TranslationTree = {
+  [key: string]: string | TranslationTree;
+};
 
 interface LocalizationContextType {
   locale: SupportedLocale;
   setLocale: (locale: SupportedLocale) => void;
-  t: (key: string, params?: Record<string, string | number>) => string;
-  formatCurrency: (amount: number, currency?: string) => string;
-  availableLocales: SupportedLocale[];
+  t: (key: string) => string;
+  formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
 }
 
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined);
 
-export const useLocalization = () => {
-  const context = useContext(LocalizationContext);
-  if (!context) {
-    throw new Error("useLocalization must be used within a LocalizationProvider");
-  }
-  return context;
-};
-
 interface LocalizationProviderProps {
   children: ReactNode;
-  defaultLocale?: SupportedLocale;
 }
 
-export const LocalizationProvider: React.FC<LocalizationProviderProps> = ({ 
-  children, 
-  defaultLocale = DefaultLocale 
-}) => {
+export const LocalizationProvider: React.FC<LocalizationProviderProps> = ({ children }) => {
   const [locale, setLocale] = useState<SupportedLocale>(() => {
-    // Verificar se há uma preferência salva
-    const savedLocale = localStorage.getItem('preferredLocale') as SupportedLocale;
-    // Verificar se o navegador tem uma preferência
-    const browserLocale = navigator.language.split('-')[0] as SupportedLocale;
-    
-    if (savedLocale && translations[savedLocale]) {
+    // Tenta recuperar o idioma salvo no localStorage
+    const savedLocale = localStorage.getItem('locale') as SupportedLocale;
+    if (savedLocale && Object.keys(translations).includes(savedLocale)) {
       return savedLocale;
-    } else if (browserLocale && translations[browserLocale]) {
-      return browserLocale;
     }
-    return defaultLocale;
+
+    // Verifica o idioma do navegador
+    const browserLang = navigator.language.split('-')[0] as SupportedLocale;
+    if (browserLang && Object.keys(translations).includes(browserLang)) {
+      return browserLang;
+    }
+
+    // Volta para o idioma padrão
+    return DefaultLocale;
   });
 
-  // Salvar preferência quando mudar
   useEffect(() => {
-    localStorage.setItem('preferredLocale', locale);
-    document.documentElement.lang = locale;
-    console.log(`Idioma alterado para: ${locale}`);
+    // Salva o idioma escolhido no localStorage
+    localStorage.setItem('locale', locale);
   }, [locale]);
 
-  // Função para traduzir textos
-  const t = (key: string, params?: Record<string, string | number>): string => {
+  const t = (key: string): string => {
     const keys = key.split('.');
-    let value = translations[locale];
+    let currentObj: TranslationTree = translations[locale];
     
-    // Navegar pela árvore de chaves
     for (const k of keys) {
-      if (!value || typeof value !== 'object') {
-        console.warn(`Chave de tradução não encontrada: ${key}`);
-        return key; // Fallback para a própria chave
+      if (currentObj && typeof currentObj === 'object' && k in currentObj) {
+        const value = currentObj[k];
+        currentObj = value as TranslationTree;
+      } else {
+        console.warn(`Translation key not found: ${key}`);
+        return key;
       }
-      value = value[k];
     }
     
-    if (typeof value !== 'string') {
-      console.warn(`Valor de tradução não é uma string para: ${key}`);
+    // Garantir que o valor final é uma string
+    if (typeof currentObj !== 'string') {
+      console.warn(`Translation key "${key}" does not resolve to a string value`);
       return key;
     }
     
-    // Substituir parâmetros
-    if (params) {
-      return Object.entries(params).reduce(
-        (str, [paramKey, paramValue]) => 
-          str.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramValue)),
-        value
-      );
-    }
-    
-    return value;
+    return currentObj;
   };
 
-  // Função para formatar moeda
-  const formatCurrency = (amount: number, currency = 'BRL'): string => {
-    return new Intl.NumberFormat(locale, {
+  const formatCurrency = (value: number, options?: Intl.NumberFormatOptions): string => {
+    const defaultOptions: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency
-    }).format(amount);
-  };
+      currency: locale === 'pt' ? 'BRL' : locale === 'en' ? 'USD' : locale === 'es' ? 'EUR' : 'USD',
+      minimumFractionDigits: 2,
+    };
 
-  // Lista de idiomas disponíveis
-  const availableLocales: SupportedLocale[] = Object.keys(translations) as SupportedLocale[];
-
-  const value: LocalizationContextType = {
-    locale,
-    setLocale,
-    t,
-    formatCurrency,
-    availableLocales
+    const mergedOptions = { ...defaultOptions, ...options };
+    
+    return new Intl.NumberFormat(locale, mergedOptions).format(value);
   };
 
   return (
-    <LocalizationContext.Provider value={value}>
+    <LocalizationContext.Provider value={{ locale, setLocale, t, formatCurrency }}>
       {children}
     </LocalizationContext.Provider>
   );
+};
+
+export const useLocalization = (): LocalizationContextType => {
+  const context = useContext(LocalizationContext);
+  if (context === undefined) {
+    throw new Error('useLocalization must be used within a LocalizationProvider');
+  }
+  return context;
 };
