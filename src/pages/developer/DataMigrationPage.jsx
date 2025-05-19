@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowUpDown, Download, FileUp, Database, ArrowDownToLine, Upload, CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
 import { useLocalization } from "@/contexts/LocalizationContext";
+import { Badge } from "@/components/ui/badge"; // Adicionando a importação do Badge
 
 // Dados de exemplo para histórico de migrações
 const migrationHistory = [
@@ -56,9 +57,9 @@ const DataMigrationPage = () => {
   const { toast } = useToast();
   const { t } = useLocalization();
   const [history, setHistory] = useState(migrationHistory);
-  const [importFile, setImportFile] = useState(null); // Removida a anotação de tipo
+  const [importFile, setImportFile] = useState(null);
   const [exportOptions, setExportOptions] = useState({
-    dataTypes: [], // Removida a anotação de tipo
+    dataTypes: [],
     format: "json"
   });
   const [isExporting, setIsExporting] = useState(false);
@@ -166,13 +167,13 @@ const DataMigrationPage = () => {
     });
   };
 
-  const handleFileChange = (e) => { // Removida a anotação de tipo do parâmetro
+  const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setImportFile(e.target.files[0]);
     }
   };
 
-  const toggleDataType = (type) => { // Removida a anotação de tipo do parâmetro
+  const toggleDataType = (type) => {
     if (exportOptions.dataTypes.includes(type)) {
       setExportOptions({
         ...exportOptions,
