@@ -32,6 +32,9 @@ import PermissionsPage from "./pages/admin/PermissionsPage";
 import OrganizacoesPage from "./pages/admin/OrganizacoesPage";
 import ConfiguracoesPage from "./pages/ConfiguracoesPage";
 import NotificacoesPage from "./pages/NotificacoesPage";
+import ChannelsPage from "./pages/channels/ChannelsPage";
+import ModuleManagerPage from "./pages/admin/ModuleManagerPage";
+import AutomationConfigPage from "./pages/admin/AutomationConfigPage";
 
 // Componente para contornar a autenticação (modo de teste)
 const BypassAuthRoute = ({ children }) => {
@@ -69,6 +72,7 @@ const App = () => {
               <Route path="content-assistant" element={<ContentAssistantPage />} />
               <Route path="configuracoes" element={<ConfiguracoesPage />} />
               <Route path="notificacoes" element={<NotificacoesPage />} />
+              <Route path="channels" element={<ChannelsPage />} />
               
               {/* Rotas de admin */}
               <Route path="admin">
@@ -77,6 +81,8 @@ const App = () => {
                 <Route path="activity-logs" element={<ActivityLogsPage />} />
                 <Route path="organizacoes" element={<OrganizacoesPage />} />
                 <Route path="clientes" element={<AdminDashboardPage />} />
+                <Route path="modules" element={<ModuleManagerPage />} />
+                <Route path="automation" element={<AutomationConfigPage />} />
               </Route>
               
               {/* Rotas de relatórios */}

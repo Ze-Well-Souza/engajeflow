@@ -2,7 +2,8 @@
 import { 
   Home, Package, LayoutDashboard, Users, Settings, 
   FileText, Sparkles, Database, BarChart2, Globe, 
-  Shield, Lock, UserCog, ScrollText, Bell, Building
+  Shield, Lock, UserCog, ScrollText, Bell, Building,
+  MessageCircle, Layers, GitBranch
 } from "lucide-react";
 
 export const navigationItems = [
@@ -25,6 +26,16 @@ export const navigationItems = [
         href: "/admin/dashboard",
       },
       {
+        title: "Gerenciar Módulos",
+        icon: Layers,
+        href: "/admin/modules",
+      },
+      {
+        title: "Automação",
+        icon: GitBranch,
+        href: "/admin/automation",
+      },
+      {
         title: "Gerenciar Clientes",
         icon: Users,
         href: "/admin/clientes",
@@ -43,6 +54,16 @@ export const navigationItems = [
         title: "Organizações",
         icon: Building,
         href: "/admin/organizacoes",
+      },
+    ],
+  },
+  {
+    group: "Comunicação",
+    items: [
+      {
+        title: "Canais",
+        icon: MessageCircle,
+        href: "/channels",
       },
     ],
   },
