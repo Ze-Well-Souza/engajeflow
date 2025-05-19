@@ -443,7 +443,7 @@ const AutomationConfigPage: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-300">Olá {{nome}}, seja bem-vindo(a)! Como posso ajudar?</p>
+                    <p className="text-sm text-gray-300">Olá {"{{nome}}"}, seja bem-vindo(a)! Como posso ajudar?</p>
                     <Button variant="ghost" size="sm" className="mt-2">Editar</Button>
                   </CardContent>
                 </Card>
@@ -456,7 +456,7 @@ const AutomationConfigPage: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-300">Olá {{nome}}, sua consulta foi agendada para {{data}} às {{hora}}.</p>
+                    <p className="text-sm text-gray-300">Olá {"{{nome}}"}, sua consulta foi agendada para {"{{data}}"} às {"{{hora}}"}.</p>
                     <Button variant="ghost" size="sm" className="mt-2">Editar</Button>
                   </CardContent>
                 </Card>
@@ -469,7 +469,7 @@ const AutomationConfigPage: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-300">✨ PROMOÇÃO! ✨ Aproveite nosso desconto especial de {{desconto}} em todos os serviços!</p>
+                    <p className="text-sm text-gray-300">✨ PROMOÇÃO! ✨ Aproveite nosso desconto especial de {"{{desconto}}"} em todos os serviços!</p>
                     <Button variant="ghost" size="sm" className="mt-2">Editar</Button>
                   </CardContent>
                 </Card>
