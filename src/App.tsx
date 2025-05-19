@@ -28,6 +28,10 @@ import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage.jsx";
 import NotFound from "./pages/NotFound";
 import SocialMediaPerformancePage from "./pages/reports/SocialMediaPerformancePage";
 import ActivityLogsPage from "./pages/admin/ActivityLogsPage";
+import PermissionsPage from "./pages/admin/PermissionsPage";
+import OrganizacoesPage from "./pages/admin/OrganizacoesPage";
+import ConfiguracoesPage from "./pages/ConfiguracoesPage";
+import NotificacoesPage from "./pages/NotificacoesPage";
 
 // Componente para contornar a autenticação (modo de teste)
 const BypassAuthRoute = ({ children }) => {
@@ -48,8 +52,8 @@ const App = () => {
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/store/catalogo" element={<Navigate to="/produtos" replace />} />
             <Route path="/agendamentos/novo" element={<Navigate to="/agendamentos" replace />} />
-            <Route path="/configuracoes" element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="/clientes" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/configuracoes" element={<Navigate to="/configuracoes" replace />} />
+            <Route path="/clientes" element={<Navigate to="/admin/clientes" replace />} />
             
             {/* Rota principal com layout do dashboard */}
             <Route path="/" element={<BypassAuthRoute><DashboardLayout /></BypassAuthRoute>}>
@@ -63,11 +67,16 @@ const App = () => {
               <Route path="templates" element={<TemplatesPage />} />
               <Route path="produtos" element={<CatalogoProdutosPage />} />
               <Route path="content-assistant" element={<ContentAssistantPage />} />
+              <Route path="configuracoes" element={<ConfiguracoesPage />} />
+              <Route path="notificacoes" element={<NotificacoesPage />} />
               
               {/* Rotas de admin */}
               <Route path="admin">
                 <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route path="permissoes" element={<PermissionsPage />} />
                 <Route path="activity-logs" element={<ActivityLogsPage />} />
+                <Route path="organizacoes" element={<OrganizacoesPage />} />
+                <Route path="clientes" element={<AdminDashboardPage />} />
               </Route>
               
               {/* Rotas de relatórios */}

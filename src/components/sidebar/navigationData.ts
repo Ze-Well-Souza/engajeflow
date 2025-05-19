@@ -1,5 +1,9 @@
 
-import { Home, Package, LayoutDashboard, Users, Settings, FileText, Sparkles, Database, BarChart2, Globe, Shield } from "lucide-react";
+import { 
+  Home, Package, LayoutDashboard, Users, Settings, 
+  FileText, Sparkles, Database, BarChart2, Globe, 
+  Shield, Lock, UserCog, ScrollText, Bell, Building
+} from "lucide-react";
 
 export const navigationItems = [
   {
@@ -13,12 +17,32 @@ export const navigationItems = [
     ],
   },
   {
-    group: "Clientes",
+    group: "Admin",
     items: [
       {
-        title: "Lista de Clientes",
-        icon: Users,
+        title: "Painel de Admin",
+        icon: UserCog,
         href: "/admin/dashboard",
+      },
+      {
+        title: "Gerenciar Clientes",
+        icon: Users,
+        href: "/admin/clientes",
+      },
+      {
+        title: "Permissões",
+        icon: Lock,
+        href: "/admin/permissoes",
+      },
+      {
+        title: "Logs de Atividade",
+        icon: ScrollText,
+        href: "/admin/activity-logs",
+      },
+      {
+        title: "Organizações",
+        icon: Building,
+        href: "/admin/organizacoes",
       },
     ],
   },
@@ -33,7 +57,7 @@ export const navigationItems = [
       {
         title: "Lista de Agendamentos",
         icon: LayoutDashboard,
-        href: "/agendamentos",
+        href: "/agendamentos/lista",
       },
     ],
   },
@@ -128,13 +152,18 @@ export const navigationItems = [
       {
         title: "Configurações da Conta",
         icon: Settings,
-        href: "/admin/dashboard",
+        href: "/configuracoes",
       },
       {
         title: "Compliance",
         icon: Shield,
         href: "/compliance",
       },
+      {
+        title: "Notificações",
+        icon: Bell,
+        href: "/notificacoes",
+      }
     ],
   },
 ];
