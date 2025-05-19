@@ -4,7 +4,7 @@ import { Button, ButtonProps } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { RefreshCw } from 'lucide-react';
 
-interface StripeCheckoutButtonProps extends ButtonProps {
+interface StripeCheckoutButtonProps extends Omit<ButtonProps, 'onError'> {
   productName?: string;
   amount: number; // valor em centavos
   currency?: string;
