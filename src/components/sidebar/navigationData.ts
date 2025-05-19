@@ -1,4 +1,5 @@
-import { Home, Package, LayoutDashboard, Users, Settings, FileText, Sparkles } from "lucide-react";
+
+import { Home, Package, LayoutDashboard, Users, Settings, FileText, Sparkles, Database, BarChart2, Globe, Shield } from "lucide-react";
 
 export const navigationItems = [
   {
@@ -7,7 +8,7 @@ export const navigationItems = [
       {
         title: "Dashboard",
         icon: Home,
-        href: "/dashboard",
+        href: "/",
       },
     ],
   },
@@ -17,7 +18,7 @@ export const navigationItems = [
       {
         title: "Lista de Clientes",
         icon: Users,
-        href: "/clientes",
+        href: "/admin/dashboard",
       },
     ],
   },
@@ -27,7 +28,7 @@ export const navigationItems = [
       {
         title: "Novo Agendamento",
         icon: LayoutDashboard,
-        href: "/agendamentos/novo",
+        href: "/agendamentos",
       },
       {
         title: "Lista de Agendamentos",
@@ -42,7 +43,7 @@ export const navigationItems = [
       {
         title: "Catálogo de Produtos",
         icon: Package,
-        href: "/store/catalogo",
+        href: "/produtos",
       },
     ],
   },
@@ -67,12 +68,72 @@ export const navigationItems = [
     ]
   },
   {
+    group: "Relatórios",
+    items: [
+      {
+        title: "Desempenho Social",
+        icon: Globe,
+        href: "/social-media",
+      },
+      {
+        title: "Análise Avançada",
+        icon: BarChart2,
+        href: "/reports/advanced",
+      },
+      {
+        title: "Logs de Atividades",
+        icon: Database,
+        href: "/admin/activity-logs",
+      },
+    ],
+  },
+  {
+    group: "IA",
+    items: [
+      {
+        title: "Análise de Sentimentos",
+        icon: Sparkles,
+        href: "/ai/sentiment",
+      },
+      {
+        title: "Gerador de Conteúdo",
+        icon: Sparkles,
+        href: "/ai/content-generator",
+      },
+      {
+        title: "Análise de Campanhas",
+        icon: Sparkles,
+        href: "/ai/campaign-analytics",
+      },
+    ],
+  },
+  {
+    group: "Desenvolvedor",
+    items: [
+      {
+        title: "Migração de Dados",
+        icon: Database,
+        href: "/developer/data-migration",
+      },
+      {
+        title: "API & Webhooks",
+        icon: Globe,
+        href: "/developer/api-docs",
+      },
+    ],
+  },
+  {
     group: "Configurações",
     items: [
       {
         title: "Configurações da Conta",
         icon: Settings,
-        href: "/configuracoes",
+        href: "/admin/dashboard",
+      },
+      {
+        title: "Compliance",
+        icon: Shield,
+        href: "/compliance",
       },
     ],
   },

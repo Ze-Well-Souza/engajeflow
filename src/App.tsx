@@ -25,6 +25,9 @@ import ContentGeneratorPage from "./pages/ai/ContentGeneratorPage.jsx";
 import ProductRecommendationsPage from "./pages/ai/ProductRecommendationsPage.jsx";
 import SalesForecastPage from "./pages/ai/SalesForecastPage.jsx";
 import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage.jsx";
+import NotFound from "./pages/NotFound";
+import SocialMediaPerformancePage from "./pages/reports/SocialMediaPerformancePage";
+import ActivityLogsPage from "./pages/admin/ActivityLogsPage";
 
 // Componente para contornar a autenticação (modo de teste)
 const BypassAuthRoute = ({ children }) => {
@@ -41,13 +44,19 @@ const App = () => {
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/register" element={<Navigate to="/" replace />} />
             
-            {/* Adicionar redirecionamento explícito de /dashboard para a raiz */}
+            {/* Redirecionamentos para rotas definidas no navigationData.ts */}
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            <Route path="/store/catalogo" element={<Navigate to="/produtos" replace />} />
+            <Route path="/agendamentos/novo" element={<Navigate to="/agendamentos" replace />} />
+            <Route path="/configuracoes" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/clientes" element={<Navigate to="/admin/dashboard" replace />} />
             
             {/* Rota principal com layout do dashboard */}
             <Route path="/" element={<BypassAuthRoute><DashboardLayout /></BypassAuthRoute>}>
               {/* Rota index */}
               <Route index element={<DashboardPage />} />
+              
+              {/* Rotas simples */}
               <Route path="agendamentos" element={<AgendamentosPage />} />
               <Route path="social-media" element={<SocialMediaPage />} />
               <Route path="relatorios" element={<RelatoriosPage />} />
@@ -58,11 +67,13 @@ const App = () => {
               {/* Rotas de admin */}
               <Route path="admin">
                 <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route path="activity-logs" element={<ActivityLogsPage />} />
               </Route>
               
               {/* Rotas de relatórios */}
               <Route path="reports">
                 <Route path="advanced" element={<AdvancedAnalyticsPage />} />
+                <Route path="social-media-performance" element={<SocialMediaPerformancePage />} />
               </Route>
               
               {/* Rotas de gateway */}
@@ -90,7 +101,13 @@ const App = () => {
                 <Route path="sales-forecast" element={<SalesForecastPage />} />
                 <Route path="campaign-analytics" element={<CampaignAnalyticsPage />} />
               </Route>
+              
+              {/* Rota para página não encontrada */}
+              <Route path="*" element={<NotFound />} />
             </Route>
+            
+            {/* Rota de fallback global */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </AuthProvider>
