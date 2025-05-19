@@ -41,6 +41,9 @@ const App = () => {
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/register" element={<Navigate to="/" replace />} />
             
+            {/* Adicionar redirecionamento explícito de /dashboard para a raiz */}
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            
             {/* Rota principal com layout do dashboard */}
             <Route path="/" element={<BypassAuthRoute><DashboardLayout /></BypassAuthRoute>}>
               {/* Rota index */}
