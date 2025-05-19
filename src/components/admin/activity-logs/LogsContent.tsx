@@ -12,6 +12,7 @@ interface LogsContentProps {
   currentPage: number;
   totalPages: number;
   setCurrentPage: (page: number) => void;
+  isLoading?: boolean;
 }
 
 const LogsContent: React.FC<LogsContentProps> = ({
@@ -19,8 +20,19 @@ const LogsContent: React.FC<LogsContentProps> = ({
   currentItems,
   currentPage,
   totalPages,
-  setCurrentPage
+  setCurrentPage,
+  isLoading = false
 }) => {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6 flex justify-center items-center h-64">
+          <p className="text-muted-foreground">Carregando logs...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardContent className="p-0">

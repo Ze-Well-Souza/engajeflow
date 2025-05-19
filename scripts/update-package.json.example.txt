@@ -1,0 +1,10 @@
+
+// Este é um arquivo de exemplo que mostra o que você deve adicionar ao package.json
+// Adicione estas entradas na seção "scripts" do seu package.json:
+
+"scripts": {
+  // ... scripts existentes
+  "test:all": "node scripts/run-tests.js",
+  "build:check": "node scripts/build.js",
+  "check:types": "tsc --noEmit"
+}

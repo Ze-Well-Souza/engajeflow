@@ -11,6 +11,7 @@ interface LocalizationContextType {
   setLocale: (locale: SupportedLocale) => void;
   t: (key: string) => string;
   formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
+  availableLocales: SupportedLocale[];
 }
 
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined);
@@ -77,8 +78,11 @@ export const LocalizationProvider: React.FC<LocalizationProviderProps> = ({ chil
     return new Intl.NumberFormat(locale, mergedOptions).format(value);
   };
 
+  // Lista de idiomas disponíveis com base nas chaves do objeto de traduções
+  const availableLocales = Object.keys(translations) as SupportedLocale[];
+
   return (
-    <LocalizationContext.Provider value={{ locale, setLocale, t, formatCurrency }}>
+    <LocalizationContext.Provider value={{ locale, setLocale, t, formatCurrency, availableLocales }}>
       {children}
     </LocalizationContext.Provider>
   );

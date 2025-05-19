@@ -1,106 +1,204 @@
 
 import React from "react";
-import { useLocalization } from "@/contexts/LocalizationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocalization } from "@/contexts/LocalizationContext";
+import { Badge } from "@/components/ui/badge";
+import { Copy, Code, Book, Server } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Copy, ExternalLink } from "lucide-react";
-import { toast } from "sonner";
 
 const ApiDocumentationPage = () => {
   const { t } = useLocalization();
   
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Código copiado para a área de transferência");
-  };
-
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">API Pública para Desenvolvedores</h1>
+    <div className="container max-w-6xl mx-auto py-6">
+      <h1 className="text-3xl font-bold mb-6">Documentação da API</h1>
       
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Visão Geral da API</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">
-            A API TechZe Connect permite que desenvolvedores externos acessem e integrem funcionalidades 
-            da plataforma em suas próprias aplicações. Nossa API RESTful fornece acesso programático 
-            a recursos como mensagens, agendamentos, análises e muito mais.
-          </p>
-          <div className="flex gap-4">
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <ExternalLink size={16} />
-              Documentação Completa
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <ExternalLink size={16} />
-              Console da API
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="authentication">
-        <TabsList className="mb-4">
-          <TabsTrigger value="authentication">Autenticação</TabsTrigger>
-          <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
-          <TabsTrigger value="examples">Exemplos</TabsTrigger>
-          <TabsTrigger value="errors">Erros</TabsTrigger>
+      <Tabs defaultValue="rest" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="rest">REST API</TabsTrigger>
+          <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+          <TabsTrigger value="sdks">SDKs</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="authentication">
-          <Card>
+        <TabsContent value="rest">
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Autenticação</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Visão Geral da REST API</CardTitle>
+                <Badge variant="outline">v2.0.1</Badge>
+              </div>
+              <p className="text-muted-foreground">
+                Nossa REST API permite que você integre facilmente os recursos TechCare em seu próprio aplicativo.
+              </p>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">
-                A API TechZe Connect usa autenticação baseada em tokens. Para obter um token, você precisa 
-                registrar sua aplicação no portal do desenvolvedor.
-              </p>
-              
-              <div className="bg-gray-900 p-4 rounded-md mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-400">Exemplo de requisição</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => copyToClipboard('curl -X POST "https://api.techze.com/v1/auth/token" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"client_id": "seu_client_id", "client_secret": "seu_client_secret"}\'')}>
-                    <Copy size={14} />
+              <div className="bg-secondary/30 p-4 rounded-md mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-mono text-sm">Base URL</div>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1">
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copiar</span>
                   </Button>
                 </div>
-                <pre className="text-xs text-gray-300 overflow-x-auto">
-{`curl -X POST "https://api.techze.com/v1/auth/token" \\
-  -H "Content-Type: application/json" \\
-  -d '{"client_id": "seu_client_id", "client_secret": "seu_client_secret"}'`}
-                </pre>
+                <code className="text-green-600 dark:text-green-400">
+                  https://api.techcare.com/v2
+                </code>
               </div>
               
-              <div className="bg-gray-900 p-4 rounded-md">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-400">Resposta</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => copyToClipboard('{\n  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",\n  "token_type": "bearer",\n  "expires_in": 3600\n}')}>
-                    <Copy size={14} />
+              <h3 className="font-semibold text-lg mb-3">Autenticação</h3>
+              <p className="mb-4">
+                Todas as requisições da API requerem autenticação usando um token de API.
+                Os tokens podem ser gerados no painel de controle da sua conta.
+              </p>
+              
+              <div className="bg-secondary/30 p-4 rounded-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-mono text-sm">Header Example</div>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1">
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copiar</span>
                   </Button>
                 </div>
-                <pre className="text-xs text-gray-300 overflow-x-auto">
-{`{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "expires_in": 3600
-}`}
-                </pre>
+                <code className="text-primary dark:text-primary-foreground">
+                  Authorization: Bearer YOUR_API_TOKEN
+                </code>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Endpoints Disponíveis</CardTitle>
+              <p className="text-muted-foreground">
+                Explore os endpoints disponíveis para integração com sua aplicação.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Lista de endpoints aqui */}
+              <div className="border rounded-md p-4">
+                <div className="flex items-center mb-3">
+                  <Badge className="mr-2 bg-green-600">GET</Badge>
+                  <span className="font-mono text-sm">/campaigns</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Retorna uma lista de todas as campanhas associadas à sua conta.
+                </p>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Book className="h-3.5 w-3.5" />
+                  <span>Ver Documentação</span>
+                </Button>
+              </div>
+              
+              <div className="border rounded-md p-4">
+                <div className="flex items-center mb-3">
+                  <Badge className="mr-2 bg-blue-600">POST</Badge>
+                  <span className="font-mono text-sm">/campaigns</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Cria uma nova campanha associada à sua conta.
+                </p>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Book className="h-3.5 w-3.5" />
+                  <span>Ver Documentação</span>
+                </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        {/* Outros TabsContent aqui... */}
+        <TabsContent value="webhooks">
+          <Card>
+            <CardHeader>
+              <CardTitle>Webhooks</CardTitle>
+              <p className="text-muted-foreground">
+                Configure webhooks para receber notificações em tempo real sobre eventos em sua conta.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>
+                Os webhooks permitem que seu aplicativo receba notificações em tempo real
+                quando eventos específicos ocorrem em sua conta TechCare.
+              </p>
+              
+              <h3 className="font-semibold text-lg mt-6 mb-3">Eventos Disponíveis</h3>
+              <ul className="space-y-2">
+                <li className="flex items-center">
+                  <Server className="h-4 w-4 mr-2 text-primary" />
+                  <span>campaign.created - Quando uma nova campanha é criada</span>
+                </li>
+                <li className="flex items-center">
+                  <Server className="h-4 w-4 mr-2 text-primary" />
+                  <span>campaign.updated - Quando uma campanha é atualizada</span>
+                </li>
+                <li className="flex items-center">
+                  <Server className="h-4 w-4 mr-2 text-primary" />
+                  <span>campaign.deleted - Quando uma campanha é excluída</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="sdks">
+          <Card>
+            <CardHeader>
+              <CardTitle>SDKs & Bibliotecas</CardTitle>
+              <p className="text-muted-foreground">
+                Utilize nossas bibliotecas oficiais para integrar com a API TechCare.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded bg-red-600 flex items-center justify-center text-white mr-3">
+                        <Code className="h-4 w-4" />
+                      </div>
+                      <CardTitle className="text-lg">JavaScript/Node.js</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      SDK oficial para JavaScript e aplicações Node.js
+                    </p>
+                    <div className="bg-secondary/30 p-3 rounded-md text-xs font-mono mb-3">
+                      npm install @techcare/sdk
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm">GitHub</Button>
+                      <Button variant="outline" size="sm">Documentação</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded bg-blue-600 flex items-center justify-center text-white mr-3">
+                        <Code className="h-4 w-4" />
+                      </div>
+                      <CardTitle className="text-lg">Python</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      SDK oficial para aplicações Python
+                    </p>
+                    <div className="bg-secondary/30 p-3 rounded-md text-xs font-mono mb-3">
+                      pip install techcare-sdk
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm">GitHub</Button>
+                      <Button variant="outline" size="sm">Documentação</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
