@@ -2,11 +2,10 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
+import UserSearch from "./components/UserSearch";
+import UsersList from "./components/UsersList";
+import { User } from "./types";
 
 // Mock usuários
 const mockUsuarios = [
@@ -37,57 +36,12 @@ const UsuariosTab: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end mb-4">
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="user-search">Buscar Usuário</Label>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="user-search" 
-                  placeholder="Nome, email ou perfil..." 
-                  className="pl-8" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
+          <UserSearch 
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+          />
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Perfil</TableHead>
-                <TableHead>Organização</TableHead>
-                <TableHead className="w-[200px]">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsuarios.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.nome}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.perfil === "administrador" ? "default" : "outline"}>
-                      {user.perfil}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{user.organizacao}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        Editar
-                      </Button>
-                      <Button variant="destructive" size="sm" className="flex items-center">
-                        <Trash className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <UsersList users={filteredUsuarios} />
         </CardContent>
       </Card>
     </div>

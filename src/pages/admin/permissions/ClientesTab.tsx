@@ -1,16 +1,11 @@
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Shield, Search, Save, Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import ClienteSearch from "./components/ClienteSearch";
+import ClientesList from "./components/ClientesList";
+import PermissionsConfig from "./components/PermissionsConfig";
+import { Client, PermissionModule, Profile } from "./types";
 
 // Mock client data for the filter
 const mockClients = [
@@ -22,56 +17,16 @@ const mockClients = [
 
 // Mock permission modules
 const modulesList = [
-  {
-    id: "dashboard",
-    name: "Dashboard",
-    permissions: ["view"]
-  },
-  {
-    id: "messages",
-    name: "Mensagens",
-    permissions: ["view", "send", "delete"]
-  },
-  {
-    id: "channels",
-    name: "Canais",
-    permissions: ["view", "create", "edit", "delete"]
-  },
-  {
-    id: "automation",
-    name: "Automação",
-    permissions: ["view", "create", "edit", "delete"]
-  },
-  {
-    id: "sales_bot",
-    name: "Bot de Vendas",
-    permissions: ["view", "configure", "analyze"]
-  },
-  {
-    id: "templates",
-    name: "Templates",
-    permissions: ["view", "create", "edit", "delete"]
-  },
-  {
-    id: "gateway",
-    name: "Gateway",
-    permissions: ["view", "configure"]
-  },
-  {
-    id: "reports",
-    name: "Relatórios",
-    permissions: ["view", "export"]
-  },
-  {
-    id: "store",
-    name: "Loja",
-    permissions: ["view", "manage_products", "manage_orders", "manage_customers"]
-  },
-  {
-    id: "system",
-    name: "Sistema",
-    permissions: ["view", "notifications", "scheduling", "settings"]
-  }
+  { id: "dashboard", name: "Dashboard", permissions: ["view"] },
+  { id: "messages", name: "Mensagens", permissions: ["view", "send", "delete"] },
+  { id: "channels", name: "Canais", permissions: ["view", "create", "edit", "delete"] },
+  { id: "automation", name: "Automação", permissions: ["view", "create", "edit", "delete"] },
+  { id: "sales_bot", name: "Bot de Vendas", permissions: ["view", "configure", "analyze"] },
+  { id: "templates", name: "Templates", permissions: ["view", "create", "edit", "delete"] },
+  { id: "gateway", name: "Gateway", permissions: ["view", "configure"] },
+  { id: "reports", name: "Relatórios", permissions: ["view", "export"] },
+  { id: "store", name: "Loja", permissions: ["view", "manage_products", "manage_orders", "manage_customers"] },
+  { id: "system", name: "Sistema", permissions: ["view", "notifications", "scheduling", "settings"] }
 ];
 
 // Perfis predefinidos
@@ -83,7 +38,7 @@ const predefinedProfiles = [
     permissions: modulesList.reduce((acc, module) => {
       acc[module.id] = module.permissions;
       return acc;
-    }, {})
+    }, {} as Record<string, string[]>)
   },
   { 
     id: 2, 
@@ -96,7 +51,7 @@ const predefinedProfiles = [
         acc[module.id] = ["view"];
       }
       return acc;
-    }, {})
+    }, {} as Record<string, string[]>)
   },
   { 
     id: 3, 
@@ -107,10 +62,11 @@ const predefinedProfiles = [
         acc[module.id] = ["view"];
       }
       if (module.id === "messages") {
+        acc[module.id] = acc[module.id] || [];
         acc[module.id].push("send");
       }
       return acc;
-    }, {})
+    }, {} as Record<string, string[]>)
   }
 ];
 
@@ -123,7 +79,7 @@ const ClientesTab: React.FC = () => {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
   const [newProfileDesc, setNewProfileDesc] = useState("");
-  const [profiles, setProfiles] = useState(predefinedProfiles);
+  const [profiles, setProfiles] = useState<Profile[]>(predefinedProfiles);
 
   useEffect(() => {
     // Se um perfil predefinido for selecionado, carregar suas permissões
@@ -133,7 +89,7 @@ const ClientesTab: React.FC = () => {
         setClientPermissions(profile.permissions);
       }
     }
-  }, [selectedProfile]);
+  }, [selectedProfile, profiles]);
 
   const handlePermissionChange = (moduleId: string, permission: string, checked: boolean) => {
     setClientPermissions(prevState => {
@@ -216,175 +172,41 @@ const ClientesTab: React.FC = () => {
           <CardTitle className="text-xl">Selecione um Cliente</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="client-search">Buscar Cliente</Label>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="client-search" 
-                  placeholder="Nome do cliente ou tipo..." 
-                  className="pl-8" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
+          <ClienteSearch 
+            searchTerm={searchTerm} 
+            setSearchTerm={setSearchTerm} 
+          />
 
           <div className="mt-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead className="w-[100px]">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClients.map(client => (
-                  <TableRow key={client.id} className={selectedClient === client.id.toString() ? "bg-muted/50" : ""}>
-                    <TableCell>{client.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={client.type === "juridica" ? "outline" : "secondary"}>
-                        {client.type === "juridica" ? "Pessoa Jurídica" : "Pessoa Física"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{client.plano}</TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedClient(client.id.toString())}
-                      >
-                        Selecionar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <ClientesList 
+              filteredClients={filteredClients}
+              selectedClient={selectedClient}
+              setSelectedClient={setSelectedClient}
+            />
           </div>
         </CardContent>
       </Card>
 
       {selectedClient && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Configurar Permissões</CardTitle>
-              <CardDescription>
-                Cliente: {mockClients.find(c => c.id.toString() === selectedClient)?.name}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Salvar como Perfil
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Novo Perfil de Permissões</DialogTitle>
-                    <DialogDescription>
-                      Salve as permissões atuais como um perfil reutilizável.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="profile-name">Nome do Perfil</Label>
-                      <Input 
-                        id="profile-name" 
-                        value={newProfileName} 
-                        onChange={(e) => setNewProfileName(e.target.value)} 
-                        placeholder="Ex: Administrador, Usuário Básico, etc."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="profile-desc">Descrição (opcional)</Label>
-                      <Input 
-                        id="profile-desc" 
-                        value={newProfileDesc} 
-                        onChange={(e) => setNewProfileDesc(e.target.value)} 
-                        placeholder="Descreva o objetivo deste perfil de permissões"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowProfileDialog(false)}>Cancelar</Button>
-                    <Button onClick={handleSaveProfile}>Salvar Perfil</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Button onClick={handleSavePermissions} className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Salvar Permissões
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-6">
-              <Label htmlFor="profile">Aplicar perfil predefinido</Label>
-              <Select value={selectedProfile} onValueChange={setSelectedProfile}>
-                <SelectTrigger className="w-[280px] mt-2">
-                  <SelectValue placeholder="Selecione um perfil" />
-                </SelectTrigger>
-                <SelectContent>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id.toString()}>
-                      {profile.name} - {profile.description}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[300px]">Módulo</TableHead>
-                  <TableHead>Permissões</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {modulesList.map(module => (
-                  <TableRow key={module.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-muted-foreground" />
-                        {module.name}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-6">
-                        {module.permissions.map(permission => (
-                          <div key={`${module.id}-${permission}`} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`${module.id}-${permission}`}
-                              checked={isPermissionChecked(module.id, permission)}
-                              onCheckedChange={(checked) => 
-                                handlePermissionChange(module.id, permission, !!checked)
-                              }
-                            />
-                            <label 
-                              htmlFor={`${module.id}-${permission}`} 
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-                            >
-                              {permission.replace('_', ' ')}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <PermissionsConfig 
+          selectedClient={selectedClient}
+          clients={mockClients}
+          clientPermissions={clientPermissions}
+          profiles={profiles}
+          modulesList={modulesList}
+          selectedProfile={selectedProfile}
+          setSelectedProfile={setSelectedProfile}
+          isPermissionChecked={isPermissionChecked}
+          handlePermissionChange={handlePermissionChange}
+          handleSavePermissions={handleSavePermissions}
+          showProfileDialog={showProfileDialog}
+          setShowProfileDialog={setShowProfileDialog}
+          newProfileName={newProfileName}
+          setNewProfileName={setNewProfileName}
+          newProfileDesc={newProfileDesc}
+          setNewProfileDesc={setNewProfileDesc}
+          handleSaveProfile={handleSaveProfile}
+        />
       )}
     </div>
   );
