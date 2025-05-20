@@ -19,6 +19,7 @@ import RatingsPage from "./pages/RatingsPage";
 import { Toaster as SonnerToaster } from "sonner";
 import DashboardLayout from "./components/DashboardLayout";
 import ConfiguracoesPage from "./pages/system/ConfiguracoesPage";
+import NotificacoesPage from "./pages/system/NotificacoesPage";
 import LandingPage from "./pages/landing/LandingPage";
 import BeautyLandingPage from "./pages/landing/BeautyLandingPage";
 import FoodLandingPage from "./pages/landing/FoodLandingPage";
@@ -39,6 +40,10 @@ import PermissionsPage from "./pages/admin/PermissionsPage";
 // Fase 5: Escalabilidade
 import MicroservicesPage from "./pages/system/MicroservicesPage";
 import QueueSystemPage from "./pages/system/QueueSystemPage";
+import DistributedCachePage from "./pages/system/DistributedCachePage";
+
+// Fase 6: Internacionalização
+import InternationalizationPage from "./pages/system/InternationalizationPage";
 
 // AI Pages
 import SentimentAnalysisPage from "./pages/ai/SentimentAnalysisPage";
@@ -115,9 +120,14 @@ function App() {
             {/* Scalability Routes - Fase 5 */}
             <Route path="/system/microservices" element={<MicroservicesPage />} />
             <Route path="/system/queue" element={<QueueSystemPage />} />
+            <Route path="/system/cache" element={<DistributedCachePage />} />
+            
+            {/* Internationalization Routes - Fase 6 */}
+            <Route path="/system/internationalization" element={<InternationalizationPage />} />
             
             {/* System Routes */}
             <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+            <Route path="/notificacoes" element={<NotificacoesPage />} />
           </Route>
         </Routes>
         
