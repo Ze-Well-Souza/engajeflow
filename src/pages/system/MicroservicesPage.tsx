@@ -532,11 +532,11 @@ const ScalingPanel: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Escala para cima</p>
-                <p className="font-medium">CPU > 70% por 2 minutos</p>
+                <p className="font-medium">CPU &gt; 70% por 2 minutos</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Escala para baixo</p>
-                <p className="font-medium">CPU < 30% por 5 minutos</p>
+                <p className="font-medium">CPU &lt; 30% por 5 minutos</p>
               </div>
             </div>
             <div className="flex justify-end">
@@ -557,11 +557,11 @@ const ScalingPanel: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Escala para cima</p>
-                <p className="font-medium">Requisições > 1000/min</p>
+                <p className="font-medium">Requisições &gt; 1000/min</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Escala para baixo</p>
-                <p className="font-medium">Requisições < 500/min por 10 minutos</p>
+                <p className="font-medium">Requisições &lt; 500/min por 10 minutos</p>
               </div>
             </div>
             <div className="flex justify-end">
