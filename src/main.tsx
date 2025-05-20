@@ -6,6 +6,7 @@ import "./index.css";
 import { Toaster } from "sonner";
 import { createAdminUserIfNotExists } from "./integrations/supabase/initAdminUser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Criação do cliente de query
 const queryClient = new QueryClient();
@@ -16,8 +17,10 @@ createAdminUserIfNotExists().catch(console.error);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <Toaster position="top-right" richColors />
-      <App />
+      <AuthProvider>
+        <Toaster position="top-right" richColors />
+        <App />
+      </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

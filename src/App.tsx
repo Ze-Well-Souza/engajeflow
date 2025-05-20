@@ -7,6 +7,7 @@ import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
 import VendasPage from "./pages/store/VendasPage";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
 import StripeIntegrationPage from "./pages/store/StripeIntegrationPage";
 import PaymentTestPage from "./pages/store/PaymentTestPage";
 import RelatoriosPage from "./pages/RelatoriosPage";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<Navigate to="/index" replace />} />
           <Route path="/index" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           
           {/* Gateway Routes */}
           <Route path="/gateway" element={<GatewayPage />} />
