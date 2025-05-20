@@ -1,21 +1,20 @@
 
 import React from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import MainSidebar from "@/components/MainSidebar";
 import { Outlet } from "react-router-dom";
+import MainSidebar from "./MainSidebar";
+import AssistantButton from "./ai/AssistantButton";
 
-const DashboardLayout: React.FC = () => {
+const DashboardLayout = () => {
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <MainSidebar />
-        <SidebarInset className="flex-1">
-          <div className="container mx-auto p-6 max-w-7xl">
-            <Outlet />
-          </div>
-        </SidebarInset>
+    <div className="flex min-h-screen w-full bg-background">
+      <MainSidebar />
+      <div className="flex-1 p-8 overflow-auto">
+        <main className="max-w-7xl mx-auto">
+          <Outlet />
+        </main>
+        <AssistantButton />
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
