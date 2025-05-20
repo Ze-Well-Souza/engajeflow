@@ -56,6 +56,13 @@ jest.mock('@/pages/landing/BeautyLandingPage', () => {
   };
 });
 
+jest.mock('@/pages/store/ClientesPage', () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="clientes-page">Clientes Page</div>
+  };
+});
+
 // Wrapper personalizado para testes que inclui os providers necessários
 const AllTheProviders = ({ children }) => {
   return (
@@ -141,5 +148,18 @@ describe('App Routing', () => {
     );
     
     expect(screen.getByTestId('beauty-landing-page')).toBeInTheDocument();
+  });
+  
+  it('renderiza a página de clientes na rota /store/clientes', () => {
+    render(
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/store/clientes']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+    
+    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
+    expect(screen.getByTestId('clientes-page')).toBeInTheDocument();
   });
 });

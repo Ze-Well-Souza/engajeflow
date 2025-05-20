@@ -5,6 +5,7 @@ import Index from "./pages/Index";
 import GatewayPage from "./pages/gateway/GatewayPage";
 import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
 import VendasPage from "./pages/store/VendasPage";
+import ClientesPage from "./pages/store/ClientesPage"; // Nova importação
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -49,6 +50,7 @@ function App() {
             
             {/* Store Routes */}
             <Route path="/store/vendas" element={<VendasPage />} />
+            <Route path="/store/clientes" element={<ClientesPage />} /> {/* Nova rota */}
             <Route path="/store/stripe-integration" element={<StripeIntegrationPage />} />
             <Route path="/store/payment-test" element={<PaymentTestPage />} />
 
