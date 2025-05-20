@@ -2,45 +2,57 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SocialMediaOverview from "@/components/reports/social-media/SocialMediaOverview";
-import { default as SocialMediaEngagement } from "@/components/reports/social-media/SocialMediaEngagement";
+import SocialMediaEngagement from "@/components/reports/social-media/SocialMediaEngagement";
 import SocialMediaMetricCards from "@/components/reports/social-media/SocialMediaMetricCards";
-
-// Dados de exemplo para o SocialMediaEngagement
-const engagementData = [
-  { name: 'Jan', engagementRate: 4.2, comments: 432, shares: 123 },
-  { name: 'Fev', engagementRate: 3.8, comments: 321, shares: 98 },
-  { name: 'Mar', engagementRate: 5.1, comments: 543, shares: 211 },
-  { name: 'Abr', engagementRate: 4.8, comments: 459, shares: 187 },
-  { name: 'Mai', engagementRate: 4.3, comments: 401, shares: 143 },
-  { name: 'Jun', engagementRate: 5.2, comments: 587, shares: 231 }
-];
+import SocialMediaHeader from "@/components/reports/social-media/SocialMediaHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { engagementData, reachData } from "@/components/reports/social-media/mock-data";
+import SocialMediaReach from "@/components/reports/social-media/SocialMediaReach";
+import SocialMediaRatings from "@/components/reports/social-media/SocialMediaRatings";
+import SocialMediaConversion from "@/components/reports/social-media/SocialMediaConversion";
 
 const SocialMediaPage: React.FC = () => {
+  const [period, setPeriod] = React.useState("last30days");
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Social Media Performance</h1>
+      <SocialMediaHeader 
+        title="Desempenho em Redes Sociais" 
+        period={period} 
+        setPeriod={setPeriod} 
+      />
       
       <SocialMediaMetricCards />
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Visão Geral</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SocialMediaOverview />
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="engagement">Engajamento</TabsTrigger>
+          <TabsTrigger value="reach">Alcance</TabsTrigger>
+          <TabsTrigger value="conversion">Conversão</TabsTrigger>
+          <TabsTrigger value="ratings">Avaliações</TabsTrigger>
+        </TabsList>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Engajamento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SocialMediaEngagement data={engagementData} />
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="overview">
+          <SocialMediaOverview engagementData={engagementData} reachData={reachData} />
+        </TabsContent>
+        
+        <TabsContent value="engagement">
+          <SocialMediaEngagement data={engagementData} />
+        </TabsContent>
+        
+        <TabsContent value="reach">
+          <SocialMediaReach data={reachData} />
+        </TabsContent>
+        
+        <TabsContent value="conversion">
+          <SocialMediaConversion />
+        </TabsContent>
+        
+        <TabsContent value="ratings">
+          <SocialMediaRatings />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

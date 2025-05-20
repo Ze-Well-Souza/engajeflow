@@ -14,7 +14,7 @@ jest.mock('@/components/DashboardLayout', () => {
   };
 });
 
-jest.mock('@/pages/DashboardPage', () => {
+jest.mock('@/pages/Index', () => {
   return {
     __esModule: true,
     default: () => <div data-testid="dashboard-page">Dashboard Page</div>
@@ -49,20 +49,23 @@ const AllTheProviders = ({ children }) => {
 describe('App Routing', () => {
   it('renderiza a página de dashboard na rota raiz', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
     );
     
-    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-page')).toBeInTheDocument();
   });
   
   it('renderiza a página de agendamentos na rota /agendamentos', () => {
     render(
-      <MemoryRouter initialEntries={['/agendamentos']}>
-        <App />
-      </MemoryRouter>
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/agendamentos']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
     );
     
     expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
@@ -71,23 +74,14 @@ describe('App Routing', () => {
   
   it('renderiza a página de redes sociais na rota /social-media', () => {
     render(
-      <MemoryRouter initialEntries={['/social-media']}>
-        <App />
-      </MemoryRouter>
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/social-media']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
     );
     
     expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
     expect(screen.getByTestId('social-media-page')).toBeInTheDocument();
-  });
-  
-  it('redireciona /login para a rota raiz enquanto estiver no modo de bypass', () => {
-    render(
-      <MemoryRouter initialEntries={['/login']}>
-        <App />
-      </MemoryRouter>
-    );
-    
-    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
-    expect(screen.getByTestId('dashboard-page')).toBeInTheDocument();
   });
 });

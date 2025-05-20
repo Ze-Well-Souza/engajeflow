@@ -1,190 +1,48 @@
 
 import { 
-  Home, Package, LayoutDashboard, Users, Settings, 
-  FileText, Sparkles, Database, BarChart2, Globe, 
-  Shield, Lock, UserCog, ScrollText, Bell, Building,
-  MessageCircle, Layers, GitBranch
+  LayoutDashboard, 
+  MessageSquare, 
+  Calendar, 
+  ShoppingCart, 
+  Users, 
+  Settings, 
+  Bell, 
+  BarChart2,
+  Star,
+  Globe,
+  Share2
 } from "lucide-react";
 
 export const navigationItems = [
   {
-    group: "Geral",
+    group: "Principal",
     items: [
-      {
-        title: "Dashboard",
-        icon: Home,
-        href: "/",
-      },
+      { title: "Dashboard", href: "/index", icon: LayoutDashboard },
+      { title: "Mensagens", href: "/messages", icon: MessageSquare },
+      { title: "Agendamentos", href: "/agendamentos", icon: Calendar },
+      { title: "Notificações", href: "/notificacoes", icon: Bell },
     ],
   },
   {
-    group: "Admin",
+    group: "Analytics",
     items: [
-      {
-        title: "Painel de Admin",
-        icon: UserCog,
-        href: "/admin/dashboard",
-      },
-      {
-        title: "Gerenciar Módulos",
-        icon: Layers,
-        href: "/admin/modules",
-      },
-      {
-        title: "Automação",
-        icon: GitBranch,
-        href: "/admin/automation",
-      },
-      {
-        title: "Gerenciar Clientes",
-        icon: Users,
-        href: "/admin/clientes",
-      },
-      {
-        title: "Permissões",
-        icon: Lock,
-        href: "/admin/permissoes",
-      },
-      {
-        title: "Logs de Atividade",
-        icon: ScrollText,
-        href: "/admin/activity-logs",
-      },
-      {
-        title: "Organizações",
-        icon: Building,
-        href: "/admin/organizacoes",
-      },
+      { title: "Relatórios", href: "/relatorios", icon: BarChart2 },
+      { title: "Social Media", href: "/social-media", icon: Share2 },
+      { title: "Avaliações", href: "/ratings", icon: Star },
     ],
   },
   {
-    group: "Comunicação",
+    group: "E-commerce",
     items: [
-      {
-        title: "Canais",
-        icon: MessageCircle,
-        href: "/channels",
-      },
+      { title: "Vendas", href: "/store/vendas", icon: ShoppingCart },
+      { title: "Clientes", href: "/store/clientes", icon: Users },
     ],
   },
   {
-    group: "Agendamentos",
+    group: "Sistema",
     items: [
-      {
-        title: "Novo Agendamento",
-        icon: LayoutDashboard,
-        href: "/agendamentos",
-      },
-      {
-        title: "Lista de Agendamentos",
-        icon: LayoutDashboard,
-        href: "/agendamentos/lista",
-      },
-    ],
-  },
-  {
-    group: "Store",
-    items: [
-      {
-        title: "Catálogo de Produtos",
-        icon: Package,
-        href: "/produtos",
-      },
-    ],
-  },
-  {
-    group: "Templates",
-    items: [
-      {
-        title: "Templates de Mensagens",
-        icon: FileText,
-        href: "/templates",
-      },
-    ],
-  },
-  {
-    group: "Marketing",
-    items: [
-      {
-        title: "Assistente de Conteúdo",
-        icon: Sparkles,
-        href: "/content-assistant",
-      },
-    ]
-  },
-  {
-    group: "Relatórios",
-    items: [
-      {
-        title: "Desempenho Social",
-        icon: Globe,
-        href: "/social-media",
-      },
-      {
-        title: "Análise Avançada",
-        icon: BarChart2,
-        href: "/reports/advanced",
-      },
-      {
-        title: "Logs de Atividades",
-        icon: Database,
-        href: "/admin/activity-logs",
-      },
-    ],
-  },
-  {
-    group: "IA",
-    items: [
-      {
-        title: "Análise de Sentimentos",
-        icon: Sparkles,
-        href: "/ai/sentiment",
-      },
-      {
-        title: "Gerador de Conteúdo",
-        icon: Sparkles,
-        href: "/ai/content-generator",
-      },
-      {
-        title: "Análise de Campanhas",
-        icon: Sparkles,
-        href: "/ai/campaign-analytics",
-      },
-    ],
-  },
-  {
-    group: "Desenvolvedor",
-    items: [
-      {
-        title: "Migração de Dados",
-        icon: Database,
-        href: "/developer/data-migration",
-      },
-      {
-        title: "API & Webhooks",
-        icon: Globe,
-        href: "/developer/api-docs",
-      },
-    ],
-  },
-  {
-    group: "Configurações",
-    items: [
-      {
-        title: "Configurações da Conta",
-        icon: Settings,
-        href: "/configuracoes",
-      },
-      {
-        title: "Compliance",
-        icon: Shield,
-        href: "/compliance",
-      },
-      {
-        title: "Notificações",
-        icon: Bell,
-        href: "/notificacoes",
-      }
+      { title: "Gateway", href: "/gateway", icon: Globe },
+      { title: "Configurações", href: "/configuracoes", icon: Settings },
     ],
   },
 ];
