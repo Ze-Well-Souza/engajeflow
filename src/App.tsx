@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Index from "./pages/Index";
 import GatewayPage from "./pages/gateway/GatewayPage";
 import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
@@ -9,13 +9,15 @@ import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import LoginPage from "./pages/auth/LoginPage";
 import StripeIntegrationPage from "./pages/store/StripeIntegrationPage";
 import PaymentTestPage from "./pages/store/PaymentTestPage";
+import RelatoriosPage from "./pages/RelatoriosPage";
+import SocialMediaPerformancePage from "./pages/reports/SocialMediaPerformancePage";
 
 function App() {
   return (
     <LocalizationProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Navigate to="/index" replace />} />
           <Route path="/index" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           
@@ -27,6 +29,10 @@ function App() {
           <Route path="/store/vendas" element={<VendasPage />} />
           <Route path="/store/stripe-integration" element={<StripeIntegrationPage />} />
           <Route path="/store/payment-test" element={<PaymentTestPage />} />
+
+          {/* Reports Routes */}
+          <Route path="/relatorios" element={<RelatoriosPage />} />
+          <Route path="/reports/social-media" element={<SocialMediaPerformancePage />} />
         </Routes>
       </Router>
     </LocalizationProvider>
