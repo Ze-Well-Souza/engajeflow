@@ -30,6 +30,13 @@ const Index = () => {
         { path: "/relatorios", label: "Relatórios Gerais" },
         { path: "/reports/social-media", label: "Redes Sociais" }
       ]
+    },
+    {
+      title: "Agendamentos",
+      description: "Gerenciamento de postagens e conteúdo",
+      links: [
+        { path: "/agendamentos", label: "Agendamentos" }
+      ]
     }
   ];
 

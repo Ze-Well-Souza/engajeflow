@@ -1,24 +1,20 @@
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 export interface ScheduledPost {
   id: string;
+  clientId: string;
   mediaId: string;
+  mediaType: 'image' | 'video' | 'carousel';
+  mediaTitle: string;
+  mediaUrl?: string;
   platform: string;
   scheduledFor: string;
-  caption?: string;
-  hashtags?: string[];
   status: 'pending' | 'processing' | 'posted' | 'failed';
   errorMessage?: string;
-  postUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-  mediaTitle?: string;
-  mediaType?: string;
-  thumbnailPath?: string;
+  caption?: string;
+  hashtags?: string[];
 }
 
 export interface PostFilters {
@@ -26,119 +22,108 @@ export interface PostFilters {
   status: string;
 }
 
-export const useScheduledPosts = (clientId?: string) => {
-  const { toast } = useToast();
-  const [filter, setFilter] = useState<PostFilters>({
-    platform: 'all',
-    status: 'all',
-  });
+// Dados de mock para demonstração
+const MOCK_SCHEDULED_POSTS: ScheduledPost[] = [
+  {
+    id: '1',
+    clientId: '00000000-0000-0000-0000-000000000000',
+    mediaId: 'media-1',
+    mediaType: 'image',
+    mediaTitle: 'Lançamento de Produto',
+    mediaUrl: '/placeholder.svg',
+    platform: 'instagram',
+    scheduledFor: '2025-05-25T14:30:00',
+    status: 'pending',
+    caption: 'Estamos muito animados para compartilhar nosso novo produto!',
+    hashtags: ['novidade', 'lancamento', 'produto']
+  },
+  {
+    id: '2',
+    clientId: '00000000-0000-0000-0000-000000000000',
+    mediaId: 'media-2',
+    mediaType: 'video',
+    mediaTitle: 'Tutorial de Uso',
+    platform: 'youtube',
+    scheduledFor: '2025-05-27T10:00:00',
+    status: 'processing',
+  },
+  {
+    id: '3',
+    clientId: '00000000-0000-0000-0000-000000000000',
+    mediaId: 'media-3',
+    mediaType: 'image',
+    mediaTitle: 'Promoção Especial',
+    platform: 'facebook',
+    scheduledFor: '2025-05-22T18:15:00',
+    status: 'posted',
+  },
+  {
+    id: '4',
+    clientId: '00000000-0000-0000-0000-000000000000',
+    mediaId: 'media-4',
+    mediaType: 'carousel',
+    mediaTitle: 'Retrospectiva do Mês',
+    platform: 'instagram',
+    scheduledFor: '2025-05-20T09:00:00',
+    status: 'failed',
+    errorMessage: 'Falha na conexão com a API do Instagram'
+  }
+];
 
-  const fetchScheduledPosts = async (): Promise<ScheduledPost[]> => {
+export const useScheduledPosts = (clientId: string) => {
+  const [posts, setPosts] = useState<ScheduledPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Função para buscar os posts agendados
+  const fetchPosts = async () => {
+    setIsLoading(true);
+    // Em uma implementação real, aqui seria feita uma chamada à API
     try {
-      // Primeiro verifica se o usuário está autenticado
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      // Simulação de delay de carregamento
+      await new Promise((resolve) => setTimeout(resolve, 800));
       
-      if (userError || !userData.user) {
-        throw new Error('Usuário não autenticado');
-      }
-
-      // Constrói a consulta base
-      let query = supabase
-        .from('scheduled_posts')
-        .select(`
-          *,
-          social_media(id, title, media_type, thumbnail_path)
-        `)
-        .order('scheduled_for', { ascending: true });
-
-      // Aplica filtro de cliente se fornecido
-      if (clientId) {
-        query = query.eq('client_id', clientId);
-      }
-
-      // Aplica filtros adicionais
-      if (filter.platform !== 'all') {
-        query = query.eq('platform', filter.platform);
-      }
-
-      if (filter.status !== 'all') {
-        query = query.eq('status', filter.status);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw error;
-      }
-
-      // Transforma os dados para o formato esperado
-      return (data || []).map(post => ({
-        id: post.id,
-        mediaId: post.media_id,
-        platform: post.platform,
-        scheduledFor: post.scheduled_for,
-        caption: post.caption || undefined,
-        hashtags: post.hashtags || undefined,
-        status: post.status as 'pending' | 'processing' | 'posted' | 'failed',
-        errorMessage: post.error_message || undefined,
-        postUrl: post.post_url || undefined,
-        createdAt: post.created_at,
-        updatedAt: post.updated_at,
-        mediaTitle: post.social_media?.title,
-        mediaType: post.social_media?.media_type,
-        thumbnailPath: post.social_media?.thumbnail_path,
-      }));
+      // Filtrando posts pelo ID do cliente
+      const filteredPosts = MOCK_SCHEDULED_POSTS.filter(
+        post => post.clientId === clientId
+      );
+      
+      setPosts(filteredPosts);
     } catch (error) {
-      console.error('Erro ao buscar agendamentos:', error);
-      toast({
-        title: 'Erro ao carregar agendamentos',
-        description: 'Não foi possível buscar os agendamentos de postagens.',
-        variant: 'destructive',
-      });
-      return [];
+      console.error("Erro ao buscar posts agendados:", error);
+      toast.error("Não foi possível carregar os agendamentos");
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const { data: posts = [], isLoading, refetch } = useQuery({
-    queryKey: ['scheduledPosts', clientId, filter],
-    queryFn: fetchScheduledPosts,
-    refetchOnWindowFocus: false,
-  });
-
-  const deleteScheduledPost = async (id: string): Promise<void> => {
+  
+  // Função para refetch
+  const refetch = () => fetchPosts();
+  
+  // Função para deletar um post agendado
+  const deleteScheduledPost = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('scheduled_posts')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: 'Agendamento excluído',
-        description: 'O agendamento foi excluído com sucesso.',
-      });
-
-      // Atualiza a lista após exclusão
-      await refetch();
+      // Em uma implementação real, aqui seria feita uma chamada à API
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      // Removendo o post da lista local
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+      
+      toast.success("Agendamento removido com sucesso");
     } catch (error) {
-      console.error('Erro ao excluir agendamento:', error);
-      toast({
-        title: 'Erro ao excluir',
-        description: 'Não foi possível excluir o agendamento.',
-        variant: 'destructive',
-      });
+      console.error("Erro ao deletar post:", error);
+      toast.error("Não foi possível remover o agendamento");
     }
   };
-
+  
+  // Carregar os posts agendados na montagem do componente
+  useEffect(() => {
+    fetchPosts();
+  }, [clientId]);
+  
   return {
     posts,
     isLoading,
     refetch,
-    filter,
-    setFilter,
-    deleteScheduledPost,
+    deleteScheduledPost
   };
 };

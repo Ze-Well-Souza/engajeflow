@@ -11,6 +11,8 @@ import StripeIntegrationPage from "./pages/store/StripeIntegrationPage";
 import PaymentTestPage from "./pages/store/PaymentTestPage";
 import RelatoriosPage from "./pages/RelatoriosPage";
 import SocialMediaPerformancePage from "./pages/reports/SocialMediaPerformancePage";
+import AgendamentosPage from "./pages/AgendamentosPage";
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   return (
@@ -33,7 +35,12 @@ function App() {
           {/* Reports Routes */}
           <Route path="/relatorios" element={<RelatoriosPage />} />
           <Route path="/reports/social-media" element={<SocialMediaPerformancePage />} />
+          
+          {/* Agendamentos Route */}
+          <Route path="/agendamentos" element={<AgendamentosPage />} />
         </Routes>
+        
+        <Toaster />
       </Router>
     </LocalizationProvider>
   );

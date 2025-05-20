@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     if (paymentMethod === 'credit_card') {
       // Validação básica para cartão
       if (!cardNumber || !cardName || !cardExpiry || !cardCvc) {
+        toast("Preencha todos os campos do cartão");
         return;
       }
     }

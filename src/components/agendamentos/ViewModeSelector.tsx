@@ -1,35 +1,25 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { List, CalendarDays } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ListFilter, Calendar } from "lucide-react";
 
 interface ViewModeSelectorProps {
   viewMode: 'list' | 'calendar';
-  setViewMode: (mode: 'list' | 'calendar') => void;
+  setViewMode: (value: 'list' | 'calendar') => void;
 }
 
 const ViewModeSelector: React.FC<ViewModeSelectorProps> = ({ viewMode, setViewMode }) => {
   return (
-    <div className="flex gap-2">
-      <Button 
-        variant={viewMode === 'list' ? "default" : "outline"} 
-        size="sm"
-        onClick={() => setViewMode('list')}
-        className="flex items-center gap-1"
-      >
-        <List className="h-4 w-4" />
-        <span className="hidden sm:inline">Lista</span>
-      </Button>
-      <Button 
-        variant={viewMode === 'calendar' ? "default" : "outline"} 
-        size="sm"
-        onClick={() => setViewMode('calendar')}
-        className="flex items-center gap-1"
-      >
-        <CalendarDays className="h-4 w-4" />
-        <span className="hidden sm:inline">Calendário</span>
-      </Button>
-    </div>
+    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'list' | 'calendar')}>
+      <ToggleGroupItem value="list" aria-label="Visualização em lista">
+        <ListFilter className="h-4 w-4 mr-2" />
+        Lista
+      </ToggleGroupItem>
+      <ToggleGroupItem value="calendar" aria-label="Visualização em calendário">
+        <Calendar className="h-4 w-4 mr-2" />
+        Calendário
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 };
 
