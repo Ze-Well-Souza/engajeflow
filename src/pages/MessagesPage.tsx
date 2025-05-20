@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,11 @@ import MessageTypeTag from "@/components/MessageTypeTag";
 import ActionsMenu from "@/components/ActionsMenu";
 import { toast } from "sonner";
 import SentimentAnalysis from "@/components/ai/SentimentAnalysis";
+import AdvancedSentimentAnalysis from "@/components/ai/AdvancedSentimentAnalysis";
+import ContentGenerator from "@/components/ai/ContentGenerator";
 import ThemeSelector from "@/components/ThemeSelector";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CustomerServiceAutomation from "@/components/ai/CustomerServiceAutomation";
 
 // Define the message data type
 interface MessageData {
@@ -129,6 +134,8 @@ const MessagesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [messages, setMessages] = useState<MessageData[]>(initialMessages);
   const [selectedMessage, setSelectedMessage] = useState<MessageData | null>(null);
+  const [activeTab, setActiveTab] = useState("messages");
+  const [analysisMode, setAnalysisMode] = useState<"basic" | "advanced">("advanced");
   
   const handleNewMessage = () => {
     toast.success("Criando nova mensagem automatizada...");
@@ -139,7 +146,8 @@ const MessagesPage: React.FC = () => {
     const message = messages.find(msg => msg.id === id);
     if (message) {
       setSelectedMessage(message);
-      toast("Editando mensagem: " + id);
+      setActiveTab("analysis");
+      toast("Analisando mensagem: " + message.title);
     }
     // This would open an edit form
   };
@@ -173,6 +181,17 @@ const MessagesPage: React.FC = () => {
     }));
   };
   
+  const handleContentSelected = (content: string, type: string) => {
+    if (selectedMessage) {
+      const updatedMessage = { ...selectedMessage, text: content };
+      setSelectedMessage(updatedMessage);
+      setMessages(prev => prev.map(msg => msg.id === selectedMessage.id ? updatedMessage : msg));
+      toast.success(`Conteúdo de ${type} aplicado à mensagem!`);
+    } else {
+      toast.error("Selecione uma mensagem primeiro");
+    }
+  };
+  
   const filteredMessages = messages.filter(message => 
     message.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -197,71 +216,163 @@ const MessagesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-card rounded-lg overflow-hidden border shadow-sm">
-        <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border gap-4">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar mensagens"
-              className="pl-9"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filtros
-          </Button>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="messages">Mensagens</TabsTrigger>
+          <TabsTrigger value="analysis" disabled={!selectedMessage}>Análise</TabsTrigger>
+          <TabsTrigger value="generator">Gerador de Conteúdo</TabsTrigger>
+          <TabsTrigger value="automation">Automação</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="messages" className="space-y-6">
+          <div className="bg-card rounded-lg overflow-hidden border shadow-sm">
+            <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border gap-4">
+              <div className="relative w-full sm:w-80">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar mensagens"
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+              </Button>
+            </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-xs border-b border-border">
-                <th className="px-4 py-3 font-medium">Título</th>
-                <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Agendamento</th>
-                <th className="px-4 py-3 font-medium">Criado em</th>
-                <th className="px-4 py-3 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMessages.map((message) => (
-                <tr key={message.id} className="border-b border-border hover:bg-muted/40">
-                  <td className="px-4 py-3">{message.title}</td>
-                  <td className="px-4 py-3">
-                    <MessageTypeTag type={message.type} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={message.status} />
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {message.scheduled ? 'Agendado' : 'Não agendado'}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{message.createdAt}</td>
-                  <td className="px-4 py-3 text-right">
-                    <ActionsMenu 
-                      onEdit={() => handleEdit(message.id)} 
-                      onDuplicate={() => handleDuplicate(message.id)} 
-                      onDelete={() => handleDelete(message.id)} 
-                      onToggleActive={() => handleToggleActive(message.id)} 
-                      isActive={message.status === "ativo"}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      {selectedMessage && selectedMessage.text && (
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-4">Análise de Sentimento</h3>
-          <SentimentAnalysis text={selectedMessage.text} />
-        </div>
-      )}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-xs border-b border-border">
+                    <th className="px-4 py-3 font-medium">Título</th>
+                    <th className="px-4 py-3 font-medium">Tipo</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Agendamento</th>
+                    <th className="px-4 py-3 font-medium">Criado em</th>
+                    <th className="px-4 py-3 font-medium text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMessages.map((message) => (
+                    <tr key={message.id} className="border-b border-border hover:bg-muted/40">
+                      <td className="px-4 py-3">{message.title}</td>
+                      <td className="px-4 py-3">
+                        <MessageTypeTag type={message.type} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={message.status} />
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {message.scheduled ? 'Agendado' : 'Não agendado'}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{message.createdAt}</td>
+                      <td className="px-4 py-3 text-right">
+                        <ActionsMenu 
+                          onEdit={() => handleEdit(message.id)} 
+                          onDuplicate={() => handleDuplicate(message.id)} 
+                          onDelete={() => handleDelete(message.id)} 
+                          onToggleActive={() => handleToggleActive(message.id)} 
+                          isActive={message.status === "ativo"}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="analysis" className="space-y-6">
+          {selectedMessage && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="text-xl font-semibold">Análise de Sentimento: {selectedMessage.title}</h3>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-muted-foreground">Modo de análise:</div>
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      variant={analysisMode === "basic" ? "default" : "outline"}
+                      onClick={() => setAnalysisMode("basic")}
+                    >
+                      Básico
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={analysisMode === "advanced" ? "default" : "outline"}
+                      onClick={() => setAnalysisMode("advanced")}
+                    >
+                      Avançado
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-muted/40 border rounded-md">
+                <h4 className="font-medium mb-2">Texto da Mensagem:</h4>
+                <div className="p-3 bg-card rounded border">
+                  {selectedMessage.text}
+                </div>
+              </div>
+              
+              {analysisMode === "basic" ? (
+                <SentimentAnalysis text={selectedMessage.text || ""} />
+              ) : (
+                <AdvancedSentimentAnalysis text={selectedMessage.text || ""} />
+              )}
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="generator" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ContentGenerator 
+                defaultProduct={selectedMessage ? { 
+                  name: selectedMessage.title,
+                  description: selectedMessage.text 
+                } : undefined}
+                onContentSelected={handleContentSelected}
+              />
+            </div>
+            
+            <div>
+              <div className="bg-card border rounded-lg p-4 space-y-4">
+                <h3 className="font-medium">Mensagem Atual</h3>
+                {selectedMessage ? (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">{selectedMessage.title}</h4>
+                    <div className="text-sm p-3 bg-muted/40 rounded border">
+                      {selectedMessage.text || "Sem conteúdo"}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedMessage.channels.map((channel, i) => (
+                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          {channel}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <p className="mb-2">Nenhuma mensagem selecionada</p>
+                    <Button variant="outline" size="sm" onClick={() => setActiveTab("messages")}>
+                      Selecionar mensagem
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="automation" className="space-y-6">
+          <CustomerServiceAutomation />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

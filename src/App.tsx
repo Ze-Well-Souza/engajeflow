@@ -25,6 +25,10 @@ import FoodLandingPage from "./pages/landing/FoodLandingPage";
 import PricingPage from "./pages/plans/PricingPage";
 import MessagesPage from "./pages/MessagesPage";
 import DashboardPage from "./pages/DashboardPage";
+import ApiDocPage from "./pages/developer/ApiDocPage";
+import MarketplacePage from "./pages/marketplace/MarketplacePage";
+import ApiDocumentationPage from "./pages/developer/ApiDocumentationPage";
+import DataMigrationPage from "./pages/developer/DataMigrationPage";
 
 function App() {
   return (
@@ -71,6 +75,12 @@ function App() {
             {/* Agendamentos & Ratings Routes */}
             <Route path="/agendamentos" element={<AgendamentosPage />} />
             <Route path="/ratings" element={<RatingsPage />} />
+            
+            {/* Developer Routes - Fase 3 */}
+            <Route path="/developer/api" element={<ApiDocPage />} />
+            <Route path="/developer/api/docs" element={<ApiDocumentationPage />} />
+            <Route path="/developer/data-migration" element={<DataMigrationPage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
             
             {/* System Routes */}
             <Route path="/configuracoes" element={<ConfiguracoesPage />} />
