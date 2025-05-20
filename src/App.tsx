@@ -18,6 +18,10 @@ import RatingsPage from "./pages/RatingsPage";
 import { Toaster as SonnerToaster } from "sonner";
 import DashboardLayout from "./components/DashboardLayout";
 import ConfiguracoesPage from "./pages/system/ConfiguracoesPage";
+import LandingPage from "./pages/landing/LandingPage";
+import BeautyLandingPage from "./pages/landing/BeautyLandingPage";
+import FoodLandingPage from "./pages/landing/FoodLandingPage";
+import PricingPage from "./pages/plans/PricingPage";
 
 function App() {
   return (
@@ -25,6 +29,14 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/index" replace />} />
+          
+          {/* Landing Pages */}
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/landing/beauty" element={<BeautyLandingPage />} />
+          <Route path="/landing/food" element={<FoodLandingPage />} />
+          <Route path="/landing/pricing" element={<PricingPage />} />
+          
+          {/* Auth Routes */}
           <Route path="/index" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

@@ -42,6 +42,20 @@ jest.mock('@/pages/system/ConfiguracoesPage', () => {
   };
 });
 
+jest.mock('@/pages/landing/LandingPage', () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="landing-page">Landing Page</div>
+  };
+});
+
+jest.mock('@/pages/landing/BeautyLandingPage', () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="beauty-landing-page">Beauty Landing Page</div>
+  };
+});
+
 // Wrapper personalizado para testes que inclui os providers necessários
 const AllTheProviders = ({ children }) => {
   return (
@@ -103,5 +117,29 @@ describe('App Routing', () => {
     
     expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
     expect(screen.getByTestId('configuracoes-page')).toBeInTheDocument();
+  });
+  
+  it('renderiza a página inicial do landing page', () => {
+    render(
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/landing']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+    
+    expect(screen.getByTestId('landing-page')).toBeInTheDocument();
+  });
+  
+  it('renderiza a landing page de beleza', () => {
+    render(
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/landing/beauty']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+    
+    expect(screen.getByTestId('beauty-landing-page')).toBeInTheDocument();
   });
 });

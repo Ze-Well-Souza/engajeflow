@@ -43,6 +43,8 @@ export const navigationItems = [
     items: [
       { title: "Gateway", href: "/gateway", icon: Globe },
       { title: "Configurações", href: "/configuracoes", icon: Settings },
+      { title: "Landing Pages", href: "/landing", icon: Globe },
+      { title: "Planos", href: "/landing/pricing", icon: Star },
     ],
   },
 ];
