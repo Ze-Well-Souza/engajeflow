@@ -30,6 +30,23 @@ import MarketplacePage from "./pages/marketplace/MarketplacePage";
 import ApiDocumentationPage from "./pages/developer/ApiDocumentationPage";
 import DataMigrationPage from "./pages/developer/DataMigrationPage";
 
+// Fase 4: Segurança e Conformidade
+import SecurityAuditPage from "./pages/security/SecurityAuditPage";
+import MfaSetupPage from "./pages/security/MfaSetupPage";
+import CompliancePage from "./pages/compliance/CompliancePage";
+import PermissionsPage from "./pages/admin/PermissionsPage";
+
+// Fase 5: Escalabilidade
+import MicroservicesPage from "./pages/system/MicroservicesPage";
+import QueueSystemPage from "./pages/system/QueueSystemPage";
+
+// AI Pages
+import SentimentAnalysisPage from "./pages/ai/SentimentAnalysisPage";
+import SalesForecastPage from "./pages/ai/SalesForecastPage";
+import ContentGeneratorPage from "./pages/ai/ContentGeneratorPage";
+import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage";
+import ProductRecommendationsPage from "./pages/ai/ProductRecommendationsPage";
+
 function App() {
   return (
     <LocalizationProvider>
@@ -81,6 +98,23 @@ function App() {
             <Route path="/developer/api/docs" element={<ApiDocumentationPage />} />
             <Route path="/developer/data-migration" element={<DataMigrationPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
+            
+            {/* AI Pages - Fase 2 */}
+            <Route path="/ai/sentiment" element={<SentimentAnalysisPage />} />
+            <Route path="/ai/forecast" element={<SalesForecastPage />} />
+            <Route path="/ai/content" element={<ContentGeneratorPage />} />
+            <Route path="/ai/campaign" element={<CampaignAnalyticsPage />} />
+            <Route path="/ai/recommendations" element={<ProductRecommendationsPage />} />
+            
+            {/* Security Routes - Fase 4 */}
+            <Route path="/security/audit" element={<SecurityAuditPage />} />
+            <Route path="/security/mfa" element={<MfaSetupPage />} />
+            <Route path="/compliance" element={<CompliancePage />} />
+            <Route path="/admin/permissions" element={<PermissionsPage />} />
+            
+            {/* Scalability Routes - Fase 5 */}
+            <Route path="/system/microservices" element={<MicroservicesPage />} />
+            <Route path="/system/queue" element={<QueueSystemPage />} />
             
             {/* System Routes */}
             <Route path="/configuracoes" element={<ConfiguracoesPage />} />
