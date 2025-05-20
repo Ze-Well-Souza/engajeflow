@@ -225,7 +225,6 @@ class DistributedCacheService {
       newNode.status = 'active';
       console.log(`[Cache] Nó ${newNode.id} sincronizado e ativo`);
       toast({
-        title: "Novo nó de cache ativado",
         description: `${newNode.name} foi sincronizado e está ativo agora`
       });
     }, 2000);
@@ -246,7 +245,6 @@ class DistributedCacheService {
     // Não permitir remover o nó atual
     if (this.nodes[index].id === this.nodeId) {
       toast({
-        title: "Operação não permitida",
         description: "Não é possível remover o nó atual do cluster",
         variant: "destructive"
       });
@@ -257,7 +255,6 @@ class DistributedCacheService {
     console.log(`[Cache] Nó removido: ${removedNode.name} (${removedNode.id})`);
     
     toast({
-      title: "Nó de cache removido",
       description: `${removedNode.name} foi removido do cluster`
     });
     
@@ -277,7 +274,6 @@ class DistributedCacheService {
     // Não permitir simular falha no nó atual (por segurança)
     if (node.id === this.nodeId) {
       toast({
-        title: "Operação não permitida",
         description: "Não é possível simular falha no nó atual",
         variant: "destructive"
       });
@@ -288,7 +284,6 @@ class DistributedCacheService {
     console.log(`[Cache] Simulada falha no nó: ${node.name} (${node.id})`);
     
     toast({
-      title: "Falha de nó simulada",
       description: `${node.name} está agora inativo`
     });
     
@@ -310,7 +305,6 @@ class DistributedCacheService {
     console.log(`[Cache] Iniciando recuperação do nó: ${node.name} (${node.id})`);
     
     toast({
-      title: "Recuperação de nó iniciada",
       description: `${node.name} está sincronizando...`
     });
     
@@ -321,7 +315,6 @@ class DistributedCacheService {
       console.log(`[Cache] Nó recuperado: ${node.name} (${node.id})`);
       
       toast({
-        title: "Nó de cache recuperado",
         description: `${node.name} foi sincronizado e está ativo novamente`
       });
     }, 3000);

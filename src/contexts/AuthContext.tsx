@@ -5,8 +5,10 @@ import { useAuthMethods } from "@/hooks/useAuthMethods";
 import { AuthContextType } from "@/types/auth";
 import { toast } from "sonner";
 
+// Criar o contexto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Hook para uso do contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -19,6 +21,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Provider do contexto de autenticação
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { currentUser, session, loading } = useAuthState();
   const { login, logout, register } = useAuthMethods();
@@ -55,6 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     is_admin: true
   };
 
+  // Valor do contexto
   const value: AuthContextType = {
     // Sempre fornecer um usuário simulado em vez do currentUser real
     currentUser: mockUser,
