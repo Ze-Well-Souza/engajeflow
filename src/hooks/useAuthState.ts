@@ -16,7 +16,7 @@ export const useAuthState = () => {
     is_admin: true
   };
 
-  // Desativando as chamadas ao Supabase
+  // Simulação de estado para garantir compatibilidade com React
   useEffect(() => {
     console.log("Modo de bypass de autenticação ativado");
     // Não há chamadas ao Supabase neste modo

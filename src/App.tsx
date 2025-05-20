@@ -52,6 +52,7 @@ import SalesForecastPage from "./pages/ai/SalesForecastPage";
 import ContentGeneratorPage from "./pages/ai/ContentGeneratorPage";
 import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage";
 import ProductRecommendationsPage from "./pages/ai/ProductRecommendationsPage";
+import LandingSegmentsPage from "./pages/landing/LandingSegmentsPage";
 
 function App() {
   return (
@@ -65,6 +66,7 @@ function App() {
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/landing/beauty" element={<BeautyLandingPage />} />
             <Route path="/landing/food" element={<FoodLandingPage />} />
+            <Route path="/landing/segments" element={<LandingSegmentsPage />} />
             <Route path="/landing/pricing" element={<PricingPage />} />
             
             {/* Auth Routes */}
@@ -130,7 +132,7 @@ function App() {
               {/* System Routes */}
               <Route path="/configuracoes" element={<ConfiguracoesPage />} />
               <Route path="/notificacoes" element={<NotificacoesPage />} />
-              <Route path="/system/notificacoes" element={NotificacoesPage} />
+              <Route path="/system/notificacoes" element={<NotificacoesPage />} />
             </Route>
           </Routes>
           

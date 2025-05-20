@@ -224,9 +224,7 @@ class DistributedCacheService {
     setTimeout(() => {
       newNode.status = 'active';
       console.log(`[Cache] Nó ${newNode.id} sincronizado e ativo`);
-      toast({
-        description: `${newNode.name} foi sincronizado e está ativo agora`
-      });
+      toast(`${newNode.name} foi sincronizado e está ativo agora`);
     }, 2000);
     
     return newNode;
@@ -244,19 +242,14 @@ class DistributedCacheService {
     
     // Não permitir remover o nó atual
     if (this.nodes[index].id === this.nodeId) {
-      toast({
-        description: "Não é possível remover o nó atual do cluster",
-        variant: "destructive"
-      });
+      toast("Não é possível remover o nó atual do cluster");
       return false;
     }
     
     const removedNode = this.nodes.splice(index, 1)[0];
     console.log(`[Cache] Nó removido: ${removedNode.name} (${removedNode.id})`);
     
-    toast({
-      description: `${removedNode.name} foi removido do cluster`
-    });
+    toast(`${removedNode.name} foi removido do cluster`);
     
     return true;
   }
@@ -273,19 +266,14 @@ class DistributedCacheService {
     
     // Não permitir simular falha no nó atual (por segurança)
     if (node.id === this.nodeId) {
-      toast({
-        description: "Não é possível simular falha no nó atual",
-        variant: "destructive"
-      });
+      toast("Não é possível simular falha no nó atual");
       return false;
     }
     
     node.status = 'inactive';
     console.log(`[Cache] Simulada falha no nó: ${node.name} (${node.id})`);
     
-    toast({
-      description: `${node.name} está agora inativo`
-    });
+    toast(`${node.name} está agora inativo`);
     
     return true;
   }
@@ -304,9 +292,7 @@ class DistributedCacheService {
     node.status = 'syncing';
     console.log(`[Cache] Iniciando recuperação do nó: ${node.name} (${node.id})`);
     
-    toast({
-      description: `${node.name} está sincronizando...`
-    });
+    toast(`${node.name} está sincronizando...`);
     
     // Após um tempo, considerar o nó recuperado
     setTimeout(() => {
@@ -314,9 +300,7 @@ class DistributedCacheService {
       node.lastSync = new Date();
       console.log(`[Cache] Nó recuperado: ${node.name} (${node.id})`);
       
-      toast({
-        description: `${node.name} foi sincronizado e está ativo novamente`
-      });
+      toast(`${node.name} foi sincronizado e está ativo novamente`);
     }, 3000);
     
     return true;
