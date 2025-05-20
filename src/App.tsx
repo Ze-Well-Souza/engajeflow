@@ -17,6 +17,7 @@ import AgendamentosPage from "./pages/AgendamentosPage";
 import RatingsPage from "./pages/RatingsPage";
 import { Toaster as SonnerToaster } from "sonner";
 import DashboardLayout from "./components/DashboardLayout";
+import ConfiguracoesPage from "./pages/system/ConfiguracoesPage";
 
 function App() {
   return (
@@ -49,6 +50,9 @@ function App() {
             {/* Agendamentos & Ratings Routes */}
             <Route path="/agendamentos" element={<AgendamentosPage />} />
             <Route path="/ratings" element={<RatingsPage />} />
+            
+            {/* System Routes */}
+            <Route path="/configuracoes" element={<ConfiguracoesPage />} />
           </Route>
         </Routes>
         

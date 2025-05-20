@@ -35,6 +35,13 @@ jest.mock('@/pages/SocialMediaPage', () => {
   };
 });
 
+jest.mock('@/pages/system/ConfiguracoesPage', () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="configuracoes-page">Configurações Page</div>
+  };
+});
+
 // Wrapper personalizado para testes que inclui os providers necessários
 const AllTheProviders = ({ children }) => {
   return (
@@ -83,5 +90,18 @@ describe('App Routing', () => {
     
     expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
     expect(screen.getByTestId('social-media-page')).toBeInTheDocument();
+  });
+
+  it('renderiza a página de configurações na rota /configuracoes', () => {
+    render(
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/configuracoes']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+    
+    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
+    expect(screen.getByTestId('configuracoes-page')).toBeInTheDocument();
   });
 });
