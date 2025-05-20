@@ -50,7 +50,7 @@ const ThemeSelector: React.FC = () => {
           <Palette className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-popover text-popover-foreground border border-border shadow-md">
         {themes.map((theme) => (
           <DropdownMenuItem
             key={theme.className}

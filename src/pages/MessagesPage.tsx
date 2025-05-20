@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,8 @@ import StatusBadge from "@/components/StatusBadge";
 import MessageTypeTag from "@/components/MessageTypeTag";
 import ActionsMenu from "@/components/ActionsMenu";
 import { toast } from "sonner";
+import SentimentAnalysis from "@/components/ai/SentimentAnalysis";
+import ThemeSelector from "@/components/ThemeSelector";
 
 // Define the message data type
 interface MessageData {
@@ -17,6 +18,7 @@ interface MessageData {
   scheduled: boolean;
   createdAt: string;
   channels: string[];
+  text?: string;
 }
 
 // Sample data
@@ -28,7 +30,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["whatsapp", "email"]
+    channels: ["whatsapp", "email"],
+    text: "Olá! Seja bem-vindo à nossa plataforma. Estamos muito felizes em ter você conosco!"
   },
   {
     id: "2",
@@ -37,7 +40,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["whatsapp", "sms", "email"]
+    channels: ["whatsapp", "sms", "email"],
+    text: "Aproveite nossa promoção especial! Todos os produtos com 30% de desconto hoje."
   },
   {
     id: "3",
@@ -46,7 +50,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp"]
+    channels: ["email", "whatsapp"],
+    text: "Sua compra foi confirmada e está sendo processada. Obrigado pela preferência!"
   },
   {
     id: "4",
@@ -55,7 +60,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email"]
+    channels: ["email"],
+    text: "Agradecemos a sua compra! Esperamos que você aproveite o produto."
   },
   {
     id: "5",
@@ -64,7 +70,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["whatsapp", "sms"]
+    channels: ["whatsapp", "sms"],
+    text: "Lembre-se dos produtos em seu carrinho! Finalize sua compra hoje mesmo."
   },
   {
     id: "6",
@@ -73,7 +80,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email"]
+    channels: ["email"],
+    text: "Confira as instruções de uso do seu produto para aproveitar ao máximo."
   },
   {
     id: "7",
@@ -82,7 +90,8 @@ const initialMessages: MessageData[] = [
     status: "recurring",
     scheduled: true,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp"]
+    channels: ["email", "whatsapp"],
+    text: "Feliz aniversário! 🎉 Aproveite um desconto especial em sua próxima compra."
   },
   {
     id: "8",
@@ -91,7 +100,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp", "sms"]
+    channels: ["email", "whatsapp", "sms"],
+    text: "Oferta exclusiva! Eletrônicos com até 50% de desconto. Não perca!"
   },
   {
     id: "9",
@@ -100,7 +110,8 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07", 
-    channels: ["whatsapp"]
+    channels: ["whatsapp"],
+    text: "Bem-vindo! Estamos felizes por você se juntar à nossa comunidade."
   },
   {
     id: "10",
@@ -109,13 +120,15 @@ const initialMessages: MessageData[] = [
     status: "ativo",
     scheduled: false,
     createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp"]
+    channels: ["email", "whatsapp"],
+    text: "Promoção imperdível! Produtos selecionados com preços incríveis."
   }
 ];
 
 const MessagesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [messages, setMessages] = useState<MessageData[]>(initialMessages);
+  const [selectedMessage, setSelectedMessage] = useState<MessageData | null>(null);
   
   const handleNewMessage = () => {
     toast.success("Criando nova mensagem automatizada...");
@@ -123,7 +136,11 @@ const MessagesPage: React.FC = () => {
   };
   
   const handleEdit = (id: string) => {
-    toast("Editando mensagem: " + id);
+    const message = messages.find(msg => msg.id === id);
+    if (message) {
+      setSelectedMessage(message);
+      toast("Editando mensagem: " + id);
+    }
     // This would open an edit form
   };
   
@@ -161,30 +178,37 @@ const MessagesPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Mensagens</h1>
-          <p className="text-gray-400">Gerenciamento de mensagens automatizadas do bot</p>
+          <h2 className="text-3xl font-bold tracking-tight">Mensagens</h2>
+          <p className="text-muted-foreground">
+            Gerenciamento de mensagens automatizadas do bot
+          </p>
         </div>
-        <Button onClick={handleNewMessage} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Mensagem
-        </Button>
+        
+        <div className="flex items-center gap-2">
+          <ThemeSelector />
+          <Button onClick={handleNewMessage} className="transition-all flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nova Mensagem</span>
+            <span className="sm:hidden">Adicionar</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="bg-gray-800 rounded-xl overflow-hidden">
-        <div className="p-4 flex justify-between items-center border-b border-gray-700">
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+      <div className="bg-card rounded-lg overflow-hidden border shadow-sm">
+        <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border gap-4">
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar mensagens"
-              className="pl-9 bg-gray-700 border-gray-600 focus:border-blue-500 focus:ring-blue-500 text-white"
+              className="pl-9"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
+          <Button variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             Filtros
           </Button>
@@ -193,7 +217,7 @@ const MessagesPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs text-gray-400 border-b border-gray-700">
+              <tr className="text-left text-xs border-b border-border">
                 <th className="px-4 py-3 font-medium">Título</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -204,7 +228,7 @@ const MessagesPage: React.FC = () => {
             </thead>
             <tbody>
               {filteredMessages.map((message) => (
-                <tr key={message.id} className="border-b border-gray-700 hover:bg-gray-750">
+                <tr key={message.id} className="border-b border-border hover:bg-muted/40">
                   <td className="px-4 py-3">{message.title}</td>
                   <td className="px-4 py-3">
                     <MessageTypeTag type={message.type} />
@@ -212,10 +236,10 @@ const MessagesPage: React.FC = () => {
                   <td className="px-4 py-3">
                     <StatusBadge status={message.status} />
                   </td>
-                  <td className="px-4 py-3 text-gray-400">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {message.scheduled ? 'Agendado' : 'Não agendado'}
                   </td>
-                  <td className="px-4 py-3 text-gray-400">{message.createdAt}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{message.createdAt}</td>
                   <td className="px-4 py-3 text-right">
                     <ActionsMenu 
                       onEdit={() => handleEdit(message.id)} 
@@ -231,6 +255,13 @@ const MessagesPage: React.FC = () => {
           </table>
         </div>
       </div>
+      
+      {selectedMessage && selectedMessage.text && (
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold mb-4">Análise de Sentimento</h3>
+          <SentimentAnalysis text={selectedMessage.text} />
+        </div>
+      )}
     </div>
   );
 };

@@ -5,7 +5,7 @@ import Index from "./pages/Index";
 import GatewayPage from "./pages/gateway/GatewayPage";
 import GatewayIntegrationsPage from "./pages/gateway/GatewayIntegrationsPage";
 import VendasPage from "./pages/store/VendasPage";
-import ClientesPage from "./pages/store/ClientesPage"; // Nova importação
+import ClientesPage from "./pages/store/ClientesPage";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -23,6 +23,8 @@ import LandingPage from "./pages/landing/LandingPage";
 import BeautyLandingPage from "./pages/landing/BeautyLandingPage";
 import FoodLandingPage from "./pages/landing/FoodLandingPage";
 import PricingPage from "./pages/plans/PricingPage";
+import MessagesPage from "./pages/MessagesPage";
+import DashboardPage from "./pages/DashboardPage";
 
 function App() {
   return (
@@ -44,13 +46,18 @@ function App() {
           
           {/* Rotas principais com layout de Dashboard */}
           <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            
+            {/* Messages Route */}
+            <Route path="/messages" element={<MessagesPage />} />
+            
             {/* Gateway Routes */}
             <Route path="/gateway" element={<GatewayPage />} />
             <Route path="/gateway/integrations" element={<GatewayIntegrationsPage />} />
             
             {/* Store Routes */}
             <Route path="/store/vendas" element={<VendasPage />} />
-            <Route path="/store/clientes" element={<ClientesPage />} /> {/* Nova rota */}
+            <Route path="/store/clientes" element={<ClientesPage />} />
             <Route path="/store/stripe-integration" element={<StripeIntegrationPage />} />
             <Route path="/store/payment-test" element={<PaymentTestPage />} />
 

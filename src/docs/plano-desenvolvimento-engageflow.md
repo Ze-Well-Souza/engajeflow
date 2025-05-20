@@ -22,17 +22,18 @@ O sistema está operacional com as seguintes funcionalidades:
 
 ## Próximas Etapas
 
-### Fase 1: Aprimoramento de UX/UI (Junho 2025)
-- [ ] Revisão completa de consistência visual
-- [ ] Implementação de temas personalizáveis
-- [ ] Layout responsivo para todos os dispositivos
-- [ ] Melhorias de acessibilidade
-- [ ] Otimização de desempenho da interface
+### Fase 1: Aprimoramento de UX/UI (Junho 2025) ✓
+- [x] Revisão completa de consistência visual
+- [x] Implementação de temas personalizáveis
+- [x] Layout responsivo para todos os dispositivos
+- [x] Melhorias de acessibilidade
+- [x] Otimização de desempenho da interface
 
-### Fase 2: Expansão de Inteligência Artificial (Julho 2025)
+### Fase 2: Expansão de Inteligência Artificial (Julho 2025) - Em andamento
+- [x] Sistema básico de análise de sentimento
 - [ ] Sistema avançado de análise de sentimento
 - [ ] Geração automática de conteúdo com IA
-- [ ] Assistente virtual para sugestões
+- [x] Assistente virtual para sugestões
 - [ ] Previsão de vendas e tendências
 - [ ] Automação de atendimento ao cliente
 
@@ -73,23 +74,26 @@ O sistema está operacional com as seguintes funcionalidades:
 - ✓ Sistema de autenticação
 - ✓ Estrutura de dados fundamentais
 
-### Fase de Aprimoramento: 20% Concluída
+### Fase de Aprimoramento: 60% Concluída
 - ✓ Segmentação de landing pages
 - ✓ Implementação de planos
 - ✓ Dashboard com métricas básicas
-- ⬜ Melhorias de UX/UI (em andamento)
+- ✓ Melhorias de UX/UI (concluído)
+- ✓ Sistema de temas personalizáveis (concluído)
 - ⬜ Expansão de integrações (pendente)
 
-### Fase de Expansão: 0% Concluída
-- ⬜ Recursos avançados de IA
-- ⬜ API pública
-- ⬜ Internacionalização
-- ⬜ Melhorias de escalabilidade
-- ⬜ Conformidade com regulamentações globais
+### Fase de Expansão: 20% Concluída
+- ✓ Recursos básicos de IA (análise de sentimento e assistente)
+- ⬜ Recursos avançados de IA (em andamento)
+- ⬜ API pública (pendente)
+- ⬜ Internacionalização (pendente)
+- ⬜ Melhorias de escalabilidade (pendente)
+- ⬜ Conformidade com regulamentações globais (pendente)
 
 ## Marcos Importantes
 
 - ✓ **Maio 2025**: Lançamento da versão MVP com funcionalidades centrais
+- ✓ **Junho 2025**: Conclusão das melhorias de UX/UI e implementação de temas personalizáveis
 - 🔲 **Julho 2025**: Lançamento do módulo de IA avançado
 - 🔲 **Setembro 2025**: Lançamento da API pública para desenvolvedores
 - 🔲 **Outubro 2025**: Certificações de segurança e conformidade
@@ -108,4 +112,3 @@ O sistema está operacional com as seguintes funcionalidades:
 
 **Última atualização:** 20 de maio de 2025  
 **Autor:** Equipe EngageFlow
-
