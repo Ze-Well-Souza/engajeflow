@@ -12,7 +12,8 @@ import PaymentTestPage from "./pages/store/PaymentTestPage";
 import RelatoriosPage from "./pages/RelatoriosPage";
 import SocialMediaPerformancePage from "./pages/reports/SocialMediaPerformancePage";
 import AgendamentosPage from "./pages/AgendamentosPage";
-import { Toaster } from "@/components/ui/toaster";
+import RatingsPage from "./pages/RatingsPage";
+import { Toaster as SonnerToaster } from "sonner";
 
 function App() {
   return (
@@ -36,11 +37,12 @@ function App() {
           <Route path="/relatorios" element={<RelatoriosPage />} />
           <Route path="/reports/social-media" element={<SocialMediaPerformancePage />} />
           
-          {/* Agendamentos Route */}
+          {/* Agendamentos & Ratings Routes */}
           <Route path="/agendamentos" element={<AgendamentosPage />} />
+          <Route path="/ratings" element={<RatingsPage />} />
         </Routes>
         
-        <Toaster />
+        <SonnerToaster />
       </Router>
     </LocalizationProvider>
   );

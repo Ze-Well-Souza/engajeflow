@@ -7,6 +7,9 @@ import StatCards from "@/components/agendamentos/StatCards";
 import AgendamentosListaWrapper from "@/components/agendamentos/AgendamentosListaWrapper";
 import NovoAgendamento from "@/components/agendamentos/NovoAgendamento";
 import { useScheduledPosts } from "@/hooks/useScheduledPosts";
+import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Cliente temporário fixo para demonstração
 const DEMO_CLIENT_ID = "00000000-0000-0000-0000-000000000000";
@@ -20,6 +23,16 @@ const AgendamentosContent: React.FC = () => {
       <AgendamentosHeader onCreateNew={handleCreateNew} />
       
       <StatCards posts={posts} />
+      
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Gerenciamento de Conteúdo</h2>
+        <Link to="/ratings">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            Ver Avaliações
+          </Button>
+        </Link>
+      </div>
 
       <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as 'agendamentos' | 'novo')} className="w-full">
         <TabsList className="mb-6">
