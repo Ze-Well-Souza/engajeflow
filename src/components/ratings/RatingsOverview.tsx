@@ -58,7 +58,7 @@ export const RatingsOverview: React.FC<RatingsOverviewProps> = ({
             {[1, 2, 3, 4, 5].map(i => (
               <Star 
                 key={i}
-                className={`w-5 h-5 ${i <= Math.round(parseFloat(averageRating)) 
+                className={`w-5 h-5 ${i <= Math.round(Number(averageRating)) 
                   ? "fill-yellow-400 text-yellow-400" 
                   : "text-muted-foreground"}`} 
               />

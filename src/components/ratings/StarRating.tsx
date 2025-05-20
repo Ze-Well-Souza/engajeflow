@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Star } from "lucide-react";
+import { StarRatingDisplay } from "@/components/ratings/StarRatingDisplay";
+import { StarRatingInput } from "@/components/ratings/StarRatingInput";
 
 interface StarRatingProps {
   value: number;
@@ -17,32 +18,22 @@ export const StarRating: React.FC<StarRatingProps> = ({
   readOnly = false,
   size = "md"
 }) => {
-  const starSizeClass = 
-    size === "sm" ? "w-3 h-3" :
-    size === "lg" ? "w-6 h-6" : 
-    "w-4 h-4";
-
-  const handleStarClick = (starValue: number) => {
-    if (readOnly) return;
-    if (onChange) onChange(starValue);
-  };
+  if (readOnly || !onChange) {
+    return (
+      <StarRatingDisplay 
+        value={value} 
+        maxStars={maxStars} 
+        size={size} 
+      />
+    );
+  }
 
   return (
-    <div className="flex items-center">
-      {[...Array(maxStars)].map((_, i) => {
-        const starValue = i + 1;
-        return (
-          <Star
-            key={`star-${i}`}
-            className={`
-              ${starSizeClass}
-              ${starValue <= value ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"} 
-              ${!readOnly ? "cursor-pointer hover:scale-110 transition-transform" : ""}
-            `}
-            onClick={() => handleStarClick(starValue)}
-          />
-        );
-      })}
-    </div>
+    <StarRatingInput
+      value={value}
+      maxStars={maxStars}
+      onChange={onChange}
+      size={size}
+    />
   );
 };
