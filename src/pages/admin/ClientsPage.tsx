@@ -4,11 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientsTable from "./components/ClientsTable";
 import ClientFormDialog from "./components/ClientFormDialog";
 import ClientSearchBar from "./components/ClientSearchBar";
+import ClientsPagination from "./components/ClientsPagination";
 import { useClients } from "./hooks/useClients";
 
 const ClientsPage = () => {
   const {
     filteredClients,
+    currentItems,
     searchTerm,
     setSearchTerm,
     isAddClientOpen,
@@ -16,7 +18,10 @@ const ClientsPage = () => {
     newClient,
     setNewClient,
     handleAddClient,
-    handleRemoveClient
+    handleRemoveClient,
+    currentPage,
+    setCurrentPage,
+    totalPages
   } = useClients();
 
   return (
@@ -52,8 +57,13 @@ const ClientsPage = () => {
         
         <TabsContent value="all">
           <ClientsTable 
-            clients={filteredClients} 
+            clients={currentItems} 
             onRemove={handleRemoveClient} 
+          />
+          <ClientsPagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </TabsContent>
         

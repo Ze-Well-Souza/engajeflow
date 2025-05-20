@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/usePagination";
 
 // Mock data for clients
 const mockClients = [
@@ -43,7 +44,67 @@ const mockClients = [
     phone: "(21) 91234-5678",
     address: "Av. Atlântica, 450 - Rio de Janeiro/RJ",
     status: "active" 
-  }
+  },
+  { 
+    id: 5, 
+    name: "Mercado Bom Preço", 
+    document: "45.678.901/0001-23", 
+    type: "juridica", 
+    email: "atendimento@bompreco.com", 
+    phone: "(11) 5555-6666",
+    address: "Rua dos Alimentos, 300 - São Paulo/SP",
+    status: "active" 
+  },
+  { 
+    id: 6, 
+    name: "Carlos Mendes", 
+    document: "456.789.012-34", 
+    type: "fisica", 
+    email: "carlos.mendes@email.com", 
+    phone: "(21) 97777-8888",
+    address: "Rua dos Viajantes, 50 - Rio de Janeiro/RJ",
+    status: "active" 
+  },
+  { 
+    id: 7, 
+    name: "Padaria Bom Pão Ltda", 
+    document: "56.789.012/0001-34", 
+    type: "juridica", 
+    email: "contato@bompao.com", 
+    phone: "(11) 4444-5555",
+    address: "Rua das Padarias, 150 - São Paulo/SP",
+    status: "inactive" 
+  },
+  { 
+    id: 8, 
+    name: "Fernanda Lima", 
+    document: "567.890.123-45", 
+    type: "fisica", 
+    email: "fernanda.lima@email.com", 
+    phone: "(11) 96666-7777",
+    address: "Av. Principal, 222 - São Paulo/SP",
+    status: "active" 
+  },
+  { 
+    id: 9, 
+    name: "Autopeças Rápidas", 
+    document: "67.890.123/0001-45", 
+    type: "juridica", 
+    email: "vendas@autopecasrapidas.com", 
+    phone: "(11) 2222-3333",
+    address: "Av. dos Automóveis, 800 - São Paulo/SP",
+    status: "active" 
+  },
+  { 
+    id: 10, 
+    name: "Ricardo Santos", 
+    document: "678.901.234-56", 
+    type: "fisica", 
+    email: "ricardo.santos@email.com", 
+    phone: "(21) 95555-6666",
+    address: "Rua Tranquila, 75 - Rio de Janeiro/RJ",
+    status: "active" 
+  },
 ];
 
 export interface Client {
@@ -83,11 +144,23 @@ export const useClients = () => {
   
   const { toast } = useToast();
 
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtrar clientes com base no termo de busca
+  const filteredClients = useMemo(() => {
+    return clients.filter(client => 
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [clients, searchTerm]);
+
+  // Adicionar paginação
+  const ITEMS_PER_PAGE = 5;
+  const {
+    currentPage,
+    setCurrentPage,
+    currentItems,
+    totalPages
+  } = usePagination<Client>(filteredClients, ITEMS_PER_PAGE);
 
   const handleAddClient = () => {
     if (!newClient.name || !newClient.document || !newClient.email) {
@@ -134,6 +207,7 @@ export const useClients = () => {
   return {
     clients,
     filteredClients,
+    currentItems,
     searchTerm,
     setSearchTerm,
     isAddClientOpen,
@@ -142,6 +216,9 @@ export const useClients = () => {
     setNewClient,
     handleAddClient,
     handleRemoveClient,
-    resetNewClientForm
+    resetNewClientForm,
+    currentPage,
+    setCurrentPage,
+    totalPages
   };
 };

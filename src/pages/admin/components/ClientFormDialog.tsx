@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, 
   SelectTrigger, SelectValue 
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 interface ClientFormDialogProps {
   open: boolean;
@@ -48,8 +48,8 @@ const ClientFormDialog: React.FC<ClientFormDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Novo Cliente
+        <Button className="flex items-center gap-2">
+          <UserPlus className="h-4 w-4" /> Novo Cliente
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[625px]">
