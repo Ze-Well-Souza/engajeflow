@@ -8,6 +8,7 @@ import VendasPage from "./pages/store/VendasPage";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import LoginPage from "./pages/auth/LoginPage";
 import StripeIntegrationPage from "./pages/store/StripeIntegrationPage";
+import PaymentTestPage from "./pages/store/PaymentTestPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           {/* Store Routes */}
           <Route path="/store/vendas" element={<VendasPage />} />
           <Route path="/store/stripe-integration" element={<StripeIntegrationPage />} />
+          <Route path="/store/payment-test" element={<PaymentTestPage />} />
         </Routes>
       </Router>
     </LocalizationProvider>
