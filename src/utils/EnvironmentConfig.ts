@@ -1,95 +1,133 @@
 
 /**
- * Utilitário para gerenciar variáveis de ambiente
+ * Sistema centralizado de gerenciamento de configuração e variáveis de ambiente
  */
+import { toast } from "sonner";
 
-// Classe para gerenciar variáveis de ambiente
+type EnvVariableValue = string | number | boolean | null;
+
 class EnvironmentConfig {
-  private static instance: EnvironmentConfig;
-  private envCache: Record<string, string> = {};
-  
-  // Variáveis de ambiente obrigatórias
-  private requiredVariables = [
+  private variables: Map<string, EnvVariableValue> = new Map();
+  private readonly requiredVariables: string[] = [
     'TECHCARE_USER',
     'TECHCARE_PASS'
   ];
 
-  private constructor() {
-    // Carregar variáveis do localStorage em ambiente de desenvolvimento
-    if (import.meta.env.DEV) {
-      this.loadFromLocalStorage();
-    }
-    
-    // No ambiente de produção, as variáveis de ambiente são injetadas pelo Docker
+  constructor() {
+    this.loadFromLocalStorage();
+    console.log('EnvironmentConfig inicializado');
   }
 
   /**
-   * Obtém a instância singleton
+   * Carrega variáveis do localStorage
    */
-  public static getInstance(): EnvironmentConfig {
-    if (!EnvironmentConfig.instance) {
-      EnvironmentConfig.instance = new EnvironmentConfig();
+  private loadFromLocalStorage(): void {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
     }
-    return EnvironmentConfig.instance;
+
+    // Procurar todas as chaves que começam com 'env.'
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('env.')) {
+        const envKey = key.substring(4); // Remover 'env.'
+        const value = localStorage.getItem(key);
+        if (value !== null) {
+          this.variables.set(envKey, this.parseValue(value));
+        }
+      }
+    }
+  }
+
+  /**
+   * Converte string em tipo apropriado (boolean, number, etc)
+   */
+  private parseValue(value: string): EnvVariableValue {
+    // Converter 'true' e 'false' para boolean
+    if (value.toLowerCase() === 'true') return true;
+    if (value.toLowerCase() === 'false') return false;
+    
+    // Converter números
+    if (/^-?\d+(\.\d+)?$/.test(value)) {
+      return Number(value);
+    }
+    
+    // Manter como string
+    return value;
   }
 
   /**
    * Obtém uma variável de ambiente
    */
-  public get(key: string): string | undefined {
-    // Primeiro verificar o cache
-    if (this.envCache[key]) {
-      return this.envCache[key];
+  public get(name: string, defaultValue: EnvVariableValue = null): EnvVariableValue {
+    // Verificar no Map interno
+    if (this.variables.has(name)) {
+      return this.variables.get(name) as EnvVariableValue;
     }
     
-    // Em ambiente de produção, buscar do process.env
-    // Em ambiente de desenvolvimento, buscar do localStorage
-    let value;
-    
-    if (import.meta.env.DEV) {
-      // Em dev, buscar de localStorage
-      value = localStorage.getItem(`env_${key}`);
-    } else {
-      // Em produção, buscar do window.env (que é injetado pelo Dockerfile)
-      value = (window as any).env?.[key];
+    // Verificar em process.env para Node.js
+    if (typeof process !== 'undefined' && process.env && process.env[name]) {
+      const value = process.env[name] as string;
+      return this.parseValue(value);
     }
     
-    // Armazenar no cache se encontrou
-    if (value) {
-      this.envCache[key] = value;
+    // Verificar em import.meta.env para Vite
+    const viteEnv = (import.meta as any).env;
+    if (viteEnv && viteEnv[name]) {
+      return this.parseValue(viteEnv[name]);
     }
     
-    return value;
+    // Retornar valor padrão
+    return defaultValue;
   }
 
   /**
-   * Define uma variável de ambiente (apenas em desenvolvimento)
+   * Define uma variável de ambiente
    */
-  public set(key: string, value: string): void {
-    if (!import.meta.env.DEV) {
-      console.warn('Tentativa de definir variável de ambiente em produção ignorada.');
-      return;
+  public set(name: string, value: EnvVariableValue): void {
+    // Armazenar no Map interno
+    this.variables.set(name, value);
+    
+    // Armazenar no localStorage (apenas valores não-null)
+    if (typeof window !== 'undefined' && window.localStorage && value !== null) {
+      localStorage.setItem(`env.${name}`, String(value));
     }
-    
-    // Armazenar no localStorage
-    localStorage.setItem(`env_${key}`, value);
-    
-    // Atualizar o cache
-    this.envCache[key] = value;
-    
-    console.log(`Variável de ambiente ${key} definida.`);
   }
 
   /**
-   * Verifica se todas as variáveis de ambiente obrigatórias estão definidas
+   * Remove uma variável de ambiente
+   */
+  public remove(name: string): void {
+    // Remover do Map interno
+    this.variables.delete(name);
+    
+    // Remover do localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem(`env.${name}`);
+    }
+  }
+
+  /**
+   * Lista todas as variáveis de ambiente configuradas
+   */
+  public listAll(): Record<string, EnvVariableValue> {
+    const result: Record<string, EnvVariableValue> = {};
+    
+    // Adicionar variáveis do Map interno
+    this.variables.forEach((value, key) => {
+      result[key] = value;
+    });
+    
+    return result;
+  }
+
+  /**
+   * Verifica se todas as variáveis obrigatórias estão definidas
    */
   public validateRequiredVariables(): { valid: boolean; missing: string[] } {
-    const missing: string[] = [];
-    
-    this.requiredVariables.forEach(key => {
-      if (!this.get(key)) {
-        missing.push(key);
-      }
+    const missing = this.requiredVariables.filter(name => {
+      const value = this.get(name);
+      return value === null || value === undefined || value === '';
     });
     
     return {
@@ -99,29 +137,43 @@ class EnvironmentConfig {
   }
 
   /**
-   * Carrega variáveis de ambiente do localStorage (apenas para desenvolvimento)
+   * Carrega configurações de um objeto
    */
-  private loadFromLocalStorage(): void {
-    if (!import.meta.env.DEV) return;
-    
-    this.requiredVariables.forEach(key => {
-      const value = localStorage.getItem(`env_${key}`);
-      if (value) {
-        this.envCache[key] = value;
-      }
+  public loadFromObject(config: Record<string, EnvVariableValue>): void {
+    Object.entries(config).forEach(([key, value]) => {
+      this.set(key, value);
     });
   }
 }
 
-// Exportar uma instância singleton
-export const env = EnvironmentConfig.getInstance();
+// Instância singleton
+export const env = new EnvironmentConfig();
 
-// Função de conveniência para obter uma variável de ambiente
-export function getEnv(key: string): string | undefined {
-  return env.get(key);
+/**
+ * Helper para definir uma variável de ambiente
+ */
+export function setEnv(name: string, value: EnvVariableValue): void {
+  env.set(name, value);
+  toast.success(`Configuração '${name}' atualizada`);
 }
 
-// Função de conveniência para definir uma variável de ambiente (apenas em desenvolvimento)
-export function setEnv(key: string, value: string): void {
-  env.set(key, value);
+/**
+ * Helper para remover uma variável de ambiente
+ */
+export function removeEnv(name: string): void {
+  env.remove(name);
+  toast.info(`Configuração '${name}' removida`);
+}
+
+/**
+ * Helper para verificar variáveis obrigatórias
+ */
+export function validateEnv(): boolean {
+  const { valid, missing } = env.validateRequiredVariables();
+  
+  if (!valid) {
+    toast.error(`Configurações obrigatórias ausentes: ${missing.join(', ')}`);
+  }
+  
+  return valid;
 }

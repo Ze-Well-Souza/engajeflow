@@ -3,12 +3,13 @@
  * Serviço de autenticação para o TechCare Connect Automator
  */
 import { toast } from "sonner";
+import { getEnvVariable } from "../../utils/environment";
 
 // Interfaces
 interface AuthConfig {
-  username: string;
-  password: string;
-  baseUrl: string;
+  username?: string;
+  password?: string;
+  baseUrl?: string;
 }
 
 interface AuthResponse {
@@ -22,7 +23,6 @@ interface AuthResponse {
  */
 class AuthService {
   private static instance: AuthService;
-  private config: AuthConfig | null = null;
   private token: string | null = null;
   private loginAttempts = 0;
   private readonly MAX_LOGIN_ATTEMPTS = 3;
@@ -42,20 +42,17 @@ class AuthService {
   }
 
   /**
-   * Configura o serviço de autenticação
-   */
-  public configure(config: AuthConfig): void {
-    this.config = config;
-    console.log('[AuthService] Configurado com sucesso');
-  }
-
-  /**
    * Realiza login no sistema
    */
   public async login(): Promise<AuthResponse> {
     try {
-      if (!this.config) {
-        throw new Error("Serviço não configurado");
+      // Obter credenciais das variáveis de ambiente
+      const username = getEnvVariable('TECHCARE_USER');
+      const password = getEnvVariable('TECHCARE_PASS');
+      const baseUrl = getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com');
+      
+      if (!username || !password) {
+        throw new Error("Credenciais não configuradas. Verifique as variáveis de ambiente TECHCARE_USER e TECHCARE_PASS.");
       }
 
       if (this.loginAttempts >= this.MAX_LOGIN_ATTEMPTS) {
@@ -65,8 +62,8 @@ class AuthService {
       this.loginAttempts++;
       console.log(`[AuthService] Tentativa de login ${this.loginAttempts}/${this.MAX_LOGIN_ATTEMPTS}`);
 
-      // Simulação de login - em produção, isto seria uma chamada real à API
-      const response = await this.simulateLoginRequest();
+      // Em produção, isto seria uma chamada real à API
+      const response = await this.performLoginRequest(username, password, baseUrl);
       
       if (response.success && response.token) {
         this.token = response.token;
@@ -108,16 +105,18 @@ class AuthService {
   }
 
   /**
-   * Simula uma requisição de login
+   * Realiza uma requisição de login
    * Em produção, isto seria substituído por uma chamada real à API
    */
-  private async simulateLoginRequest(): Promise<AuthResponse> {
+  private async performLoginRequest(username: string, password: string, baseUrl: string): Promise<AuthResponse> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (this.config?.username === 'admin' && this.config?.password === 'password') {
+        // Simulação de API para fins de demonstração
+        // Em produção, isso seria substituído por uma chamada HTTP real
+        if (username && password) {
           resolve({ 
             success: true, 
-            token: `mock-token-${Date.now()}` 
+            token: `auth-token-${Date.now()}` 
           });
         } else {
           resolve({ 

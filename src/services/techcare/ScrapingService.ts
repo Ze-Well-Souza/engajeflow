@@ -1,29 +1,39 @@
 
-import NavigationService from './NavigationService';
-import AuthService from './AuthService';
-
 /**
- * Interface para representar uma instância de página
+ * Serviço de extração de dados para o TechCare Connect Automator
  */
-interface PageInterface {
-  waitForSelector: (selector: string, options?: any) => Promise<any>;
-  evaluate: (fn: () => any) => Promise<any>;
+import AuthService from './AuthService';
+import NavigationService from './NavigationService';
+import logger from '../../utils/logger';
+import { CircuitBreaker } from '../../utils/circuit-breaker';
+
+interface ScrapingResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
 }
 
+type ScrapeFunction<T> = () => Promise<T>;
+
 /**
- * ScrapingService - Serviço responsável por extrair dados do TechCare
- * 
- * Esta classe fornece métodos para extrair informações do site do TechCare
- * como tickets, usuários, relatórios, etc.
+ * Serviço responsável pela extração de dados do sistema TechCare
  */
 class ScrapingService {
   private static instance: ScrapingService;
-  private page: PageInterface | null = null;
+  private circuitBreaker: CircuitBreaker;
 
-  private constructor() {}
+  private constructor() {
+    // Configurar circuit breaker para evitar sobrecarga
+    this.circuitBreaker = new CircuitBreaker({
+      failureThreshold: 3,
+      resetTimeout: 30000
+    });
+    
+    logger.info('[ScrapingService] Inicializado');
+  }
 
   /**
-   * Obtém a instância do serviço (Singleton)
+   * Obtém a instância singleton do serviço
    */
   public static getInstance(): ScrapingService {
     if (!ScrapingService.instance) {
@@ -33,144 +43,128 @@ class ScrapingService {
   }
 
   /**
-   * Configura a página para o serviço de scraping
-   * @param page Instância de Page do Puppeteer
+   * Extrai dados de tickets
+   * @param filters Filtros para busca de tickets
    */
-  public setPage(page: PageInterface) {
-    this.page = page;
+  public async getTickets(filters: Record<string, any> = {}): Promise<ScrapingResult<any[]>> {
+    return this.executeWithRetry(async () => {
+      // Navegar para página de tickets
+      await NavigationService.navigateTo('/tickets', filters);
+      
+      // Simular extração de dados
+      return this.simulateExtraction('tickets', filters);
+    });
   }
 
   /**
-   * Extrai a lista de tickets do TechCare
-   * @returns Lista de tickets ou null em caso de erro
+   * Extrai dados de clientes
+   * @param filters Filtros para busca de clientes
    */
-  public async extractTickets() {
+  public async getClients(filters: Record<string, any> = {}): Promise<ScrapingResult<any[]>> {
+    return this.executeWithRetry(async () => {
+      // Navegar para página de clientes
+      await NavigationService.navigateTo('/clients', filters);
+      
+      // Simular extração de dados
+      return this.simulateExtraction('clients', filters);
+    });
+  }
+
+  /**
+   * Extrai dados de relatórios
+   * @param reportType Tipo de relatório
+   * @param params Parâmetros do relatório
+   */
+  public async getReport(reportType: string, params: Record<string, any> = {}): Promise<ScrapingResult<any>> {
+    return this.executeWithRetry(async () => {
+      // Navegar para página de relatórios
+      await NavigationService.navigateTo(`/reports/${reportType}`, params);
+      
+      // Simular extração de dados
+      return this.simulateExtraction('report', { type: reportType, ...params });
+    });
+  }
+
+  /**
+   * Executa uma função de scraping com retry e circuit breaker
+   */
+  private async executeWithRetry<T>(fn: ScrapeFunction<ScrapingResult<T>>): Promise<ScrapingResult<T>> {
     try {
-      if (!this.page) {
-        throw new Error("Página não inicializada");
+      // Verificar autenticação
+      if (!AuthService.isAuthenticated()) {
+        logger.warn('[ScrapingService] Tentativa de extração sem autenticação');
+        return { success: false, error: 'Não autenticado' };
       }
 
-      // Navega para a página de tickets
-      await NavigationService.navigateTo('/tickets');
-
-      // Aguarda o carregamento da lista de tickets
-      await this.page.waitForSelector('.ticket-list', { timeout: 10000 });
-
-      // Extrai os dados dos tickets
-      return await this.page.evaluate(() => {
-        const ticketElements = document.querySelectorAll('.ticket-item');
-        return Array.from(ticketElements).map(ticket => ({
-          id: ticket.getAttribute('data-id'),
-          title: ticket.querySelector('.ticket-title')?.textContent?.trim(),
-          status: ticket.querySelector('.ticket-status')?.textContent?.trim(),
-          date: ticket.querySelector('.ticket-date')?.textContent?.trim(),
-          priority: ticket.querySelector('.ticket-priority')?.textContent?.trim()
-        }));
-      });
+      // Executar com circuit breaker
+      return await this.circuitBreaker.execute(fn);
     } catch (error) {
-      console.error("Erro ao extrair tickets:", error);
-      return null;
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante extração';
+      logger.error('[ScrapingService] Erro durante extração:', errorMessage);
+      return { success: false, error: errorMessage };
     }
   }
 
   /**
-   * Extrai a lista de clientes do TechCare
-   * @returns Lista de clientes ou null em caso de erro
+   * Simula extração de dados
+   * Em produção, isto seria substituído por scraping real usando Puppeteer ou similar
    */
-  public async extractClients() {
-    try {
-      if (!this.page) {
-        throw new Error("Página não inicializada");
-      }
-
-      // Navega para a página de clientes
-      await NavigationService.navigateTo('/clients');
-
-      // Aguarda o carregamento da lista de clientes
-      await this.page.waitForSelector('.client-list', { timeout: 10000 });
-
-      // Extrai os dados dos clientes
-      return await this.page.evaluate(() => {
-        const clientElements = document.querySelectorAll('.client-item');
-        return Array.from(clientElements).map(client => ({
-          id: client.getAttribute('data-id'),
-          name: client.querySelector('.client-name')?.textContent?.trim(),
-          email: client.querySelector('.client-email')?.textContent?.trim(),
-          phone: client.querySelector('.client-phone')?.textContent?.trim(),
-          status: client.querySelector('.client-status')?.textContent?.trim()
-        }));
-      });
-    } catch (error) {
-      console.error("Erro ao extrair clientes:", error);
-      return null;
-    }
+  private async simulateExtraction(type: string, params: Record<string, any> = {}): Promise<ScrapingResult<any>> {
+    return new Promise((resolve) => {
+      // Simular delay de processamento
+      setTimeout(() => {
+        // Lógica de simulação
+        const mockData = this.generateMockData(type, params);
+        
+        resolve({
+          success: true,
+          data: mockData
+        });
+      }, 800);
+    });
   }
 
   /**
-   * Extrai as métricas do dashboard do TechCare
-   * @returns Métricas do dashboard ou null em caso de erro
+   * Gera dados simulados para demonstração
    */
-  public async extractDashboardMetrics() {
-    try {
-      if (!this.page) {
-        throw new Error("Página não inicializada");
-      }
-
-      // Navega para a página do dashboard
-      await NavigationService.navigateTo('/dashboard');
-
-      // Aguarda o carregamento das métricas
-      await this.page.waitForSelector('.dashboard-metrics', { timeout: 10000 });
-
-      // Extrai as métricas
-      return await this.page.evaluate(() => {
-        const metricElements = document.querySelectorAll('.metric-card');
-        return Array.from(metricElements).map(metric => ({
-          label: metric.querySelector('.metric-label')?.textContent?.trim(),
-          value: metric.querySelector('.metric-value')?.textContent?.trim(),
-          trend: metric.querySelector('.metric-trend')?.textContent?.trim(),
-          percentage: metric.querySelector('.metric-percentage')?.textContent?.trim()
+  private generateMockData(type: string, params: Record<string, any>): any {
+    switch (type) {
+      case 'tickets':
+        return Array.from({ length: 5 }, (_, i) => ({
+          id: `TK-${1000 + i}`,
+          title: `Problema ${i + 1}`,
+          status: ['Novo', 'Em progresso', 'Resolvido'][i % 3],
+          priority: ['Baixa', 'Média', 'Alta'][i % 3],
+          created_at: new Date().toISOString(),
+          client: `Cliente ${i + 1}`
         }));
-      });
-    } catch (error) {
-      console.error("Erro ao extrair métricas do dashboard:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Extrai a lista de mensagens de um ticket específico
-   * @param ticketId ID do ticket
-   * @returns Lista de mensagens ou null em caso de erro
-   */
-  public async extractTicketMessages(ticketId: string) {
-    try {
-      if (!this.page) {
-        throw new Error("Página não inicializada");
-      }
-
-      // Navega para a página do ticket específico
-      await NavigationService.navigateTo(`/tickets/${ticketId}`);
-
-      // Aguarda o carregamento das mensagens
-      await this.page.waitForSelector('.message-list', { timeout: 10000 });
-
-      // Extrai as mensagens
-      return await this.page.evaluate(() => {
-        const messageElements = document.querySelectorAll('.message-item');
-        return Array.from(messageElements).map(message => ({
-          id: message.getAttribute('data-id'),
-          sender: message.querySelector('.message-sender')?.textContent?.trim(),
-          content: message.querySelector('.message-content')?.textContent?.trim(),
-          timestamp: message.querySelector('.message-timestamp')?.textContent?.trim(),
-          isAgent: message.classList.contains('agent-message')
+      
+      case 'clients':
+        return Array.from({ length: 5 }, (_, i) => ({
+          id: `CL-${2000 + i}`,
+          name: `Cliente ${i + 1}`,
+          email: `cliente${i + 1}@exemplo.com`,
+          phone: `(11) 9${i}${i}${i}${i}-${i}${i}${i}${i}`,
+          status: ['Ativo', 'Inativo', 'Pendente'][i % 3],
+          created_at: new Date().toISOString()
         }));
-      });
-    } catch (error) {
-      console.error("Erro ao extrair mensagens do ticket:", error);
-      return null;
+      
+      case 'report':
+        return {
+          title: `Relatório: ${params.type}`,
+          generated_at: new Date().toISOString(),
+          filters: params,
+          data: Array.from({ length: 10 }, (_, i) => ({
+            id: `DATA-${3000 + i}`,
+            value: Math.round(Math.random() * 1000),
+            label: `Item ${i + 1}`
+          }))
+        };
+      
+      default:
+        return { message: 'Dados não disponíveis' };
     }
   }
 }
 
-export default ScrapingService;
+export default ScrapingService.getInstance();

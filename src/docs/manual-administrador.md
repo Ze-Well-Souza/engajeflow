@@ -13,6 +13,9 @@
 9. [Gerenciamento de Integrações](#gerenciamento-de-integrações)
 10. [Segurança e Conformidade](#segurança-e-conformidade)
 11. [Suporte e Resolução de Problemas](#suporte-e-resolução-de-problemas)
+12. [Gerenciamento de Variáveis de Ambiente](#gerenciamento-de-variáveis-de-ambiente)
+13. [Circuit Breakers e Resiliência](#circuit-breakers-e-resiliência)
+14. [Gerenciamento de Filas e Trabalhos](#gerenciamento-de-filas-e-trabalhos)
 
 ## Introdução
 
@@ -470,7 +473,140 @@ Alternativamente, você pode contatar o suporte por:
 - Chat ao vivo: Disponível no canto inferior direito da plataforma em horário comercial
 - Portal do cliente: https://suporte.techcare.com
 
+## Gerenciamento de Variáveis de Ambiente
+
+O sistema utiliza variáveis de ambiente para configuração segura, sem hardcoding de credenciais sensíveis no código. Como administrador, você é responsável por gerenciar essas variáveis.
+
+### Variáveis de Ambiente Obrigatórias
+
+1. Para o funcionamento básico do sistema, as seguintes variáveis são obrigatórias:
+   - `TECHCARE_USER`: Nome de usuário para API TechCare
+   - `TECHCARE_PASS`: Senha para API TechCare
+   - `TECHCARE_BASE_URL`: URL base da API TechCare
+
+### Configurando Variáveis de Ambiente
+
+1. No painel administrativo, acesse "Sistema" > "Configurações" > "Variáveis".
+2. Para adicionar ou modificar uma variável:
+   - Clique em "Nova Variável" ou selecione uma existente
+   - Preencha o nome da variável
+   - Preencha o valor da variável
+   - Marque "Sensível" para variáveis que contêm senhas ou tokens
+   - Clique em "Salvar"
+
+3. Para variáveis sensíveis, o sistema:
+   - Armazena-as criptografadas
+   - Não as exibe completamente na interface
+   - Registra acessos em log de auditoria
+
+### Variáveis em Ambiente Docker
+
+1. Se utilizar Docker, configure as variáveis de ambiente no arquivo docker-compose.yml ou via linha de comando:
+
+```yml
+services:
+  techcare-automator:
+    image: techcare-automator:latest
+    environment:
+      - TECHCARE_USER=seu_usuario
+      - TECHCARE_PASS=sua_senha
+      - TECHCARE_BASE_URL=https://api.techcare.com
+      - LOG_LEVEL=info
+```
+
+### Segurança das Variáveis
+
+1. Nunca compartilhe arquivos .env ou secrets em repositórios de código
+2. Utilize secrets managers em ambientes de produção (como Docker Secrets, AWS Secrets Manager, HashiCorp Vault)
+3. Rotacione regularmente credenciais sensíveis
+4. Mantenha logs de auditoria de alterações de variáveis de ambiente
+
+## Circuit Breakers e Resiliência
+
+O sistema implementa padrões de resiliência para garantir estabilidade mesmo em condições adversas.
+
+### Como Funcionam os Circuit Breakers
+
+1. **Proteção contra Falhas em Cascata**:
+   - Detectam falhas repetidas em serviços externos
+   - "Abrem o circuito" para evitar sobrecarga
+   - Falham rapidamente em vez de esperar timeouts
+   - Permitem recuperação gradual dos serviços
+
+2. **Estados do Circuit Breaker**:
+   - **Fechado**: Operação normal, requisições passam normalmente
+   - **Aberto**: Falhas detectadas, requisições falham rapidamente
+   - **Semi-aberto**: Permite algumas requisições para testar recuperação
+
+### Configurando Circuit Breakers
+
+1. Acesse "Sistema" > "Resiliência" > "Circuit Breakers".
+2. Para cada serviço integrado, configure:
+   - **Threshold de Falhas**: Número de falhas consecutivas para abrir o circuito
+   - **Período de Reset**: Tempo de espera antes de testar recuperação
+   - **Threshold de Sucesso**: Número de sucessos para fechar o circuito novamente
+   - **Timeout**: Tempo máximo de espera por respostas
+
+### Monitoramento de Circuit Breakers
+
+1. No painel "Status de Resiliência", monitore:
+   - Estado atual de cada circuit breaker
+   - Histórico de transições de estado
+   - Métricas de falhas e sucessos
+   - Tempos de resposta e disponibilidade
+
+### Políticas de Retry
+
+1. Complementando os circuit breakers, o sistema implementa políticas de retry:
+   - Retry com backoff exponencial
+   - Limitação de tentativas por operação
+   - Jitter aleatório para evitar ressincronização
+
+## Gerenciamento de Filas e Trabalhos
+
+O sistema implementa gerenciamento avançado de filas para processar tarefas assíncronas de forma confiável.
+
+### Tipos de Filas
+
+1. **Filas de Prioridade**:
+   - Trabalhos críticos são processados primeiro
+   - Níveis configuráveis de prioridade (alta, média, baixa)
+   - Prevenção de starvation para trabalhos de baixa prioridade
+
+2. **Filas por Cliente**:
+   - Isolamento de trabalhos por cliente
+   - Limites de trabalhos concorrentes por cliente
+   - Prevenção de impacto cruzado entre clientes
+
+### Configurando Filas
+
+1. Acesse "Sistema" > "Filas" > "Configurações".
+2. Configure parâmetros globais:
+   - **Concorrência Máxima**: Número máximo de trabalhos simultâneos
+   - **TTL**: Tempo de vida de trabalhos em fila
+   - **Retry**: Política de retentativas para trabalhos falhos
+   - **Purge**: Configurações de limpeza automática
+
+### Monitoramento de Filas
+
+1. No painel "Status de Filas", monitore em tempo real:
+   - Comprimento das filas
+   - Taxa de processamento
+   - Trabalhos por status (pendente, em execução, concluído, falho)
+   - Tempos médios de processamento
+   - Distribuição por tipo de trabalho
+
+### Gerenciamento de Trabalhos
+
+1. Na seção "Trabalhos", você pode:
+   - Visualizar todos os trabalhos no sistema
+   - Filtrar por status, tipo, cliente ou prioridade
+   - Pausar trabalhos específicos
+   - Cancelar trabalhos pendentes
+   - Forçar reexecução de trabalhos falhos
+   - Exportar histórico de execuções
+
 ---
 
 **Última atualização**: 21 de maio de 2025 - 15:30  
-**Versão do Manual**: 2.0
+**Versão do Manual**: 3.0

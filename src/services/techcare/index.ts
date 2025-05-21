@@ -6,6 +6,8 @@
 import AuthService from './AuthService';
 import NavigationService from './NavigationService';
 import ScrapingService from './ScrapingService';
+import logger from '../../utils/logger';
+import { getEnvVariable } from '../../utils/environment';
 
 // Re-exportar todos os serviços
 export {
@@ -16,41 +18,43 @@ export {
 
 // Interface de configuração centralizada
 export interface TechCareConfig {
-  username: string;
-  password: string;
-  baseUrl: string;
+  username?: string;
+  password?: string;
+  baseUrl?: string;
 }
 
 /**
  * Configura todos os serviços do TechCare Connect Automator de uma vez
+ * Se não forem fornecidos parâmetros, usa variáveis de ambiente
  */
-export function configureTechCareServices(config: TechCareConfig): void {
-  // Configurar serviço de autenticação
-  AuthService.configure({
-    username: config.username,
-    password: config.password,
-    baseUrl: config.baseUrl
-  });
+export function configureTechCareServices(config?: TechCareConfig): void {
+  const baseUrl = config?.baseUrl || getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com') as string;
   
   // Configurar serviço de navegação
-  NavigationService.configure(config.baseUrl);
+  NavigationService.configure(baseUrl);
   
-  console.log('[TechCare] Todos os serviços configurados com sucesso');
+  logger.info('[TechCare] Todos os serviços configurados com sucesso', { baseUrl });
 }
 
 /**
  * Inicializa uma nova sessão automatizada
  */
-export async function initializeSession(config: TechCareConfig): Promise<boolean> {
+export async function initializeSession(config?: TechCareConfig): Promise<boolean> {
   try {
-    // Configurar todos os serviços
-    configureTechCareServices(config);
+    // Configurar todos os serviços se uma configuração for fornecida
+    if (config) {
+      configureTechCareServices(config);
+    } else {
+      configureTechCareServices({
+        baseUrl: getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com') as string
+      });
+    }
     
     // Realizar login
     const loginResult = await AuthService.login();
     
     if (!loginResult.success) {
-      console.error('[TechCare] Falha ao inicializar sessão:', loginResult.error);
+      logger.error('[TechCare] Falha ao inicializar sessão:', loginResult.error);
       return false;
     }
     
@@ -58,15 +62,15 @@ export async function initializeSession(config: TechCareConfig): Promise<boolean
     const navResult = await NavigationService.navigateTo('/dashboard');
     
     if (!navResult.success) {
-      console.error('[TechCare] Falha ao navegar para dashboard:', navResult.error);
+      logger.error('[TechCare] Falha ao navegar para dashboard:', navResult.error);
       return false;
     }
     
-    console.log('[TechCare] Sessão inicializada com sucesso');
+    logger.info('[TechCare] Sessão inicializada com sucesso');
     return true;
   } catch (error) {
-    console.error('[TechCare] Erro ao inicializar sessão:', 
-      error instanceof Error ? error.message : 'Erro desconhecido');
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    logger.error('[TechCare] Erro ao inicializar sessão:', errorMessage);
     return false;
   }
 }
