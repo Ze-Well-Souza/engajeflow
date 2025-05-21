@@ -1,73 +1,105 @@
-# Welcome to your Lovable project
 
-## Project info
+# TechCare Connect Automator
 
-**URL**: https://lovable.dev/projects/0998b496-6829-47d0-9643-0b8e6b0ecdd4
+Um sistema de automação para interação com a plataforma TechCare, permitindo automação de tarefas, extração de dados e integração com outros sistemas.
 
-## How can I edit this code?
+## Funcionalidades
 
-There are several ways of editing your application.
+- **Automação de login e navegação**: Acesso automatizado à plataforma TechCare
+- **Extração de dados**: Coleta de informações de tickets, clientes e relatórios
+- **Processamento automatizado**: Atualização de status, envio de mensagens e categorização
+- **Dashboard de monitoramento**: Acompanhamento em tempo real das automações
+- **Agendamento de tarefas**: Execução programada de automações
+- **Suporte multi-usuário**: Isolamento de execuções por cliente/usuário
 
-**Use Lovable**
+## Requisitos
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0998b496-6829-47d0-9643-0b8e6b0ecdd4) and start prompting.
+- Node.js v18 ou superior
+- Docker (para execução em ambiente isolado)
+- Acesso à plataforma TechCare
 
-Changes made via Lovable will be committed automatically to this repo.
+## Instalação
 
-**Use your preferred IDE**
+### Método 1: Instalação local
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+# Clonar o repositório
+git clone https://github.com/seu-usuario/techcare-connect-automator.git
+cd techcare-connect-automator
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Instalar dependências
+npm install
 
-Follow these steps:
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas credenciais
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Iniciar o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Método 2: Execução com Docker
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Construir a imagem Docker
+docker build -t techcare-automator .
 
-**Use GitHub Codespaces**
+# Executar o contêiner
+docker run -d -p 3000:3000 \
+  -e TECHCARE_USER=seu_usuario \
+  -e TECHCARE_PASS=sua_senha \
+  -e OPERATION_MODE=dashboard \
+  --name techcare-automator \
+  techcare-automator
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Modos de Operação
 
-## What technologies are used for this project?
+O sistema pode operar em três modos diferentes:
 
-This project is built with:
+1. **Dashboard**: Interface web para monitoramento e configuração
+2. **Automator**: Execução de automações agendadas
+3. **Scheduler**: Gerenciamento de fila de tarefas
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Variáveis de Ambiente
 
-## How can I deploy this project?
+- `TECHCARE_USER`: Nome de usuário para autenticação no TechCare
+- `TECHCARE_PASS`: Senha para autenticação no TechCare
+- `TECHCARE_BASE_URL`: URL base do TechCare (padrão: https://app.techcare.com)
+- `OPERATION_MODE`: Modo de operação (dashboard, automator, scheduler)
+- `LOG_LEVEL`: Nível de detalhamento dos logs (debug, info, warn, error)
 
-Simply open [Lovable](https://lovable.dev/projects/0998b496-6829-47d0-9643-0b8e6b0ecdd4) and click on Share -> Publish.
+## Estrutura do Projeto
 
-## Can I connect a custom domain to my Lovable project?
+```
+.
+├── src/
+│   ├── services/     # Serviços core de automação
+│   │   ├── techcare/ # Módulos específicos para TechCare
+│   │   └── ...
+│   ├── components/   # Componentes React
+│   ├── pages/        # Páginas da aplicação
+│   ├── utils/        # Utilitários
+│   └── tests/        # Testes automatizados
+├── Dockerfile        # Configuração Docker
+├── docker-entrypoint.sh # Script de inicialização
+└── README.md         # Documentação
+```
 
-Yes, you can!
+## Desenvolvimento
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+# Executar testes
+npm test
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Verificar linting
+npm run lint
+
+# Construir para produção
+npm run build
+```
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT.
+

@@ -169,6 +169,33 @@ class DistributedCacheService {
   }
 
   /**
+   * Simula a falha de um nó para testes
+   */
+  public simulateNodeFailure(id: string): boolean {
+    const node = this.nodes.find(node => node.id === id);
+    if (node) {
+      node.status = 'inactive';
+      console.log(`[DistributedCacheService] Nó ${id} marcado como inativo`);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Recupera um nó que estava inativo
+   */
+  public recoverNode(id: string): boolean {
+    const node = this.nodes.find(node => node.id === id);
+    if (node && node.status === 'inactive') {
+      node.status = 'active';
+      node.lastSync = new Date();
+      console.log(`[DistributedCacheService] Nó ${id} recuperado para status ativo`);
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Sincroniza o cache entre os nós
    */
   public syncNodes(): boolean {
@@ -217,5 +244,5 @@ class DistributedCacheService {
 // Exportando o serviço como singleton
 export const distributedCache = new DistributedCacheService();
 
-// Re-exportar interfaces para uso em outros arquivos
-export { CacheEntry, CacheOptions, CacheStats, ICacheNode };
+// Re-exportar interfaces para uso em outros arquivos usando 'export type'
+export type { CacheEntry, CacheOptions, CacheStats, ICacheNode };
