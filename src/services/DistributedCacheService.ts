@@ -1,18 +1,12 @@
 
+import { CacheEntry, CacheOptions, CacheStats, ICacheNode } from './cache/CacheEntry';
+import { CacheStatistics } from './cache/CacheStats';
+
 /**
- * Serviço de cache distribuído para alta disponibilidade e resiliência
- * Implementa padrões de cache distribuído com sincronização entre nós
+ * Serviço de cache distribuído para o sistema
  */
-
-import { toast } from "sonner";
-import { CacheEntry, CacheOptions, CacheStats, ICacheNode } from "./cache/CacheEntry";
-import { CacheOperations } from "./cache/CacheOperations";
-import { CacheStatistics } from "./cache/CacheStats";
-
 class DistributedCacheService {
   private cache: Map<string, CacheEntry<any>> = new Map();
-  private nodes: ICacheNode[] = [];
-  private nodeId: string = 'node-' + Math.floor(Math.random() * 10000);
   private stats: CacheStats = {
     hits: 0,
     misses: 0,
@@ -22,208 +16,206 @@ class DistributedCacheService {
     newest: null,
     avgAge: 0
   };
+  private nodes: ICacheNode[] = [];
 
   constructor() {
-    // Simular nós do cluster para demonstração
-    this.nodes = [
-      {
-        id: this.nodeId,
-        name: 'Primary Node',
-        url: 'http://cache-node-1:6379',
-        status: 'active',
-        priority: 100,
-        lastSync: new Date()
-      },
-      {
-        id: 'node-2',
-        name: 'Secondary Node 1',
-        url: 'http://cache-node-2:6379',
-        status: 'active',
-        priority: 90,
-        lastSync: new Date()
-      },
-      {
-        id: 'node-3',
-        name: 'Secondary Node 2',
-        url: 'http://cache-node-3:6379', 
-        status: 'active',
-        priority: 80,
-        lastSync: new Date()
-      }
-    ];
+    // Inicializar com um nó padrão
+    this.nodes.push({
+      id: 'primary',
+      name: 'Primary Node',
+      url: 'localhost',
+      status: 'active',
+      priority: 1,
+      lastSync: new Date()
+    });
 
-    // Iniciar limpeza periódica de cache
-    this.startCleanupTask();
+    console.log('[DistributedCacheService] Inicializado com sucesso');
   }
 
   /**
-   * Obtém um item do cache distribuído
+   * Obtém um item do cache
    */
   public get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       this.stats.misses++;
       CacheStatistics.updateHitRatio(this.stats);
-      console.log(`[Cache] MISS: ${key}`);
       return null;
     }
-    
-    const now = Date.now();
-    
-    if (entry.expiry < now) {
-      this.cache.delete(key);
+
+    // Verificar expiração
+    if (entry.expiry < Date.now()) {
+      this.delete(key);
       this.stats.misses++;
       CacheStatistics.updateHitRatio(this.stats);
-      console.log(`[Cache] EXPIRED: ${key}`);
       return null;
     }
-    
+
     // Atualizar estatísticas de acesso
-    entry.lastAccessed = now;
+    entry.lastAccessed = Date.now();
     this.stats.hits++;
     CacheStatistics.updateHitRatio(this.stats);
-    console.log(`[Cache] HIT: ${key}`);
-    
-    return entry.data;
+
+    return entry.data as T;
   }
 
   /**
-   * Define um item no cache distribuído
+   * Coloca um item no cache
    */
   public set<T>(key: string, data: T, options: CacheOptions): void {
-    const now = Date.now();
     const entry: CacheEntry<T> = {
       data,
-      expiry: now + (options.ttl * 1000),
-      created: now,
+      created: Date.now(),
+      expiry: Date.now() + (options.ttl * 1000),
       region: options.region,
-      tags: options.tags
+      tags: options.tags,
+      lastAccessed: Date.now()
     };
-    
+
     this.cache.set(key, entry);
-    CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'set', key, entry);
     CacheStatistics.updateStats(this.cache, this.stats);
     
-    console.log(`[Cache] SET: ${key}, TTL: ${options.ttl}s, Region: ${options.region || 'default'}`);
+    console.log(`[DistributedCacheService] Item adicionado ao cache: ${key}`);
   }
 
   /**
-   * Remove um item do cache distribuído
+   * Remove um item do cache
    */
   public delete(key: string): boolean {
     const result = this.cache.delete(key);
+    CacheStatistics.updateStats(this.cache, this.stats);
+    
     if (result) {
-      CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'delete', key);
-      CacheStatistics.updateStats(this.cache, this.stats);
-      console.log(`[Cache] DELETE: ${key}`);
+      console.log(`[DistributedCacheService] Item removido do cache: ${key}`);
     }
+    
     return result;
   }
 
   /**
-   * Limpa todo o cache distribuído ou por região/tags
+   * Limpa todo o cache ou uma região específica
    */
   public clear(options?: { region?: string; tags?: string[] }): void {
     if (!options) {
       this.cache.clear();
-      CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'clear');
-      console.log(`[Cache] CLEAR: Todos os itens`);
+      CacheStatistics.updateStats(this.cache, this.stats);
+      console.log('[DistributedCacheService] Cache limpo completamente');
       return;
     }
-    
-    const { region, tags } = options;
-    let deleteCount = 0;
-    
-    this.cache.forEach((entry, key) => {
-      let shouldDelete = false;
-      
-      if (region && entry.region === region) {
-        shouldDelete = true;
-      }
-      
-      if (tags && tags.length > 0 && entry.tags) {
-        if (tags.some(tag => entry.tags?.includes(tag))) {
-          shouldDelete = true;
+
+    if (options.region) {
+      for (const [key, entry] of this.cache.entries()) {
+        if (entry.region === options.region) {
+          this.cache.delete(key);
         }
       }
-      
-      if (shouldDelete) {
-        this.cache.delete(key);
-        deleteCount++;
-      }
-    });
-    
-    if (deleteCount > 0) {
-      CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'clear', undefined, undefined, options);
-      console.log(`[Cache] CLEAR SELECTIVE: ${deleteCount} itens (Região: ${region}, Tags: ${tags?.join(', ')})`);
+      console.log(`[DistributedCacheService] Região '${options.region}' limpa`);
     }
-    
+
+    if (options.tags && options.tags.length > 0) {
+      for (const [key, entry] of this.cache.entries()) {
+        if (entry.tags && entry.tags.some(tag => options.tags!.includes(tag))) {
+          this.cache.delete(key);
+        }
+      }
+      console.log(`[DistributedCacheService] Tags '${options.tags.join(', ')}' limpas`);
+    }
+
     CacheStatistics.updateStats(this.cache, this.stats);
   }
 
   /**
-   * Obtém estatísticas sobre o estado atual do cache
+   * Obtém estatísticas do cache
    */
   public getStats(): CacheStats {
+    CacheStatistics.updateStats(this.cache, this.stats);
     return { ...this.stats };
   }
 
   /**
-   * Obtém os nós do cluster de cache
+   * Adiciona um nó ao cluster de cache
+   */
+  public addNode(node: Omit<ICacheNode, 'lastSync'>): void {
+    const newNode: ICacheNode = {
+      ...node,
+      lastSync: new Date()
+    };
+
+    this.nodes.push(newNode);
+    console.log(`[DistributedCacheService] Nó adicionado ao cluster: ${node.name}`);
+  }
+
+  /**
+   * Remove um nó do cluster
+   */
+  public removeNode(id: string): boolean {
+    const initialLength = this.nodes.length;
+    this.nodes = this.nodes.filter(node => node.id !== id);
+
+    const removed = this.nodes.length < initialLength;
+    if (removed) {
+      console.log(`[DistributedCacheService] Nó removido do cluster: ${id}`);
+    }
+
+    return removed;
+  }
+
+  /**
+   * Obtém todos os nós do cluster
    */
   public getNodes(): ICacheNode[] {
     return [...this.nodes];
   }
 
   /**
-   * Adiciona um novo nó ao cluster de cache
+   * Sincroniza o cache entre os nós
    */
-  public addNode(node: Omit<ICacheNode, 'id' | 'lastSync'>): ICacheNode {
-    return CacheOperations.addNode(this.nodes, node);
-  }
-
-  /**
-   * Remove um nó do cluster de cache
-   */
-  public removeNode(nodeId: string): boolean {
-    return CacheOperations.removeNode(this.nodes, nodeId, this.nodeId);
-  }
-
-  /**
-   * Simula falha em um nó do cluster
-   */
-  public simulateNodeFailure(nodeId: string): boolean {
-    return CacheOperations.simulateNodeFailure(this.nodes, nodeId, this.nodeId);
-  }
-
-  /**
-   * Recupera um nó com falha
-   */
-  public recoverNode(nodeId: string): boolean {
-    return CacheOperations.recoverNode(this.nodes, nodeId);
-  }
-
-  private startCleanupTask(): void {
-    // Limpar entradas expiradas periodicamente
-    setInterval(() => {
-      const now = Date.now();
-      let expiredCount = 0;
-      
-      this.cache.forEach((entry, key) => {
-        if (entry.expiry < now) {
-          this.cache.delete(key);
-          expiredCount++;
-        }
-      });
-      
-      if (expiredCount > 0) {
-        console.log(`[Cache] Cleanup: Removidas ${expiredCount} entradas expiradas`);
-        CacheStatistics.updateStats(this.cache, this.stats);
+  public syncNodes(): boolean {
+    // Implementação simulada de sincronização
+    this.nodes.forEach(node => {
+      if (node.status === 'active' && node.id !== 'primary') {
+        node.lastSync = new Date();
       }
-    }, 30000); // Executar a cada 30 segundos
+    });
+
+    console.log('[DistributedCacheService] Sincronização de nós concluída');
+    return true;
+  }
+
+  /**
+   * Busca entradas por tag
+   */
+  public getByTag<T>(tag: string): Map<string, T> {
+    const result = new Map<string, T>();
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.tags && entry.tags.includes(tag)) {
+        result.set(key, entry.data as T);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Busca entradas por região
+   */
+  public getByRegion<T>(region: string): Map<string, T> {
+    const result = new Map<string, T>();
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.region === region) {
+        result.set(key, entry.data as T);
+      }
+    }
+
+    return result;
   }
 }
 
-// Exportar uma instância única para uso em toda a aplicação
+// Exportando o serviço como singleton
 export const distributedCache = new DistributedCacheService();
+
+// Re-exportar interfaces para uso em outros arquivos
+export { CacheEntry, CacheOptions, CacheStats, ICacheNode };

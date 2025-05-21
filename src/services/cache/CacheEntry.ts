@@ -44,3 +44,7 @@ export interface ICacheNode {
   priority: number;
   lastSync: Date;
 }
+
+// Re-exportar interfaces para garantir que estejam disponíveis
+export * from './CacheStats';
+export * from './CacheOperations';
