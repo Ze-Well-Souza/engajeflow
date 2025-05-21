@@ -18,8 +18,7 @@ import SocialMediaPage from "@/pages/SocialMediaPage";
 const MainRoutes: React.FC = () => {
   return (
     <RouteGroup>
-      <Route path="/" element={<Index />} />
-      <Route path="/index" element={<Navigate to="/" replace />} />
+      <Route path="/index" element={<Index />} />
       <Route path="/dashboard" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
       <Route path="/messages" element={<DashboardLayout><MessagesPage /></DashboardLayout>} />
       <Route path="/relatorios" element={<DashboardLayout><RelatoriosPage /></DashboardLayout>} />

@@ -1,12 +1,13 @@
 
-import React, { Fragment } from "react";
+import React from "react";
+import { Route } from "react-router-dom";
 
 interface RouteGroupProps {
   children: React.ReactNode;
 }
 
 const RouteGroup: React.FC<RouteGroupProps> = ({ children }) => {
-  return <Fragment>{children}</Fragment>;
+  return <>{children}</>;
 }
 
 export default RouteGroup;

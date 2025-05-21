@@ -11,9 +11,9 @@ import MicroservicesPage from "@/pages/system/MicroservicesPage";
 import InternationalizationPage from "@/pages/system/InternationalizationPage";
 import FinancialPage from "@/pages/system/FinancialPage";
 import TechCareAutomatorPage from "@/pages/system/TechCareAutomatorPage";
-import ConfiguracoesPage from "@/pages/ConfiguracoesPage";
-import NotificacoesPage from "@/pages/NotificacoesPage";
-import AgendamentosPage from "@/pages/AgendamentosPage";
+import ConfiguracoesPage from "@/pages/system/ConfiguracoesPage";
+import NotificacoesPage from "@/pages/system/NotificacoesPage";
+import AgendamentosPage from "@/pages/system/AgendamentosPage";
 
 const SystemRoutes: React.FC = () => {
   return (
