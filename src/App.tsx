@@ -23,7 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/landing" replace />} />
         
-        {/* Integrando todos os grupos de rotas via fragmentos */}
+        {/* Corrigimos o modo como os componentes de rota são renderizados */}
         {MainRoutes()}
         {AdminRoutes()}
         {SystemRoutes()}
