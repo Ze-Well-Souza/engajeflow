@@ -2,21 +2,17 @@
 /**
  * Serviço de navegação para o TechCare Connect Automator
  */
-import AuthService from './AuthService';
-import { getEnvVariable } from '../../utils/environment';
-import logger from '../../utils/logger';
 
+import logger from '../../utils/logger';
+import { getEnvVariable } from '../../utils/environment';
+import { CircuitBreaker } from '../../utils/circuit-breaker';
+
+/**
+ * Resultado da navegação
+ */
 interface NavigationResult {
   success: boolean;
   error?: string;
-  data?: any;
-}
-
-interface PageInfo {
-  url: string;
-  title?: string;
-  isLoaded: boolean;
-  timestamp: number;
 }
 
 /**
@@ -25,15 +21,22 @@ interface PageInfo {
 class NavigationService {
   private static instance: NavigationService;
   private baseUrl: string;
-  private currentPage: PageInfo | null = null;
-  private history: PageInfo[] = [];
-  private readonly MAX_HISTORY = 50;
-
+  private lastPage: string | null = null;
+  private circuitBreaker: CircuitBreaker;
+  
   private constructor() {
-    this.baseUrl = getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com') as string;
-    logger.info('[NavigationService] Inicializado com baseUrl:', this.baseUrl);
+    // Definir URL base padrão
+    this.baseUrl = getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com');
+    
+    // Configurar circuit breaker
+    this.circuitBreaker = new CircuitBreaker({
+      failureThreshold: 3,
+      resetTimeout: 30000
+    });
+    
+    logger.info('[NavigationService] Inicializado com base URL:', this.baseUrl);
   }
-
+  
   /**
    * Obtém a instância singleton do serviço
    */
@@ -43,150 +46,115 @@ class NavigationService {
     }
     return NavigationService.instance;
   }
-
+  
   /**
-   * Configura o serviço de navegação
+   * Configura a URL base para o serviço
+   * @param baseUrl URL base do sistema TechCare
    */
   public configure(baseUrl: string): void {
     this.baseUrl = baseUrl;
-    logger.info('[NavigationService] Configurado com baseUrl:', baseUrl);
+    logger.info('[NavigationService] URL base configurada:', baseUrl);
   }
-
+  
   /**
-   * Navega para uma rota específica
-   * @param route Rota para navegação (ex: '/dashboard', '/clients')
-   * @param params Parâmetros opcionais da rota
+   * Obtém a URL base atual
    */
-  public async navigateTo(route: string, params: Record<string, any> = {}): Promise<NavigationResult> {
-    try {
-      // Verificar autenticação
-      if (!AuthService.isAuthenticated()) {
-        logger.warn('[NavigationService] Tentativa de navegação sem autenticação');
-        return { success: false, error: 'Não autenticado' };
-      }
-
-      // Construir URL
-      const url = this.buildUrl(route, params);
-      logger.info('[NavigationService] Navegando para:', url);
-
-      // Em um ambiente real, usaríamos Puppeteer ou outra biblioteca de automação
-      // para fazer a navegação efetiva. Aqui simulamos o comportamento.
-      const result = await this.simulateNavigation(url);
-
-      if (result.success) {
-        // Atualizar página atual
-        const pageInfo: PageInfo = {
-          url,
-          title: route,
-          isLoaded: true,
-          timestamp: Date.now()
-        };
-        
-        this.currentPage = pageInfo;
-        this.addToHistory(pageInfo);
-        
-        logger.info('[NavigationService] Navegação bem-sucedida para:', url);
-      } else {
-        logger.error('[NavigationService] Falha na navegação para:', url, result.error);
-      }
-
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante navegação';
-      logger.error('[NavigationService] Erro durante navegação:', errorMessage);
-      return { success: false, error: errorMessage };
-    }
+  public getBaseUrl(): string {
+    return this.baseUrl;
   }
-
+  
+  /**
+   * Obtém a última página visitada
+   */
+  public getLastPage(): string | null {
+    return this.lastPage;
+  }
+  
+  /**
+   * Navega para uma página específica
+   * @param path Caminho da página (relativo à URL base)
+   * @param params Parâmetros opcionais de consulta
+   */
+  public async navigateTo(path: string, params: Record<string, any> = {}): Promise<NavigationResult> {
+    return this.circuitBreaker.execute(async () => {
+      try {
+        // Construir URL completa
+        let url = this.baseUrl;
+        
+        // Garantir que o path começa com /
+        if (path && !path.startsWith('/')) {
+          path = '/' + path;
+        }
+        
+        // Adicionar o caminho à URL base
+        url += path;
+        
+        // Adicionar parâmetros de consulta, se houver
+        if (Object.keys(params).length > 0) {
+          const queryParams = new URLSearchParams();
+          for (const key in params) {
+            queryParams.append(key, params[key]);
+          }
+          url += '?' + queryParams.toString();
+        }
+        
+        logger.info('[NavigationService] Navegando para:', url);
+        
+        // Em produção, aqui seria implementada a lógica real de navegação com Puppeteer
+        // Por enquanto, apenas simulamos a navegação
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Atualizar última página
+        this.lastPage = path;
+        
+        logger.info('[NavigationService] Navegação concluída com sucesso');
+        
+        return { success: true };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante navegação';
+        logger.error('[NavigationService] Erro ao navegar:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    });
+  }
+  
+  /**
+   * Voltar para a página anterior
+   */
+  public async goBack(): Promise<NavigationResult> {
+    return this.circuitBreaker.execute(async () => {
+      try {
+        logger.info('[NavigationService] Voltando para a página anterior');
+        
+        // Em produção, aqui seria implementada a lógica real com Puppeteer
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return { success: true };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao voltar página';
+        logger.error('[NavigationService] Erro ao voltar página:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    });
+  }
+  
   /**
    * Recarrega a página atual
    */
   public async refresh(): Promise<NavigationResult> {
-    if (!this.currentPage) {
-      return { success: false, error: 'Nenhuma página carregada para atualizar' };
-    }
-    
-    logger.info('[NavigationService] Recarregando página atual:', this.currentPage.url);
-    return this.navigateTo(this.currentPage.url);
-  }
-
-  /**
-   * Obtém a página atual
-   */
-  public getCurrentPage(): PageInfo | null {
-    return this.currentPage;
-  }
-
-  /**
-   * Obtém o histórico de navegação
-   */
-  public getHistory(): PageInfo[] {
-    return [...this.history];
-  }
-
-  /**
-   * Limpa o histórico de navegação
-   */
-  public clearHistory(): void {
-    this.history = [];
-    logger.info('[NavigationService] Histórico de navegação limpo');
-  }
-
-  /**
-   * Adiciona uma página ao histórico
-   */
-  private addToHistory(page: PageInfo): void {
-    this.history.unshift(page);
-    
-    // Limitar tamanho do histórico
-    if (this.history.length > this.MAX_HISTORY) {
-      this.history.pop();
-    }
-  }
-
-  /**
-   * Constrói uma URL a partir de uma rota e parâmetros
-   */
-  private buildUrl(route: string, params: Record<string, any>): string {
-    // Garantir que a rota comece com '/'
-    const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
-    
-    // Construir URL base
-    let url = `${this.baseUrl}${normalizedRoute}`;
-    
-    // Adicionar parâmetros se houver
-    if (Object.keys(params).length > 0) {
-      const queryString = Object.entries(params)
-        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
-        .join('&');
-      
-      url += `?${queryString}`;
-    }
-    
-    return url;
-  }
-
-  /**
-   * Simula a navegação para uma URL
-   * Em produção, isto seria substituído por navegação real usando Puppeteer ou similar
-   */
-  private async simulateNavigation(url: string): Promise<NavigationResult> {
-    return new Promise((resolve) => {
-      // Simular delay de rede
-      setTimeout(() => {
-        // Validação básica da URL para simulação
-        if (url.includes(this.baseUrl)) {
-          // Páginas de erro para teste
-          if (url.includes('/error-page')) {
-            resolve({ success: false, error: 'Página não encontrada ou acesso negado' });
-            return;
-          }
-          
-          resolve({ success: true, data: { url } });
-        } else {
-          resolve({ success: false, error: 'URL inválida' });
-        }
-      }, 500);
+    return this.circuitBreaker.execute(async () => {
+      try {
+        logger.info('[NavigationService] Recarregando a página atual');
+        
+        // Em produção, aqui seria implementada a lógica real com Puppeteer
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return { success: true };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao recarregar página';
+        logger.error('[NavigationService] Erro ao recarregar página:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
     });
   }
 }
