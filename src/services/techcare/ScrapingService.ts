@@ -1,7 +1,14 @@
 
-import { Page } from 'puppeteer';
 import NavigationService from './NavigationService';
 import AuthService from './AuthService';
+
+/**
+ * Interface para representar uma instância de página
+ */
+interface PageInterface {
+  waitForSelector: (selector: string, options?: any) => Promise<any>;
+  evaluate: (fn: () => any) => Promise<any>;
+}
 
 /**
  * ScrapingService - Serviço responsável por extrair dados do TechCare
@@ -11,7 +18,7 @@ import AuthService from './AuthService';
  */
 class ScrapingService {
   private static instance: ScrapingService;
-  private page: Page | null = null;
+  private page: PageInterface | null = null;
 
   private constructor() {}
 
@@ -29,7 +36,7 @@ class ScrapingService {
    * Configura a página para o serviço de scraping
    * @param page Instância de Page do Puppeteer
    */
-  public setPage(page: Page) {
+  public setPage(page: PageInterface) {
     this.page = page;
   }
 
