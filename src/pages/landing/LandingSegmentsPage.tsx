@@ -1,169 +1,111 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  ShoppingCart, 
+  Camera, 
+  Code, 
+  BookOpen, 
+  Users, 
+  FileText, 
+  ArrowRight 
+} from "lucide-react";
 
-const LandingSegmentsPage = () => {
+const LandingSegmentsPage: React.FC = () => {
+  const navigate = useNavigate();
+  
   const segments = [
     {
       id: "ecommerce",
-      title: "Lojistas Online",
+      name: "Lojistas Online",
+      icon: <ShoppingCart className="h-8 w-8 mb-4 text-blue-500" />,
       description: "Otimize o atendimento da sua loja com automações e inteligência artificial.",
-      features: [
-        "Atendimento pós-venda automatizado",
-        "Rastreamento inteligente de pedidos",
-        "Suporte via chat com IA",
-        "Resposta automática às perguntas frequentes"
-      ],
-      cta: "Impulsione suas vendas",
-      icon: "🏪"
+      path: "/landing/ecommerce",
+      className: "border-blue-200 hover:border-blue-500",
     },
     {
-      id: "content-creators",
-      title: "Criadores de Conteúdo",
+      id: "creators",
+      name: "Criadores de Conteúdo",
+      icon: <Camera className="h-8 w-8 mb-4 text-pink-500" />,
       description: "Responda fãs e parceiros sem perder tempo. Automatize seu inbox.",
-      features: [
-        "Agendamento de mensagens",
-        "Respostas automáticas para seguidores",
-        "Gestão de parcerias e patrocínios",
-        "Métricas de engajamento"
-      ],
-      cta: "Potencialize seu alcance",
-      icon: "🎥"
+      path: "/landing/content-creator",
+      className: "border-pink-200 hover:border-pink-500",
     },
     {
       id: "freelancers",
-      title: "Freelancers",
+      name: "Freelancers",
+      icon: <Code className="h-8 w-8 mb-4 text-purple-500" />,
       description: "Ganhe tempo com automações e concentre-se no que realmente importa: criar.",
-      features: [
-        "Suporte a clientes automatizado",
-        "Sistemas de cobrança inteligentes",
-        "Lembretes de prazos e entregas",
-        "Gestão de projetos integrada"
-      ],
-      cta: "Foque no seu trabalho",
-      icon: "🧑‍💻"
+      path: "/landing/freelancer",
+      className: "border-purple-200 hover:border-purple-500",
     },
     {
       id: "education",
-      title: "Educadores",
+      name: "Educadores / Cursos Online",
+      icon: <BookOpen className="h-8 w-8 mb-4 text-blue-600" />,
       description: "Automatize a comunicação com alunos e aumente a retenção.",
-      features: [
-        "Resposta automática a dúvidas comuns",
-        "Distribuição inteligente de materiais",
-        "Organização de listas de alunos",
-        "Lembretes de aulas e eventos"
-      ],
-      cta: "Revolucione seu ensino",
-      icon: "📚"
+      path: "/landing/education",
+      className: "border-blue-200 hover:border-blue-600",
     },
     {
-      id: "recruitment",
-      title: "RH e Recrutamento",
+      id: "hr",
+      name: "Empresas de RH",
+      icon: <Users className="h-8 w-8 mb-4 text-purple-600" />,
       description: "Transforme o contato com candidatos em uma experiência moderna e eficiente.",
-      features: [
-        "Agendamento automático de entrevistas",
-        "Feedback personalizado automático",
-        "Triagem inicial de currículos",
-        "Acompanhamento do pipeline de contratação"
-      ],
-      cta: "Modernize seu recrutamento",
-      icon: "🏢"
+      path: "/landing/hr",
+      className: "border-purple-200 hover:border-purple-600",
     },
     {
-      id: "legal",
-      title: "Advogados e Contadores",
+      id: "accounting",
+      name: "Contadores / Advogados",
+      icon: <FileText className="h-8 w-8 mb-4 text-green-600" />,
       description: "Menos WhatsApp manual, mais foco nos seus clientes e prazos.",
-      features: [
-        "Atualizações automáticas de processos",
-        "Envio programado de documentos",
-        "Lembretes de prazos importantes",
-        "Atendimento preliminar com IA"
-      ],
-      cta: "Otimize seu escritório",
-      icon: "🧾"
-    }
+      path: "/landing/accounting",
+      className: "border-green-200 hover:border-green-600",
+    },
   ];
-
+  
   return (
-    <div className="container max-w-7xl mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Soluções EngageFlow por Segmento</h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Descubra como nossa plataforma se adapta perfeitamente às necessidades específicas do seu setor
-        </p>
-      </div>
-
-      <Tabs defaultValue="ecommerce" className="w-full mb-8">
-        <TabsList className="flex flex-wrap justify-center mb-8">
-          {segments.map(segment => (
-            <TabsTrigger key={segment.id} value={segment.id} className="text-lg px-4 py-3">
-              <span className="mr-2">{segment.icon}</span>
-              {segment.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {segments.map(segment => (
-          <TabsContent key={segment.id} value={segment.id} className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-3xl flex items-center">
-                  <span className="text-4xl mr-3">{segment.icon}</span>
-                  {segment.title}
-                </CardTitle>
-                <CardDescription className="text-lg mt-2">
-                  {segment.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-muted p-6 rounded-lg mb-6">
-                  <h3 className="text-xl font-medium mb-4">Funcionalidades específicas para {segment.title}</h3>
-                  <ul className="space-y-3">
-                    {segment.features.map((feature, index) => (
-                      <li key={index} className="flex items-center">
-                        <span className="text-primary mr-2">✓</span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div className="p-6 border rounded-lg">
-                  <h3 className="text-xl font-medium mb-4">Automatize seu atendimento com IA</h3>
-                  <p className="mb-4">Você perde horas respondendo mensagens iguais todos os dias?</p>
-                  <p>Nossa plataforma usa inteligência artificial para automatizar tarefas repetitivas, 
-                  permitindo que você se concentre no que realmente importa para seu negócio.</p>
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <Link to="/landing/pricing">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    {segment.cta}
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                    Comece grátis
-                  </Button>
-                </Link>
-              </CardFooter>
+    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
+      <div className="container mx-auto py-12 px-4">
+        <div className="max-w-3xl mx-auto text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">Soluções personalizadas para o seu negócio</h1>
+          <p className="text-lg text-gray-600">
+            Escolha o segmento que melhor representa sua área de atuação e descubra como podemos ajudar.
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {segments.map((segment) => (
+            <Card 
+              key={segment.id} 
+              className={`p-6 border-2 transition-all hover:shadow-lg ${segment.className}`}
+            >
+              <div className="text-center mb-4">
+                {segment.icon}
+                <h2 className="text-xl font-bold mb-2">{segment.name}</h2>
+                <p className="text-gray-600 mb-6">{segment.description}</p>
+              </div>
+              <Button 
+                className="w-full flex items-center justify-center" 
+                onClick={() => navigate(segment.path)}
+              >
+                Ver solução <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
-      
-      <div className="text-center mt-16">
-        <h2 className="text-3xl font-bold mb-6">Pronto para revolucionar sua comunicação?</h2>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link to="/landing/pricing">
-            <Button size="lg">Ver planos e preços</Button>
-          </Link>
-          <Link to="/contact">
-            <Button variant="outline" size="lg">Fale com um especialista</Button>
-          </Link>
+          ))}
+        </div>
+        
+        <div className="mt-16 max-w-xl mx-auto text-center">
+          <h2 className="text-2xl font-bold mb-4">Não encontrou seu segmento?</h2>
+          <p className="text-gray-600 mb-6">
+            Entre em contato com nossa equipe para uma solução personalizada para o seu negócio.
+          </p>
+          <Button size="lg" variant="outline">
+            Fale com um especialista
+          </Button>
         </div>
       </div>
     </div>
@@ -171,3 +113,4 @@ const LandingSegmentsPage = () => {
 };
 
 export default LandingSegmentsPage;
+
