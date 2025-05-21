@@ -51,7 +51,7 @@ class ScrapingService {
       }
 
       // Navega para a página de tickets
-      await NavigationService.getInstance().goToTickets(this.page);
+      await NavigationService.navigateTo('/tickets');
 
       // Aguarda o carregamento da lista de tickets
       await this.page.waitForSelector('.ticket-list', { timeout: 10000 });
@@ -84,7 +84,7 @@ class ScrapingService {
       }
 
       // Navega para a página de clientes
-      await NavigationService.getInstance().goToClients(this.page);
+      await NavigationService.navigateTo('/clients');
 
       // Aguarda o carregamento da lista de clientes
       await this.page.waitForSelector('.client-list', { timeout: 10000 });
@@ -117,7 +117,7 @@ class ScrapingService {
       }
 
       // Navega para a página do dashboard
-      await NavigationService.getInstance().goToDashboard(this.page);
+      await NavigationService.navigateTo('/dashboard');
 
       // Aguarda o carregamento das métricas
       await this.page.waitForSelector('.dashboard-metrics', { timeout: 10000 });
@@ -150,7 +150,7 @@ class ScrapingService {
       }
 
       // Navega para a página do ticket específico
-      await NavigationService.getInstance().goToTicketDetail(this.page, ticketId);
+      await NavigationService.navigateTo(`/tickets/${ticketId}`);
 
       // Aguarda o carregamento das mensagens
       await this.page.waitForSelector('.message-list', { timeout: 10000 });
