@@ -8,7 +8,6 @@ interface MockNavigationState {
 }
 
 describe('NavigationService', () => {
-  let navigationService: NavigationService;
   let mockNavigationState: MockNavigationState;
 
   beforeEach(() => {
@@ -18,19 +17,16 @@ describe('NavigationService', () => {
       isLoaded: true
     };
     
-    // Create Navigation Service
-    navigationService = new NavigationService();
-    
     // Mock the internal methods that would interact with Puppeteer
-    vi.spyOn(navigationService as any, 'getCurrentUrl').mockImplementation(() => {
+    vi.spyOn(NavigationService as any, 'getCurrentUrl').mockImplementation(() => {
       return Promise.resolve(mockNavigationState.url);
     });
     
-    vi.spyOn(navigationService as any, 'isPageLoaded').mockImplementation(() => {
+    vi.spyOn(NavigationService as any, 'isPageLoaded').mockImplementation(() => {
       return Promise.resolve(mockNavigationState.isLoaded);
     });
     
-    vi.spyOn(navigationService as any, 'navigateTo').mockImplementation((url: string) => {
+    vi.spyOn(NavigationService as any, 'navigateTo').mockImplementation((url: string) => {
       mockNavigationState.url = url;
       mockNavigationState.isLoaded = true;
       return Promise.resolve(true);
@@ -38,7 +34,7 @@ describe('NavigationService', () => {
   });
 
   it('should navigate to a URL', async () => {
-    const result = await navigationService.goToUrl('https://newsite.com');
+    const result = await NavigationService.goToUrl('https://newsite.com');
     
     expect(result).toBe(true);
     expect(mockNavigationState.url).toBe('https://newsite.com');
@@ -48,7 +44,7 @@ describe('NavigationService', () => {
   it('should get the current URL', async () => {
     mockNavigationState.url = 'https://currentsite.com';
     
-    const url = await navigationService.getUrl();
+    const url = await NavigationService.getUrl();
     
     expect(url).toBe('https://currentsite.com');
   });
@@ -61,7 +57,7 @@ describe('NavigationService', () => {
       mockNavigationState.isLoaded = true;
     }, 50);
     
-    const result = await navigationService.waitForPageLoad();
+    const result = await NavigationService.waitForPageLoad();
     
     expect(result).toBe(true);
     expect(mockNavigationState.isLoaded).toBe(true);
@@ -70,11 +66,11 @@ describe('NavigationService', () => {
   it('should execute a script in the page context', async () => {
     const mockResult = 'script result';
     
-    vi.spyOn(navigationService as any, 'executeScript').mockImplementation(() => {
+    vi.spyOn(NavigationService as any, 'executeScript').mockImplementation(() => {
       return Promise.resolve(mockResult);
     });
     
-    const result = await navigationService.executeJavaScript('2 + 2');
+    const result = await NavigationService.executeJavaScript('2 + 2');
     
     expect(result).toBe(mockResult);
   });

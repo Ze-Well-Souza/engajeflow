@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const modules = [
     {
+      title: "Dashboard",
+      description: "Visualize estatísticas e métricas de desempenho",
+      links: [
+        { path: "/dashboard", label: "Dashboard Principal" }
+      ]
+    },
+    {
       title: "Gateway",
       description: "Gerencie integrações e configurações do gateway",
       links: [
@@ -19,8 +26,8 @@ const Index = () => {
       description: "Gerenciamento de vendas e pagamentos",
       links: [
         { path: "/store/vendas", label: "Vendas" },
-        { path: "/store/stripe-integration", label: "Integração Stripe" },
-        { path: "/store/payment-test", label: "Teste de Pagamento" }
+        { path: "/store/stripe", label: "Integração Stripe" },
+        { path: "/store/payment", label: "Teste de Pagamento" }
       ]
     },
     {
@@ -28,14 +35,7 @@ const Index = () => {
       description: "Análise de dados e relatórios",
       links: [
         { path: "/relatorios", label: "Relatórios Gerais" },
-        { path: "/reports/social-media", label: "Redes Sociais" }
-      ]
-    },
-    {
-      title: "Agendamentos",
-      description: "Gerenciamento de postagens e conteúdo",
-      links: [
-        { path: "/agendamentos", label: "Agendamentos" }
+        { path: "/reports/social", label: "Redes Sociais" }
       ]
     }
   ];
@@ -47,7 +47,7 @@ const Index = () => {
         <p className="text-muted-foreground">Plataforma de Gestão de Marketing e Vendas</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
         {modules.map((module, index) => (
           <Card key={index} className="transition-all hover:shadow-lg">
             <CardHeader>
