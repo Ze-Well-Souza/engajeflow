@@ -1,94 +1,80 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NavigationService } from '../../services/techcare/NavigationService';
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import NavigationService from '../../services/techcare/NavigationService';
-
-// Mock do toast
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn()
-  }
-}));
+interface MockNavigationState {
+  url: string;
+  isLoaded: boolean;
+}
 
 describe('NavigationService', () => {
-  // Reset mocks after each test
-  afterEach(() => {
-    vi.clearAllMocks();
+  let navigationService: NavigationService;
+  let mockNavigationState: MockNavigationState;
+
+  beforeEach(() => {
+    // Reset mock state
+    mockNavigationState = {
+      url: 'https://example.com',
+      isLoaded: true
+    };
+    
+    // Create Navigation Service
+    navigationService = new NavigationService();
+    
+    // Mock the internal methods that would interact with Puppeteer
+    vi.spyOn(navigationService as any, 'getCurrentUrl').mockImplementation(() => {
+      return Promise.resolve(mockNavigationState.url);
+    });
+    
+    vi.spyOn(navigationService as any, 'isPageLoaded').mockImplementation(() => {
+      return Promise.resolve(mockNavigationState.isLoaded);
+    });
+    
+    vi.spyOn(navigationService as any, 'navigateTo').mockImplementation((url: string) => {
+      mockNavigationState.url = url;
+      mockNavigationState.isLoaded = true;
+      return Promise.resolve(true);
+    });
   });
 
-  it('should be a singleton', () => {
-    const instance1 = NavigationService;
-    const instance2 = NavigationService;
-    expect(instance1).toBe(instance2);
+  it('should navigate to a URL', async () => {
+    const result = await navigationService.goToUrl('https://newsite.com');
+    
+    expect(result).toBe(true);
+    expect(mockNavigationState.url).toBe('https://newsite.com');
+    expect(mockNavigationState.isLoaded).toBe(true);
   });
 
-  it('should initialize with empty state', () => {
-    expect(NavigationService.getCurrentPage()).toBeNull();
-    expect(NavigationService.getHistory()).toEqual([]);
+  it('should get the current URL', async () => {
+    mockNavigationState.url = 'https://currentsite.com';
+    
+    const url = await navigationService.getUrl();
+    
+    expect(url).toBe('https://currentsite.com');
   });
 
-  it('should configure properly', () => {
-    NavigationService.configure('https://example.com');
+  it('should wait for the page to load', async () => {
+    mockNavigationState.isLoaded = false;
     
-    // Since baseUrl is private, we can only test indirectly
-    expect(NavigationService).toBeDefined();
+    // Simulate page loading after a delay
+    setTimeout(() => {
+      mockNavigationState.isLoaded = true;
+    }, 50);
+    
+    const result = await navigationService.waitForPageLoad();
+    
+    expect(result).toBe(true);
+    expect(mockNavigationState.isLoaded).toBe(true);
   });
 
-  it('should navigate to a page and update history', async () => {
-    NavigationService.configure('https://example.com');
+  it('should execute a script in the page context', async () => {
+    const mockResult = 'script result';
     
-    const result = await NavigationService.navigateTo('/dashboard');
+    vi.spyOn(navigationService as any, 'executeScript').mockImplementation(() => {
+      return Promise.resolve(mockResult);
+    });
     
-    expect(result.success).toBe(true);
+    const result = await navigationService.executeJavaScript('2 + 2');
     
-    const currentPage = NavigationService.getCurrentPage();
-    expect(currentPage).not.toBeNull();
-    expect(currentPage?.url).toBe('https://example.com/dashboard');
-    expect(currentPage?.isLoaded).toBe(true);
-    
-    const history = NavigationService.getHistory();
-    expect(history.length).toBe(1);
-    expect(history[0].url).toBe('https://example.com/dashboard');
-  });
-
-  it('should fail when navigating to error page', async () => {
-    NavigationService.configure('https://example.com');
-    
-    const result = await NavigationService.navigateTo('/error-page');
-    
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-  });
-
-  it('should refresh current page', async () => {
-    NavigationService.configure('https://example.com');
-    
-    // First navigate to a page
-    await NavigationService.navigateTo('/dashboard');
-    
-    // Then refresh
-    const result = await NavigationService.refresh();
-    
-    expect(result.success).toBe(true);
-    
-    const currentPage = NavigationService.getCurrentPage();
-    expect(currentPage).not.toBeNull();
-    expect(currentPage?.url).toBe('https://example.com/dashboard');
-  });
-
-  it('should clear history', async () => {
-    NavigationService.configure('https://example.com');
-    
-    // Navigate to a few pages
-    await NavigationService.navigateTo('/dashboard');
-    await NavigationService.navigateTo('/profile');
-    
-    // Check history has entries
-    expect(NavigationService.getHistory().length).toBe(2);
-    
-    // Clear history
-    NavigationService.clearHistory();
-    
-    // Check history is empty
-    expect(NavigationService.getHistory().length).toBe(0);
+    expect(result).toBe(mockResult);
   });
 });
