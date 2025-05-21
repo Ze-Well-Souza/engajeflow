@@ -1,0 +1,96 @@
+
+version: '3.8'
+
+services:
+  # Serviço principal do TechCare Automator
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPERATION_MODE=dashboard
+      - TZ=America/Sao_Paulo
+      # As credenciais devem ser definidas em um arquivo .env ou através de variáveis de ambiente
+      # - TECHCARE_USER=
+      # - TECHCARE_PASS=
+      # - TECHCARE_BASE_URL=https://app.techcare.com
+      - MAX_CONCURRENCY=3
+      - LOG_LEVEL=info
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+    networks:
+      - techcare-network
+    depends_on:
+      - redis
+
+  # Serviço para processamento de automações
+  automator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPERATION_MODE=automator
+      - TZ=America/Sao_Paulo
+      # As credenciais devem ser definidas em um arquivo .env ou através de variáveis de ambiente
+      # - TECHCARE_USER=
+      # - TECHCARE_PASS=
+      # - TECHCARE_BASE_URL=https://app.techcare.com
+      - MAX_CONCURRENCY=5
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+    networks:
+      - techcare-network
+    depends_on:
+      - redis
+      - app
+
+  # Serviço para agendamento de tarefas
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPERATION_MODE=scheduler
+      - TZ=America/Sao_Paulo
+      # As credenciais devem ser definidas em um arquivo .env ou através de variáveis de ambiente
+      # - TECHCARE_USER=
+      # - TECHCARE_PASS=
+      # - TECHCARE_BASE_URL=https://app.techcare.com
+      - MAX_CONCURRENCY=1
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+    networks:
+      - techcare-network
+    depends_on:
+      - redis
+      - app
+
+  # Redis para fila e cache
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-techcare_redis_pass}
+    volumes:
+      - redis-data:/data
+    networks:
+      - techcare-network
+
+networks:
+  techcare-network:
+    driver: bridge
+
+volumes:
+  redis-data:

@@ -8,7 +8,7 @@
 
 Um sistema robusto de automação para interação com a plataforma TechCare, permitindo automação de tarefas, extração de dados e integração com outros sistemas.
 
-**Última atualização:** 21 de maio de 2025 - 16:00
+**Última atualização:** 21 de maio de 2025 - 16:35
 
 ## 🚀 Funcionalidades
 
@@ -26,7 +26,8 @@ Um sistema robusto de automação para interação com a plataforma TechCare, pe
 ## 📋 Requisitos
 
 - Node.js v18 ou superior
-- Docker (para execução em ambiente isolado)
+- Docker e Docker Compose (para execução em ambiente isolado)
+- Redis (para sistema de filas, instalado automaticamente via Docker Compose)
 - Acesso à plataforma TechCare com credenciais válidas
 - Opcionalmente: Chave de API OpenAI para funcionalidades de IA
 
@@ -57,40 +58,47 @@ npm start
 ### Método 2: Execução com Docker (Recomendado para produção)
 
 ```bash
-# Construir a imagem Docker
-docker build -t techcare-automator .
+# Criar arquivo .env com suas credenciais
+cp .env.example .env
+# Edite o arquivo .env com suas credenciais
 
-# Executar o contêiner
-docker run -d -p 3000:3000 \
-  -e TECHCARE_USER=seu_usuario \
-  -e TECHCARE_PASS=sua_senha \
-  -e OPERATION_MODE=dashboard \
-  -e LOG_LEVEL=info \
-  --name techcare-automator \
-  techcare-automator
+# Construir e iniciar os contêineres com Docker Compose
+docker-compose up -d
 
-# Para configuração avançada, monte um volume com arquivo .env
-docker run -d -p 3000:3000 \
-  -v ./config:/app/config \
-  --name techcare-automator \
-  techcare-automator
+# Visualizar logs
+docker-compose logs -f
+
+# Parar os contêineres
+docker-compose down
 ```
 
 ## ⚙️ Configuração
 
-### Variáveis de Ambiente
+### Arquivo .env
 
-| Variável           | Descrição                                       | Padrão                    |
-|--------------------|------------------------------------------------|---------------------------|
-| TECHCARE_USER      | Nome de usuário para autenticação no TechCare   | -                         |
-| TECHCARE_PASS      | Senha para autenticação no TechCare             | -                         |
-| TECHCARE_BASE_URL  | URL base do TechCare                            | https://app.techcare.com  |
-| OPERATION_MODE     | Modo de operação (dashboard, automator, scheduler) | dashboard              |
-| LOG_LEVEL          | Nível de detalhamento dos logs                  | info                      |
-| MAX_CONCURRENCY    | Número máximo de automações concorrentes        | 5                         |
-| RETRY_ATTEMPTS     | Número de tentativas em caso de falha           | 3                         |
-| OPENAI_API_KEY     | Chave de API para integração com OpenAI         | -                         |
-| DATABASE_URL       | URL de conexão com o banco de dados             | -                         |
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```
+# Credenciais TechCare
+TECHCARE_USER=seu_usuario
+TECHCARE_PASS=sua_senha
+TECHCARE_BASE_URL=https://app.techcare.com
+
+# Configurações da aplicação
+NODE_ENV=production
+OPERATION_MODE=dashboard  # dashboard, automator ou scheduler
+MAX_CONCURRENCY=5
+LOG_LEVEL=info  # debug, info, warn, error
+TZ=America/Sao_Paulo
+
+# Redis para filas (opcional se não usar Docker Compose)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=sua_senha_redis
+
+# API OpenAI (opcional, para recursos de IA)
+OPENAI_API_KEY=sua_chave_api
+```
 
 ### Modos de Operação
 
@@ -100,15 +108,19 @@ O sistema pode operar em três modos diferentes:
 2. **Automator**: Execução de automações agendadas
 3. **Scheduler**: Gerenciamento de fila de tarefas
 
-Recomendamos executar 1 instância em modo Dashboard para gerenciamento, e múltiplas instâncias em modo Automator para processamento.
+Para produção, recomendamos configurar:
+- 1 instância em modo Dashboard para gerenciamento
+- Múltiplas instâncias em modo Automator para processamento
+- 1 instância em modo Scheduler para agendamento
 
-### Primeira Execução
+### Escalabilidade
 
-1. Configure corretamente as variáveis de ambiente
-2. Inicie o sistema em modo Dashboard
-3. Acesse http://localhost:3000 (ou a URL configurada)
-4. Complete o assistente de configuração inicial
-5. Verifique a conectividade com o sistema TechCare
+Para ambientes de produção com alta demanda, você pode escalar horizontalmente os serviços:
+
+```bash
+# Escalar o serviço automator para 5 instâncias
+docker-compose up -d --scale automator=5
+```
 
 ## 🏗️ Arquitetura
 
@@ -133,7 +145,8 @@ Recomendamos executar 1 instância em modo Dashboard para gerenciamento, e múlt
 │   │   └── utils/                 # Testes de utilitários
 │   ├── components/                # Componentes React (UI)
 │   └── pages/                     # Páginas da aplicação
-├── Dockerfile                     # Configuração Docker
+├── docker-compose.yml             # Configuração dos serviços Docker
+├── Dockerfile                     # Configuração da imagem Docker
 ├── docker-entrypoint.sh           # Script de inicialização
 └── README.md                      # Documentação
 ```
@@ -194,6 +207,27 @@ const stats = queue.getStats();
 console.log('Estatísticas da fila:', stats);
 ```
 
+### Usando Serviços Financeiros
+
+```javascript
+import FinancialService from './services/techcare/FinancialService';
+import AuthService from './services/techcare/AuthService';
+
+// Autenticar primeiro
+await AuthService.login();
+
+// Obter fluxo de caixa para um período
+const startDate = new Date('2025-01-01');
+const endDate = new Date('2025-01-31');
+const cashFlow = await FinancialService.getCashFlow(startDate, endDate);
+
+// Obter contas a receber com status específico
+const receivables = await FinancialService.getAccountsReceivable('open');
+
+// Registrar um pagamento
+const payment = await FinancialService.registerPayment('INV-1001', 1500.75, 'Transferência Bancária');
+```
+
 ### Usando o ConsultantAIService
 
 ```javascript
@@ -248,6 +282,27 @@ npm test -- --testPathPattern=AuthService
 
 # Verificar cobertura
 npm test -- --coverage
+
+# Testes de integração
+npm run test:integration
+
+# Testes de performance
+npm run test:performance
+```
+
+## 🛡️ Monitoramento e Observabilidade
+
+O sistema possui recursos avançados para monitoramento:
+
+1. **Logs estruturados**: Registros detalhados por nível de importância
+2. **Métricas de saúde**: Coleta de dados sobre performance e uso de recursos
+3. **Alertas**: Notificações para condições anômalas
+4. **Dashboard**: Visualização em tempo real das operações
+
+Para acessar o dashboard de monitoramento:
+
+```
+http://localhost:3000/monitoring
 ```
 
 ## 📚 Melhores Práticas
@@ -277,6 +332,11 @@ npm test -- --coverage
 - Verifique o estado do Circuit Breaker
 - Monitore a utilização de recursos do servidor
 
+### Problemas com Docker
+- Verifique se o Docker e o Docker Compose estão instalados corretamente
+- Certifique-se de que as portas necessárias estão disponíveis
+- Use `docker-compose logs -f` para investigar erros nos contêineres
+
 ## 🤝 Contribuição
 
 1. Faça um fork do projeto
@@ -295,6 +355,13 @@ npm test -- --coverage
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE.md para detalhes.
 
-## 📬 Contato
+## 📬 Contato e Suporte
 
-Para questões e suporte: techcare-support@example.com
+Para questões e suporte:
+- Email: techcare-support@example.com
+- Site: https://techcare-connect.example.com
+- Horário de suporte: Segunda a sexta, das 9h às 18h (GMT-3)
+
+---
+
+Desenvolvido com ❤️ pela equipe TechCare

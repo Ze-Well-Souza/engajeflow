@@ -4,7 +4,7 @@ import { QueueManager } from '../../services/queue/QueueManager';
 
 describe('QueueManager', () => {
   let queueManager: QueueManager<{ task: string }>;
-  let mockJobFunction: vi.Mock;
+  let mockJobFunction: any;
   
   beforeEach(() => {
     // Create mock job function

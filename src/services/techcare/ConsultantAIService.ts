@@ -1,44 +1,81 @@
 
 /**
- * Serviço de IA para consultoria no TechCare Connect Automator
+ * Serviço de IA consultiva para o TechCare Connect Automator
  */
+import { getEnvVariable } from '../../utils/environment';
 import logger from '../../utils/logger';
 import { CircuitBreaker } from '../../utils/circuit-breaker';
 
-interface ConsultantResult<T> {
+interface AIResult<T> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-type ConsultantArea = 'financial' | 'marketing' | 'operations' | 'sales' | 'customer-service';
-
-interface ConsultantOptions {
+interface ConsultingOptions {
   detailed?: boolean;
-  language?: string;
-  format?: 'text' | 'json' | 'html' | 'markdown';
-  maxTokens?: number;
+  format?: 'text' | 'json' | 'html';
+  maxLength?: number;
+}
+
+interface SentimentAnalysisResult {
+  overall: {
+    score: number;
+    sentiment: 'positive' | 'neutral' | 'negative';
+    summary: string;
+  };
+  aspects: {
+    name: string;
+    score: number;
+    sentiment: 'positive' | 'neutral' | 'negative';
+    key_phrases: string[];
+  }[];
+  suggestions: string[];
+}
+
+interface BusinessRecommendation {
+  title: string;
+  description: string;
+  estimated_impact: 'high' | 'medium' | 'low';
+  implementation_difficulty: 'high' | 'medium' | 'low';
+  timeline: string;
+  key_steps: string[];
+}
+
+interface FinancialConsultingResult {
+  summary: string;
+  key_metrics: {
+    name: string;
+    value: number;
+    interpretation: string;
+    trend: 'up' | 'down' | 'stable';
+  }[];
+  recommendations: BusinessRecommendation[];
+  risk_assessment: {
+    level: 'high' | 'medium' | 'low';
+    factors: string[];
+  };
 }
 
 /**
- * Serviço responsável por fornecer consultoria baseada em IA
+ * Serviço responsável por interações com IA para consultoria
  */
 class ConsultantAIService {
   private static instance: ConsultantAIService;
-  private circuitBreaker: CircuitBreaker;
   private apiKey: string | null = null;
+  private baseUrl: string = 'https://api.openai.com/v1';
+  private model: string = 'gpt-4';
+  private circuitBreaker: CircuitBreaker;
 
   private constructor() {
-    // Configurar circuit breaker para evitar sobrecarga na API
+    // Tentar obter a chave da API das variáveis de ambiente
+    this.apiKey = getEnvVariable('OPENAI_API_KEY', null) as string | null;
+    
+    // Configurar circuit breaker
     this.circuitBreaker = new CircuitBreaker({
       failureThreshold: 2,
-      resetTimeout: 60000
+      resetTimeout: 60000 // 1 minuto
     });
-    
-    // Tentar carregar a chave da API das variáveis de ambiente
-    this.apiKey = typeof process !== 'undefined' && process.env.OPENAI_API_KEY 
-      ? process.env.OPENAI_API_KEY 
-      : null;
     
     logger.info('[ConsultantAIService] Inicializado');
   }
@@ -54,272 +91,514 @@ class ConsultantAIService {
   }
 
   /**
-   * Configura a chave de API
+   * Define a chave de API para OpenAI
+   * @param apiKey Chave de API OpenAI
    */
   public setApiKey(apiKey: string): void {
     this.apiKey = apiKey;
-    logger.info('[ConsultantAIService] Chave de API configurada');
+    logger.info('[ConsultantAIService] API Key configurada');
   }
 
   /**
-   * Verifica se o serviço está configurado
+   * Define o modelo a ser utilizado
+   * @param model Nome do modelo OpenAI
    */
-  public isConfigured(): boolean {
-    return !!this.apiKey;
+  public setModel(model: string): void {
+    this.model = model;
+    logger.info(`[ConsultantAIService] Modelo definido para: ${model}`);
   }
 
   /**
-   * Gera consultoria financeira
+   * Gera uma consultoria financeira com base nos dados fornecidos
+   * @param businessData Dados da empresa para análise
+   * @param goal Objetivo de negócios
+   * @param options Opções de geração
    */
   public async generateFinancialConsulting(
-    businessData: any, 
-    objective: string,
-    options?: ConsultantOptions
-  ): Promise<ConsultantResult<any>> {
-    return this.generateConsulting('financial', businessData, objective, options);
-  }
-
-  /**
-   * Gera consultoria de marketing
-   */
-  public async generateMarketingConsulting(
-    businessData: any,
-    objective: string,
-    options?: ConsultantOptions
-  ): Promise<ConsultantResult<any>> {
-    return this.generateConsulting('marketing', businessData, objective, options);
-  }
-
-  /**
-   * Gera consultoria de vendas
-   */
-  public async generateSalesConsulting(
-    businessData: any,
-    objective: string,
-    options?: ConsultantOptions
-  ): Promise<ConsultantResult<any>> {
-    return this.generateConsulting('sales', businessData, objective, options);
-  }
-
-  /**
-   * Gera consultoria operacional
-   */
-  public async generateOperationsConsulting(
-    businessData: any,
-    objective: string,
-    options?: ConsultantOptions
-  ): Promise<ConsultantResult<any>> {
-    return this.generateConsulting('operations', businessData, objective, options);
-  }
-
-  /**
-   * Gera consultoria de atendimento ao cliente
-   */
-  public async generateCustomerServiceConsulting(
-    businessData: any,
-    objective: string,
-    options?: ConsultantOptions
-  ): Promise<ConsultantResult<any>> {
-    return this.generateConsulting('customer-service', businessData, objective, options);
-  }
-
-  /**
-   * Gera consultoria baseada em IA para uma área específica
-   */
-  private async generateConsulting(
-    area: ConsultantArea,
-    businessData: any,
-    objective: string,
-    options?: ConsultantOptions
-  ): Promise<ConsultantResult<any>> {
-    try {
-      if (!this.isConfigured()) {
-        throw new Error('Serviço de IA não configurado. Configure a chave de API primeiro.');
+    businessData: Record<string, any>,
+    goal: string,
+    options: ConsultingOptions = {}
+  ): Promise<AIResult<FinancialConsultingResult>> {
+    return this.executeWithRetry(async () => {
+      logger.info('[ConsultantAIService] Gerando consultoria financeira');
+      
+      // Validar API key
+      if (!this.apiKey) {
+        return { 
+          success: false, 
+          error: 'API Key não configurada. Use ConsultantAIService.setApiKey()' 
+        };
       }
-
-      // Usar circuit breaker para evitar chamadas excessivas à API
-      return await this.circuitBreaker.execute(async () => {
-        logger.info(`[ConsultantAIService] Gerando consultoria de ${area}`, { objective });
+      
+      try {
+        // Construir prompt para o modelo de IA
+        const prompt = this.buildFinancialConsultingPrompt(businessData, goal, options.detailed || false);
         
-        // Formatar dados para a requisição de IA
-        const requestData = this.formatConsultingRequest(area, businessData, objective, options);
+        // Fazer requisição para a API da OpenAI
+        const response = await this.makeOpenAIRequest(prompt, options);
         
-        // Em um ambiente real, faríamos a chamada à API da OpenAI aqui
-        // Neste exemplo, simulamos a resposta
-        const result = await this.simulateAIResponse(area, requestData);
+        // Processar e estruturar a resposta
+        const result = this.processFinancialConsultingResponse(response);
         
-        logger.info(`[ConsultantAIService] Consultoria de ${area} gerada com sucesso`);
+        logger.info('[ConsultantAIService] Consultoria financeira gerada com sucesso');
         
         return {
           success: true,
           data: result
         };
-      });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante geração de consultoria';
+        logger.error('[ConsultantAIService] Erro:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    });
+  }
+
+  /**
+   * Faz análise de sentimento em textos de clientes
+   * @param texts Textos a serem analisados
+   * @param context Contexto opcional para análise
+   */
+  public async analyzeSentiment(
+    texts: string[],
+    context?: string
+  ): Promise<AIResult<SentimentAnalysisResult>> {
+    return this.executeWithRetry(async () => {
+      logger.info('[ConsultantAIService] Analisando sentimento em textos');
+      
+      // Validar API key
+      if (!this.apiKey) {
+        return { 
+          success: false, 
+          error: 'API Key não configurada. Use ConsultantAIService.setApiKey()' 
+        };
+      }
+      
+      try {
+        // Construir prompt para análise de sentimento
+        const prompt = this.buildSentimentAnalysisPrompt(texts, context);
+        
+        // Fazer requisição para a API da OpenAI
+        const response = await this.makeOpenAIRequest(prompt, { format: 'json' });
+        
+        // Processar e estruturar a resposta
+        const result = this.processSentimentAnalysisResponse(response);
+        
+        logger.info('[ConsultantAIService] Análise de sentimento concluída com sucesso');
+        
+        return {
+          success: true,
+          data: result
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante análise de sentimento';
+        logger.error('[ConsultantAIService] Erro:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    });
+  }
+
+  /**
+   * Gera um plano de vendas baseado em dados históricos
+   * @param salesData Dados históricos de vendas
+   * @param targetGrowth Crescimento alvo (%)
+   * @param timeframe Período de tempo para o plano
+   */
+  public async generateSalesPlan(
+    salesData: Record<string, any>,
+    targetGrowth: number,
+    timeframe: string
+  ): Promise<AIResult<any>> {
+    return this.executeWithRetry(async () => {
+      logger.info('[ConsultantAIService] Gerando plano de vendas');
+      
+      // Validar API key
+      if (!this.apiKey) {
+        return { 
+          success: false, 
+          error: 'API Key não configurada. Use ConsultantAIService.setApiKey()' 
+        };
+      }
+      
+      try {
+        // Construir prompt para plano de vendas
+        const prompt = `
+          Analise os seguintes dados de vendas históricos e crie um plano estratégico para atingir um crescimento de ${targetGrowth}% em ${timeframe}.
+          
+          Dados históricos de vendas:
+          ${JSON.stringify(salesData, null, 2)}
+          
+          O plano deve incluir:
+          1. Análise de tendências atuais
+          2. Identificação de oportunidades de crescimento
+          3. Estratégias recomendadas
+          4. Táticas específicas
+          5. Cronograma de implementação
+          6. KPIs para monitoramento
+        `;
+        
+        // Fazer requisição para a API da OpenAI
+        const response = await this.makeOpenAIRequest(prompt, { detailed: true });
+        
+        logger.info('[ConsultantAIService] Plano de vendas gerado com sucesso');
+        
+        // Processar resposta
+        return {
+          success: true,
+          data: JSON.parse(response)
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante geração do plano de vendas';
+        logger.error('[ConsultantAIService] Erro:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
+    });
+  }
+
+  /**
+   * Executa uma função com retry e circuit breaker
+   */
+  private async executeWithRetry<T>(fn: () => Promise<AIResult<T>>): Promise<AIResult<T>> {
+    try {
+      // Executar com circuit breaker
+      return await this.circuitBreaker.execute(fn);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao gerar consultoria';
-      logger.error(`[ConsultantAIService] Erro ao gerar consultoria de ${area}:`, errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante operação com IA';
+      
+      if (errorMessage.includes('Circuit Breaker')) {
+        logger.error('[ConsultantAIService] Circuit Breaker aberto, muitas falhas recentes');
+      } else {
+        logger.error('[ConsultantAIService] Erro:', errorMessage);
+      }
+      
       return { success: false, error: errorMessage };
     }
   }
 
   /**
-   * Formata os dados para a requisição à API de IA
+   * Constrói um prompt para consultoria financeira
    */
-  private formatConsultingRequest(
-    area: ConsultantArea, 
-    businessData: any, 
-    objective: string,
-    options?: ConsultantOptions
-  ): any {
-    // Mapear área para um prompt específico
-    const areaPrompts = {
-      financial: 'Como consultor financeiro especializado, analise os seguintes dados financeiros e forneça recomendações para',
-      marketing: 'Como consultor de marketing experiente, analise os seguintes dados de mercado e forneça estratégias para',
-      operations: 'Como especialista em operações, analise os seguintes dados operacionais e forneça sugestões de otimização para',
-      sales: 'Como consultor de vendas, analise os seguintes dados de vendas e forneça estratégias para',
-      'customer-service': 'Como especialista em atendimento ao cliente, analise os seguintes dados de interação com clientes e forneça melhorias para'
-    };
+  private buildFinancialConsultingPrompt(
+    businessData: Record<string, any>, 
+    goal: string,
+    detailed: boolean
+  ): string {
+    return `
+      Atue como um consultor financeiro experiente analisando os seguintes dados de negócio:
+      
+      ${JSON.stringify(businessData, null, 2)}
+      
+      O objetivo do cliente é: ${goal}
+      
+      ${detailed ? 'Forneça uma análise detalhada e abrangente com recomendações específicas.' : 'Forneça uma análise resumida com recomendações principais.'}
+      
+      Sua resposta deve seguir este formato JSON:
+      {
+        "summary": "Resumo geral da situação financeira e principais insights",
+        "key_metrics": [
+          {
+            "name": "Nome da métrica",
+            "value": valor numérico,
+            "interpretation": "O que este valor significa para o negócio",
+            "trend": "up/down/stable"
+          }
+        ],
+        "recommendations": [
+          {
+            "title": "Título da recomendação",
+            "description": "Descrição detalhada",
+            "estimated_impact": "high/medium/low",
+            "implementation_difficulty": "high/medium/low",
+            "timeline": "Tempo estimado para implementação",
+            "key_steps": ["Passo 1", "Passo 2", ...]
+          }
+        ],
+        "risk_assessment": {
+          "level": "high/medium/low",
+          "factors": ["Fator de risco 1", "Fator de risco 2", ...]
+        }
+      }
+    `;
+  }
 
-    const prompt = `${areaPrompts[area]} ${objective}`;
+  /**
+   * Constrói um prompt para análise de sentimento
+   */
+  private buildSentimentAnalysisPrompt(texts: string[], context?: string): string {
+    return `
+      Atue como um analista de sentimento especializado. Analise os seguintes textos de clientes:
+      
+      ${texts.map((text, i) => `Texto ${i+1}: "${text}"`).join('\n\n')}
+      
+      ${context ? `Contexto adicional: ${context}` : ''}
+      
+      Forneça uma análise de sentimento detalhada no formato JSON com a seguinte estrutura:
+      
+      {
+        "overall": {
+          "score": número de -1.0 (muito negativo) a 1.0 (muito positivo),
+          "sentiment": "positive/neutral/negative",
+          "summary": "Resumo geral do sentimento"
+        },
+        "aspects": [
+          {
+            "name": "Aspecto mencionado (ex: atendimento, qualidade, preço)",
+            "score": número de -1.0 a 1.0,
+            "sentiment": "positive/neutral/negative",
+            "key_phrases": ["frase 1", "frase 2", ...]
+          }
+        ],
+        "suggestions": ["sugestão 1 para melhorar", "sugestão 2", ...]
+      }
+    `;
+  }
+
+  /**
+   * Faz uma requisição para a API da OpenAI
+   */
+  private async makeOpenAIRequest(prompt: string, options: ConsultingOptions): Promise<string> {
+    // Em um ambiente real, utilizaria-se fetch ou uma biblioteca como axios
+    // para fazer a requisição à API da OpenAI.
+    // No contexto desta implementação, estamos simulando a requisição.
     
-    // Formatar dados como JSON para facilitar a interpretação pelo modelo
-    const businessDataFormatted = JSON.stringify(businessData, null, 2);
+    logger.info('[ConsultantAIService] Enviando requisição para OpenAI');
+    
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Simulação de resposta para fins de demonstração
+    // Em produção, este código seria substituído por uma chamada real à API da OpenAI
+    
+    // Simular resposta com base no tipo de prompt
+    if (prompt.includes('consultor financeiro')) {
+      return JSON.stringify(this.generateMockFinancialConsulting());
+    } else if (prompt.includes('analista de sentimento')) {
+      return JSON.stringify(this.generateMockSentimentAnalysis());
+    } else {
+      return JSON.stringify({
+        content: "Este é um texto gerado como demonstração. Em uma implementação real, este conteúdo seria gerado pela API da OpenAI com base no prompt fornecido."
+      });
+    }
+  }
 
+  /**
+   * Processa a resposta de uma consultoria financeira
+   */
+  private processFinancialConsultingResponse(response: string): FinancialConsultingResult {
+    try {
+      // Tentar fazer parse da resposta como JSON
+      return JSON.parse(response) as FinancialConsultingResult;
+    } catch (error) {
+      // Se falhar, tentar extrair JSON da resposta
+      const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || 
+                        response.match(/{[\s\S]*}/);
+      
+      if (jsonMatch) {
+        try {
+          return JSON.parse(jsonMatch[1] || jsonMatch[0]) as FinancialConsultingResult;
+        } catch {
+          // Se ainda falhar, criar uma estrutura básica
+          logger.warn('[ConsultantAIService] Falha ao processar JSON da resposta, usando estrutura básica');
+        }
+      }
+      
+      // Estrutura básica se não conseguir extrair JSON válido
+      return {
+        summary: "Não foi possível processar a resposta em formato estruturado.",
+        key_metrics: [],
+        recommendations: [
+          {
+            title: "Consulte o texto completo da resposta",
+            description: response.slice(0, 200) + "...",
+            estimated_impact: "medium",
+            implementation_difficulty: "medium",
+            timeline: "Não disponível",
+            key_steps: ["Verificar resposta completa"]
+          }
+        ],
+        risk_assessment: {
+          level: "medium",
+          factors: ["Dados insuficientes para avaliação completa"]
+        }
+      };
+    }
+  }
+
+  /**
+   * Processa a resposta de uma análise de sentimento
+   */
+  private processSentimentAnalysisResponse(response: string): SentimentAnalysisResult {
+    try {
+      // Tentar fazer parse da resposta como JSON
+      return JSON.parse(response) as SentimentAnalysisResult;
+    } catch (error) {
+      // Se falhar, tentar extrair JSON da resposta
+      const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || 
+                        response.match(/{[\s\S]*}/);
+      
+      if (jsonMatch) {
+        try {
+          return JSON.parse(jsonMatch[1] || jsonMatch[0]) as SentimentAnalysisResult;
+        } catch {
+          // Se ainda falhar, criar uma estrutura básica
+          logger.warn('[ConsultantAIService] Falha ao processar JSON da resposta, usando estrutura básica');
+        }
+      }
+      
+      // Estrutura básica se não conseguir extrair JSON válido
+      return {
+        overall: {
+          score: 0,
+          sentiment: "neutral",
+          summary: "Não foi possível processar a análise de sentimento."
+        },
+        aspects: [],
+        suggestions: ["Verifique o texto original da resposta para mais detalhes."]
+      };
+    }
+  }
+
+  /**
+   * Gera dados simulados de consultoria financeira
+   */
+  private generateMockFinancialConsulting(): FinancialConsultingResult {
     return {
-      model: 'gpt-4-turbo', // Em produção, utilizar o modelo mais apropriado
-      messages: [
+      summary: "A empresa apresenta boa saúde financeira com crescimento de receita de 5% no último trimestre. No entanto, as margens de lucro estão menores que a média do setor devido ao aumento de custos operacionais. Há oportunidades significativas para otimização de despesas e expansão em novos mercados.",
+      key_metrics: [
         {
-          role: 'system',
-          content: `Você é um consultor especializado em ${area} para pequenas e médias empresas. ${options?.detailed ? 'Forneça análises detalhadas e específicas.' : 'Seja conciso e direto ao ponto.'}`
+          name: "ROI",
+          value: 18.5,
+          interpretation: "Retorno sobre investimento acima da média do setor (15.2%)",
+          trend: "up"
         },
         {
-          role: 'user',
-          content: `${prompt}\n\nDados da empresa:\n${businessDataFormatted}`
+          name: "Margem de Lucro",
+          value: 16.0,
+          interpretation: "Abaixo da média do setor (22%), indicando necessidade de revisão de custos",
+          trend: "down"
+        },
+        {
+          name: "Crescimento de Receita",
+          value: 5.0,
+          interpretation: "Crescimento consistente, dentro das expectativas",
+          trend: "stable"
+        },
+        {
+          name: "Fluxo de Caixa Operacional",
+          value: 420000,
+          interpretation: "Saudável, com capacidade para investimentos estratégicos",
+          trend: "up"
         }
       ],
-      temperature: options?.detailed ? 0.5 : 0.3,
-      max_tokens: options?.maxTokens || 1000,
-      format: options?.format || 'text'
+      recommendations: [
+        {
+          title: "Revisão de contratos com fornecedores",
+          description: "Renegociação de contratos com os 5 principais fornecedores para obter melhores termos e reduzir custos em aproximadamente 12%.",
+          estimated_impact: "high",
+          implementation_difficulty: "medium",
+          timeline: "2-3 meses",
+          key_steps: [
+            "Análise dos contratos atuais",
+            "Benchmark com preços de mercado",
+            "Preparação de estratégia de negociação",
+            "Agendamento de reuniões com fornecedores",
+            "Finalização de novos contratos"
+          ]
+        },
+        {
+          title: "Expansão para mercados adjacentes",
+          description: "Expansão para 2 novos mercados geográficos com perfil de consumidor similar, aproveitando a infraestrutura existente.",
+          estimated_impact: "high",
+          implementation_difficulty: "high",
+          timeline: "6-9 meses",
+          key_steps: [
+            "Pesquisa de mercado detalhada",
+            "Desenvolvimento de estratégia de entrada",
+            "Adaptação de produtos para novos mercados",
+            "Contratação de equipe local",
+            "Lançamento e campanha de marketing"
+          ]
+        },
+        {
+          title: "Implementação de sistema de automação",
+          description: "Automação de processos operacionais para reduzir custos de mão de obra e aumentar eficiência em 15-20%.",
+          estimated_impact: "medium",
+          implementation_difficulty: "medium",
+          timeline: "4-6 meses",
+          key_steps: [
+            "Mapeamento de processos atuais",
+            "Seleção de tecnologia apropriada",
+            "Implementação em fases",
+            "Treinamento da equipe",
+            "Monitoramento e otimização contínua"
+          ]
+        }
+      ],
+      risk_assessment: {
+        level: "medium",
+        factors: [
+          "Aumento da concorrência no mercado principal",
+          "Instabilidade econômica afetando poder de compra dos consumidores",
+          "Possíveis mudanças regulatórias no setor",
+          "Dependência de fornecedor-chave para componentes críticos"
+        ]
+      }
     };
   }
 
   /**
-   * Simula uma resposta da API de IA (em produção, seria substituído pela chamada real)
+   * Gera dados simulados de análise de sentimento
    */
-  private async simulateAIResponse(area: ConsultantArea, requestData: any): Promise<any> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simular diferentes respostas baseadas na área
-        const responses: Record<ConsultantArea, any> = {
-          financial: {
-            summary: "Sua empresa apresenta boa liquidez, mas margens de lucro abaixo do setor. Recomenda-se revisar a precificação e reduzir custos operacionais.",
-            recommendations: [
-              "Aumente os preços em 5-7% para produtos de alta demanda",
-              "Renegocie contratos com fornecedores para reduzir custos em 10%",
-              "Implemente um sistema de controle orçamentário mais rigoroso",
-              "Revise a política de crédito para reduzir inadimplência"
-            ],
-            metrics: {
-              currentMargin: "18%",
-              industryAverageMargin: "22%",
-              suggestedTargetMargin: "24%"
-            },
-            timeline: [
-              { month: 1, action: "Análise de preços e custos" },
-              { month: 2, action: "Implementação de novos preços" },
-              { month: 3, action: "Renegociação com fornecedores" },
-              { month: 6, action: "Avaliação de resultados" }
-            ]
-          },
-          marketing: {
-            summary: "Sua estratégia de marketing digital tem baixa conversão e alto custo de aquisição. Recomenda-se focar em conteúdo e melhorar segmentação.",
-            recommendations: [
-              "Crie conteúdo educacional para o blog (2 posts/semana)",
-              "Segmente anúncios por comportamento e não apenas demografia",
-              "Invista em marketing de influenciadores de nicho",
-              "Implemente um programa de fidelidade"
-            ],
-            channels: [
-              { name: "Instagram", effectiveness: "Alta", budget: "30%" },
-              { name: "Google Ads", effectiveness: "Média", budget: "25%" },
-              { name: "Email", effectiveness: "Muito Alta", budget: "15%" },
-              { name: "Facebook", effectiveness: "Baixa", budget: "20%" }
-            ],
-            contentCalendar: [
-              { week: 1, topics: ["Tendências do setor", "Tutorial básico"] },
-              { week: 2, topics: ["Caso de sucesso", "Comparativo de soluções"] },
-              { week: 3, topics: ["Entrevista com especialista", "FAQ"] },
-              { week: 4, topics: ["Infográfico", "E-book promocional"] }
-            ]
-          },
-          sales: {
-            summary: "Seu ciclo de vendas é 30% mais longo que o ideal e a taxa de fechamento está abaixo do esperado. Foco em qualificação de leads e treinamento da equipe.",
-            recommendations: [
-              "Implemente um sistema de lead scoring para priorizar oportunidades",
-              "Treine a equipe em técnicas de fechamento consultivo",
-              "Crie scripts de objeções para situações comuns",
-              "Revise o processo de qualificação de leads"
-            ],
-            salesFunnel: {
-              leads: { current: 150, target: 200 },
-              qualified: { current: 45, target: 80 },
-              proposals: { current: 20, target: 40 },
-              closed: { current: 8, target: 20 }
-            },
-            salesPlaybook: {
-              qualification: "BANT modificado com ênfase em necessidades",
-              presentation: "Demonstração personalizada por segmento",
-              negotiation: "Baseada em valor, não em desconto",
-              follow_up: "Sequência automatizada de 5 toques"
-            }
-          },
-          operations: {
-            summary: "Seus processos operacionais têm gargalos na produção e logística, resultando em atrasos e custos elevados. Automação e revisão de fluxos são prioritários.",
-            recommendations: [
-              "Automatize o processo de separação de pedidos",
-              "Implemente um sistema de gestão de estoque baseado em demanda",
-              "Revise o layout do espaço físico para otimizar fluxos",
-              "Estabeleça KPIs operacionais com revisão semanal"
-            ],
-            processMapping: [
-              { process: "Recebimento", efficiency: "65%", bottleneck: "Conferência manual" },
-              { process: "Armazenagem", efficiency: "80%", bottleneck: "Localização de itens" },
-              { process: "Separação", efficiency: "45%", bottleneck: "Processo manual" },
-              { process: "Expedição", efficiency: "70%", bottleneck: "Documentação" }
-            ],
-            costReduction: {
-              estimated: "22%",
-              timeframe: "6 meses",
-              investment: "Moderado",
-              roi: "195% em 12 meses"
-            }
-          },
-          'customer-service': {
-            summary: "Seu tempo de resposta e resolução está acima da média do setor, e a satisfação do cliente está em queda. Priorize automação de primeiro nível e treinamento.",
-            recommendations: [
-              "Implemente chatbot para dúvidas frequentes (redução de 30% em tickets)",
-              "Crie base de conhecimento com soluções para problemas comuns",
-              "Treine equipe em comunicação empática e resolução de problemas",
-              "Estabeleça SLAs por tipo de atendimento e monitore cumprimento"
-            ],
-            metrics: {
-              currentResponseTime: "8 horas",
-              targetResponseTime: "2 horas",
-              satisfactionScore: "7.2/10",
-              targetSatisfaction: "8.5/10"
-            },
-            automationOpportunities: [
-              { process: "FAQs", impact: "Alto", complexity: "Baixa" },
-              { process: "Status de pedido", impact: "Médio", complexity: "Média" },
-              { process: "Agendamentos", impact: "Alto", complexity: "Média" },
-              { process: "Reclamações", impact: "Baixo", complexity: "Alta" }
-            ]
-          }
-        };
-
-        resolve(responses[area]);
-      }, 1500); // Simular delay de API
-    });
+  private generateMockSentimentAnalysis(): SentimentAnalysisResult {
+    return {
+      overall: {
+        score: 0.25,
+        sentiment: "positive",
+        summary: "Sentimento geral levemente positivo, com elogios ao produto mas críticas ao atendimento ao cliente."
+      },
+      aspects: [
+        {
+          name: "Produto",
+          score: 0.75,
+          sentiment: "positive",
+          key_phrases: [
+            "produto de qualidade",
+            "funcionou como esperado",
+            "design excelente",
+            "vale o investimento"
+          ]
+        },
+        {
+          name: "Atendimento ao Cliente",
+          score: -0.5,
+          sentiment: "negative",
+          key_phrases: [
+            "demorou para responder",
+            "atendente não soube resolver",
+            "tive que ligar várias vezes",
+            "processo complicado"
+          ]
+        },
+        {
+          name: "Preço",
+          score: 0.1,
+          sentiment: "neutral",
+          key_phrases: [
+            "preço justo",
+            "um pouco caro mas vale a pena",
+            "poderia ser mais barato",
+            "preço na média do mercado"
+          ]
+        }
+      ],
+      suggestions: [
+        "Investir em treinamento da equipe de atendimento ao cliente",
+        "Simplificar processos de suporte técnico",
+        "Reduzir tempo de resposta para solicitações de clientes",
+        "Manter a qualidade do produto que já é bem avaliada",
+        "Considerar um pequeno ajuste no preço ou oferecer promoções"
+      ]
+    };
   }
 }
 
