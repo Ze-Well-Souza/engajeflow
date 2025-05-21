@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -280,7 +279,7 @@ const DeploymentPage: React.FC = () => {
                     {getCategoryIcon(category)}
                     {getCategoryTitle(category)}
                   </CardTitle>
-                  <Badge variant={getProgress(category) === 100 ? "success" : "secondary"}>
+                  <Badge variant={getProgress(category) === 100 ? "default" : "secondary"}>
                     {getProgress(category)}% concluído
                   </Badge>
                 </div>

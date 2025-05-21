@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,7 @@ import {
   Server, 
   Database, 
   Cpu, 
-  Memory, 
+  HardDrive, 
   Network, 
   AlertCircle,
   CheckCircle, 
@@ -40,7 +39,7 @@ const HealthDashboard: React.FC = () => {
       name: 'Memória', 
       value: '45%', 
       status: 'healthy',
-      icon: <Memory className="h-4 w-4" />
+      icon: <HardDrive className="h-4 w-4" /> // Substituído Memory por HardDrive
     },
     { 
       name: 'Disco', 
