@@ -56,11 +56,11 @@ import PaymentTestPage from "@/pages/store/PaymentTestPage";
 import StripeIntegrationPage from "@/pages/store/StripeIntegrationPage";
 
 // Developer Pages
-import ApiDocPage from "@/pages/dev/ApiDocPage";
-import WebhooksPage from "@/pages/dev/WebhooksPage";
-import PluginsPage from "@/pages/dev/PluginsPage";
-import DataMigrationPage from "@/pages/dev/DataMigrationPage";
-import ApiDocumentationPage from "@/pages/dev/ApiDocumentationPage";
+import ApiDocPage from "@/pages/developer/ApiDocPage";
+import WebhooksPage from "@/pages/developer/WebhooksPage";
+import PluginsPage from "@/pages/developer/PluginsPage";
+import DataMigrationPage from "@/pages/developer/DataMigrationPage";
+import ApiDocumentationPage from "@/pages/developer/ApiDocumentationPage";
 
 // Landing Pages
 import LandingPage from "@/pages/landing/LandingPage";
@@ -91,17 +91,19 @@ import AdvancedAnalyticsPage from "@/pages/reports/AdvancedAnalyticsPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 
-// Other Pages
-import PricingPage from "@/pages/PricingPage";
-import ChannelsPage from "@/pages/ChannelsPage";
-import FunilVendasPage from "@/pages/FunilVendasPage";
-import MarketplacePage from "@/pages/MarketplacePage";
-import TemplatesPage from "@/pages/TemplatesPage";
-import TicketsPage from "@/pages/TicketsPage";
+// Security Pages
 import MfaSetupPage from "@/pages/security/MfaSetupPage";
 import SecurityAuditPage from "@/pages/security/SecurityAuditPage";
-import CompliancePage from "@/pages/CompliancePage";
-import SalesBotPage from "@/pages/SalesBotPage";
+
+// Other Pages
+import PricingPage from "@/pages/misc/PricingPage";
+import ChannelsPage from "@/pages/misc/ChannelsPage";
+import FunilVendasPage from "@/pages/misc/FunilVendasPage";
+import MarketplacePage from "@/pages/misc/MarketplacePage";
+import TemplatesPage from "@/pages/misc/TemplatesPage";
+import TicketsPage from "@/pages/misc/TicketsPage";
+import CompliancePage from "@/pages/misc/CompliancePage";
+import SalesBotPage from "@/pages/misc/SalesBotPage";
 import NotFound from "@/pages/NotFound";
 
 function App() {
@@ -162,11 +164,11 @@ function App() {
           <Route path="/store/stripe" element={<DashboardLayout><StripeIntegrationPage /></DashboardLayout>} />
           
           {/* Developer Routes */}
-          <Route path="/dev/api" element={<DashboardLayout><ApiDocPage /></DashboardLayout>} />
-          <Route path="/dev/webhooks" element={<DashboardLayout><WebhooksPage /></DashboardLayout>} />
-          <Route path="/dev/plugins" element={<DashboardLayout><PluginsPage /></DashboardLayout>} />
-          <Route path="/dev/migration" element={<DashboardLayout><DataMigrationPage /></DashboardLayout>} />
-          <Route path="/dev/documentation" element={<DashboardLayout><ApiDocumentationPage /></DashboardLayout>} />
+          <Route path="/developer/api" element={<DashboardLayout><ApiDocPage /></DashboardLayout>} />
+          <Route path="/developer/webhooks" element={<DashboardLayout><WebhooksPage /></DashboardLayout>} />
+          <Route path="/developer/plugins" element={<DashboardLayout><PluginsPage /></DashboardLayout>} />
+          <Route path="/developer/migration" element={<DashboardLayout><DataMigrationPage /></DashboardLayout>} />
+          <Route path="/developer/documentation" element={<DashboardLayout><ApiDocumentationPage /></DashboardLayout>} />
           
           {/* Landing Pages */}
           <Route path="/landing" element={<LandingPage />} />
