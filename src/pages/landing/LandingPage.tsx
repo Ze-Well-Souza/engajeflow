@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -141,6 +140,14 @@ const LandingPage: React.FC = () => {
             buttonText="Contatar vendas"
             buttonVariant="secondary"
           />
+        </div>
+
+        <div className="text-center mt-8">
+          <Link to="/landing/pricing">
+            <Button variant="link" className="gap-1">
+              Ver todos os planos e detalhes <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 

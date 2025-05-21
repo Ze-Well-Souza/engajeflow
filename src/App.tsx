@@ -73,6 +73,7 @@ import ContentCreatorLandingPage from "@/pages/landing/ContentCreatorLandingPage
 import EducationLandingPage from "@/pages/landing/EducationLandingPage";
 import HRLandingPage from "@/pages/landing/HRLandingPage";
 import AccountingLandingPage from "@/pages/landing/AccountingLandingPage";
+import PricingPage from "@/pages/plans/PricingPage";
 
 // Content Pages
 import ContentAssistantPage from "@/pages/content/ContentAssistantPage";
@@ -96,7 +97,6 @@ import MfaSetupPage from "@/pages/security/MfaSetupPage";
 import SecurityAuditPage from "@/pages/security/SecurityAuditPage";
 
 // Other Pages
-import PricingPage from "@/pages/misc/PricingPage";
 import ChannelsPage from "@/pages/misc/ChannelsPage";
 import FunilVendasPage from "@/pages/misc/FunilVendasPage";
 import MarketplacePage from "@/pages/misc/MarketplacePage";
@@ -181,6 +181,7 @@ function App() {
           <Route path="/landing/education" element={<EducationLandingPage />} />
           <Route path="/landing/hr" element={<HRLandingPage />} />
           <Route path="/landing/accounting" element={<AccountingLandingPage />} />
+          <Route path="/landing/pricing" element={<PricingPage />} /> {/* Adicionando a rota para PricingPage */}
           
           {/* Content Routes */}
           <Route path="/content/assistant" element={<DashboardLayout><ContentAssistantPage /></DashboardLayout>} />
@@ -200,7 +201,6 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           
           {/* Other Routes */}
-          <Route path="/plans" element={<PricingPage />} />
           <Route path="/channels" element={<DashboardLayout><ChannelsPage /></DashboardLayout>} />
           <Route path="/funnel" element={<DashboardLayout><FunilVendasPage /></DashboardLayout>} />
           <Route path="/marketplace" element={<DashboardLayout><MarketplacePage /></DashboardLayout>} />

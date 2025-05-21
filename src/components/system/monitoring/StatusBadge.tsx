@@ -8,7 +8,7 @@ interface StatusBadgeProps {
   status: ServiceStatus;
 }
 
-export const getStatusBadge = ({ status }: StatusBadgeProps) => {
+export const StatusBadge = ({ status }: StatusBadgeProps) => {
   switch (status) {
     case 'online':
       return <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Online</Badge>;
@@ -22,5 +22,7 @@ export const getStatusBadge = ({ status }: StatusBadgeProps) => {
       return <Badge variant="outline">Desconhecido</Badge>;
   }
 };
+
+export const getStatusBadge = StatusBadge;
 
 export default StatusBadge;

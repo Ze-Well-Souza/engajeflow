@@ -8,7 +8,7 @@ interface MetricStatusIconProps {
   status: MetricStatus;
 }
 
-export const getMetricStatusIcon = ({ status }: MetricStatusIconProps) => {
+export const MetricStatusIcon = ({ status }: MetricStatusIconProps) => {
   switch (status) {
     case 'healthy':
       return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -20,5 +20,7 @@ export const getMetricStatusIcon = ({ status }: MetricStatusIconProps) => {
       return <HelpCircle className="h-4 w-4 text-muted-foreground" />;
   }
 };
+
+export const getMetricStatusIcon = MetricStatusIcon;
 
 export default MetricStatusIcon;
