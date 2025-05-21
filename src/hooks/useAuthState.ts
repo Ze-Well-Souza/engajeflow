@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 
 // Garantir que este hook seja chamado somente dentro de componentes React
 export const useAuthState = () => {
@@ -9,12 +8,12 @@ export const useAuthState = () => {
   const [loading, setLoading] = useState<boolean>(false);
   
   // Modo de bypass de autenticação - não usa o perfil real do usuário
-  const currentUser = {
+  const [currentUser] = useState({
     id: "test-user-id",
     email: "test@techze.com",
     name: "Usuário de Teste",
     is_admin: true
-  };
+  });
 
   // Simulação de estado para garantir compatibilidade com React
   useEffect(() => {

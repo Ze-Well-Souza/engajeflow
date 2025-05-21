@@ -83,9 +83,14 @@ const accessibilityCheckSuccess = true; // Implementação futura com ferramenta
 console.log(`${colors.yellow}Verificando suporte a internacionalização...${colors.reset}`);
 const i18nCheckSuccess = true; // Implementação futura com verificação de traduções
 
+// Verificar a integridade das rotas de landing pages
+const landingRoutesSuccess = runCommand('jest --testPathPattern="src/tests/functionality/RoutesTest.test.tsx" -t "landing"',
+  'Verificação específica de rotas de landing pages');
+
 // Resumo final
 console.log(`${colors.bright}${colors.blue}=== Resumo dos testes ===${colors.reset}`);
 console.log(`${routesCheckSuccess ? colors.green : colors.red}Verificação de rotas: ${routesCheckSuccess ? 'PASSOU' : 'FALHOU'}${colors.reset}`);
+console.log(`${landingRoutesSuccess ? colors.green : colors.red}Verificação de rotas de landing: ${landingRoutesSuccess ? 'PASSOU' : 'FALHOU'}${colors.reset}`);
 console.log(`${typeCheckSuccess ? colors.green : colors.red}Verificação de tipos: ${typeCheckSuccess ? 'PASSOU' : 'FALHOU'}${colors.reset}`);
 console.log(`${unitTestsSuccess ? colors.green : colors.red}Testes unitários: ${unitTestsSuccess ? 'PASSOU' : 'FALHOU'}${colors.reset}`);
 console.log(`${functionalityTestsSuccess ? colors.green : colors.red}Testes de funcionalidade: ${functionalityTestsSuccess ? 'PASSOU' : 'FALHOU'}${colors.reset}`);
@@ -93,7 +98,7 @@ console.log(`${coverageSuccess ? colors.green : colors.red}Geração de relatór
 console.log(`${accessibilityCheckSuccess ? colors.green : colors.red}Verificação de acessibilidade: ${accessibilityCheckSuccess ? 'PASSOU' : 'NÃO IMPLEMENTADO'}${colors.reset}`);
 console.log(`${i18nCheckSuccess ? colors.green : colors.red}Verificação de internacionalização: ${i18nCheckSuccess ? 'PASSOU' : 'NÃO IMPLEMENTADO'}${colors.reset}`);
 
-const allPassed = routesCheckSuccess && typeCheckSuccess && unitTestsSuccess && functionalityTestsSuccess && coverageSuccess;
+const allPassed = routesCheckSuccess && typeCheckSuccess && unitTestsSuccess && functionalityTestsSuccess && coverageSuccess && landingRoutesSuccess;
 
 console.log(`\n${allPassed ? colors.green : colors.red}${colors.bright}Resultado final: ${allPassed ? 'TODOS OS TESTES PASSARAM' : 'ALGUNS TESTES FALHARAM'}${colors.reset}`);
 

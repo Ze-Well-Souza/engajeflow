@@ -64,4 +64,29 @@ describe('Rotas da Aplicação', () => {
     // Verificar se não há erros de renderização
     expect(container).toBeInTheDocument();
   });
+  
+  // Testes adicionais para páginas importantes
+  it('renderiza a página de preços corretamente', () => {
+    render(
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/landing/pricing']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+    
+    expect(document.body).toBeInTheDocument();
+  });
+  
+  it('renderiza a página de login corretamente', () => {
+    render(
+      <AllTheProviders>
+        <MemoryRouter initialEntries={['/login']}>
+          <App />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+    
+    expect(document.body).toBeInTheDocument();
+  });
 });

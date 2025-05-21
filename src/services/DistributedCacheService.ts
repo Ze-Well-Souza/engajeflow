@@ -5,40 +5,9 @@
  */
 
 import { toast } from "sonner";
-
-export interface CacheOptions {
-  ttl: number; // tempo de vida em segundos
-  region?: string; // região do cache (útil para invalidação seletiva)
-  tags?: string[]; // tags para agrupar entradas de cache
-}
-
-export interface CacheStats {
-  hits: number;
-  misses: number;
-  hitRatio: number;
-  size: number;
-  oldest: Date | null;
-  newest: Date | null;
-  avgAge: number;
-}
-
-export interface CacheEntry<T> {
-  data: T;
-  expiry: number;
-  created: number;
-  region?: string;
-  tags?: string[];
-  lastAccessed?: number;
-}
-
-export interface ICacheNode {
-  id: string;
-  name: string;
-  url: string;
-  status: 'active' | 'inactive' | 'syncing';
-  priority: number;
-  lastSync: Date;
-}
+import { CacheEntry, CacheOptions, CacheStats, ICacheNode } from "./cache/CacheEntry";
+import { CacheOperations } from "./cache/CacheOperations";
+import { CacheStatistics } from "./cache/CacheStats";
 
 class DistributedCacheService {
   private cache: Map<string, CacheEntry<any>> = new Map();
@@ -95,7 +64,7 @@ class DistributedCacheService {
     
     if (!entry) {
       this.stats.misses++;
-      this.updateHitRatio();
+      CacheStatistics.updateHitRatio(this.stats);
       console.log(`[Cache] MISS: ${key}`);
       return null;
     }
@@ -105,7 +74,7 @@ class DistributedCacheService {
     if (entry.expiry < now) {
       this.cache.delete(key);
       this.stats.misses++;
-      this.updateHitRatio();
+      CacheStatistics.updateHitRatio(this.stats);
       console.log(`[Cache] EXPIRED: ${key}`);
       return null;
     }
@@ -113,7 +82,7 @@ class DistributedCacheService {
     // Atualizar estatísticas de acesso
     entry.lastAccessed = now;
     this.stats.hits++;
-    this.updateHitRatio();
+    CacheStatistics.updateHitRatio(this.stats);
     console.log(`[Cache] HIT: ${key}`);
     
     return entry.data;
@@ -133,8 +102,8 @@ class DistributedCacheService {
     };
     
     this.cache.set(key, entry);
-    this.notifyOtherNodes('set', key, entry);
-    this.updateStats();
+    CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'set', key, entry);
+    CacheStatistics.updateStats(this.cache, this.stats);
     
     console.log(`[Cache] SET: ${key}, TTL: ${options.ttl}s, Region: ${options.region || 'default'}`);
   }
@@ -145,8 +114,8 @@ class DistributedCacheService {
   public delete(key: string): boolean {
     const result = this.cache.delete(key);
     if (result) {
-      this.notifyOtherNodes('delete', key);
-      this.updateStats();
+      CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'delete', key);
+      CacheStatistics.updateStats(this.cache, this.stats);
       console.log(`[Cache] DELETE: ${key}`);
     }
     return result;
@@ -158,7 +127,7 @@ class DistributedCacheService {
   public clear(options?: { region?: string; tags?: string[] }): void {
     if (!options) {
       this.cache.clear();
-      this.notifyOtherNodes('clear');
+      CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'clear');
       console.log(`[Cache] CLEAR: Todos os itens`);
       return;
     }
@@ -186,11 +155,11 @@ class DistributedCacheService {
     });
     
     if (deleteCount > 0) {
-      this.notifyOtherNodes('clear', undefined, undefined, options);
+      CacheOperations.notifyOtherNodes(this.nodes, this.nodeId, 'clear', undefined, undefined, options);
       console.log(`[Cache] CLEAR SELECTIVE: ${deleteCount} itens (Região: ${region}, Tags: ${tags?.join(', ')})`);
     }
     
-    this.updateStats();
+    CacheStatistics.updateStats(this.cache, this.stats);
   }
 
   /**
@@ -211,156 +180,30 @@ class DistributedCacheService {
    * Adiciona um novo nó ao cluster de cache
    */
   public addNode(node: Omit<ICacheNode, 'id' | 'lastSync'>): ICacheNode {
-    const newNode: ICacheNode = {
-      ...node,
-      id: 'node-' + Math.floor(Math.random() * 10000),
-      lastSync: new Date()
-    };
-    
-    this.nodes.push(newNode);
-    console.log(`[Cache] Novo nó adicionado: ${newNode.name} (${newNode.id})`);
-    
-    // Simular sincronização de cache para o novo nó
-    setTimeout(() => {
-      newNode.status = 'active';
-      console.log(`[Cache] Nó ${newNode.id} sincronizado e ativo`);
-      toast(`${newNode.name} foi sincronizado e está ativo agora`);
-    }, 2000);
-    
-    return newNode;
+    return CacheOperations.addNode(this.nodes, node);
   }
 
   /**
    * Remove um nó do cluster de cache
    */
   public removeNode(nodeId: string): boolean {
-    const index = this.nodes.findIndex(node => node.id === nodeId);
-    
-    if (index === -1) {
-      return false;
-    }
-    
-    // Não permitir remover o nó atual
-    if (this.nodes[index].id === this.nodeId) {
-      toast("Não é possível remover o nó atual do cluster");
-      return false;
-    }
-    
-    const removedNode = this.nodes.splice(index, 1)[0];
-    console.log(`[Cache] Nó removido: ${removedNode.name} (${removedNode.id})`);
-    
-    toast(`${removedNode.name} foi removido do cluster`);
-    
-    return true;
+    return CacheOperations.removeNode(this.nodes, nodeId, this.nodeId);
   }
 
   /**
    * Simula falha em um nó do cluster
    */
   public simulateNodeFailure(nodeId: string): boolean {
-    const node = this.nodes.find(n => n.id === nodeId);
-    
-    if (!node) {
-      return false;
-    }
-    
-    // Não permitir simular falha no nó atual (por segurança)
-    if (node.id === this.nodeId) {
-      toast("Não é possível simular falha no nó atual");
-      return false;
-    }
-    
-    node.status = 'inactive';
-    console.log(`[Cache] Simulada falha no nó: ${node.name} (${node.id})`);
-    
-    toast(`${node.name} está agora inativo`);
-    
-    return true;
+    return CacheOperations.simulateNodeFailure(this.nodes, nodeId, this.nodeId);
   }
 
   /**
    * Recupera um nó com falha
    */
   public recoverNode(nodeId: string): boolean {
-    const node = this.nodes.find(n => n.id === nodeId);
-    
-    if (!node || node.status !== 'inactive') {
-      return false;
-    }
-    
-    // Simular processo de sincronização
-    node.status = 'syncing';
-    console.log(`[Cache] Iniciando recuperação do nó: ${node.name} (${node.id})`);
-    
-    toast(`${node.name} está sincronizando...`);
-    
-    // Após um tempo, considerar o nó recuperado
-    setTimeout(() => {
-      node.status = 'active';
-      node.lastSync = new Date();
-      console.log(`[Cache] Nó recuperado: ${node.name} (${node.id})`);
-      
-      toast(`${node.name} foi sincronizado e está ativo novamente`);
-    }, 3000);
-    
-    return true;
+    return CacheOperations.recoverNode(this.nodes, nodeId);
   }
 
-  private notifyOtherNodes(
-    operation: 'set' | 'delete' | 'clear', 
-    key?: string, 
-    entry?: CacheEntry<any>, 
-    options?: { region?: string; tags?: string[] }
-  ): void {
-    // Em uma implementação real, isso usaria um mecanismo de mensagens
-    // como Redis Pub/Sub, RabbitMQ, Kafka, ou mesmo webhooks diretos
-    // para sincronizar alterações do cache entre os nós
-    
-    const activeNodes = this.nodes.filter(n => n.id !== this.nodeId && n.status === 'active');
-    
-    if (activeNodes.length === 0) {
-      return;
-    }
-
-    console.log(`[Cache] Notificando ${activeNodes.length} nós sobre operação ${operation}`);
-    
-    // Atualizar o timestamp de sincronização dos nós
-    setTimeout(() => {
-      activeNodes.forEach(node => {
-        node.lastSync = new Date();
-      });
-    }, 50);
-  }
-
-  private updateStats(): void {
-    this.stats.size = this.cache.size;
-    
-    let oldestTimestamp = Infinity;
-    let newestTimestamp = 0;
-    let totalAge = 0;
-    
-    this.cache.forEach(entry => {
-      if (entry.created < oldestTimestamp) {
-        oldestTimestamp = entry.created;
-      }
-      
-      if (entry.created > newestTimestamp) {
-        newestTimestamp = entry.created;
-      }
-      
-      totalAge += Date.now() - entry.created;
-    });
-    
-    this.stats.oldest = oldestTimestamp !== Infinity ? new Date(oldestTimestamp) : null;
-    this.stats.newest = newestTimestamp !== 0 ? new Date(newestTimestamp) : null;
-    this.stats.avgAge = this.cache.size > 0 ? totalAge / this.cache.size / 1000 : 0;
-  }
-  
-  private updateHitRatio(): void {
-    const total = this.stats.hits + this.stats.misses;
-    this.stats.hitRatio = total > 0 ? this.stats.hits / total : 0;
-  }
-  
   private startCleanupTask(): void {
     // Limpar entradas expiradas periodicamente
     setInterval(() => {
@@ -376,7 +219,7 @@ class DistributedCacheService {
       
       if (expiredCount > 0) {
         console.log(`[Cache] Cleanup: Removidas ${expiredCount} entradas expiradas`);
-        this.updateStats();
+        CacheStatistics.updateStats(this.cache, this.stats);
       }
     }, 30000); // Executar a cada 30 segundos
   }

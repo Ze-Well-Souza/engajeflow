@@ -120,9 +120,67 @@ O sistema está operacional com todas as funcionalidades principais implementada
 - [ ] Novas verticais de mercado
 - [ ] Análises preditivas avançadas
 
+## NOVO - TechCare Connect Automator
+
+### 🧭 Plano de Desenvolvimento – TechCare Connect Automator
+
+#### 🗂️ FASE 1 – Estruturação e robustez (1–2 semanas)
+**Objetivo**: Tornar o projeto estável, limpo e seguro.
+
+| Tarefa | Descrição |
+|--------|-----------|
+| 🔧 Refatorar o código | Separar funções em arquivos (autenticação, navegação, scraping, etc). Facilita manutenção e testes. |
+| 🛡️ Variáveis de ambiente (.env) | Esconder credenciais e URLs. Ex: TECHCARE_USER, TECHCARE_PASS |
+| 🐞 Tratamento de erros | Adicionar try/catch e logs para erros como falha de login, DOM quebrado, tempo limite. |
+| 📄 README completo | Guia de instalação, execução, propósito e tecnologias usadas. |
+| 🧪 Testes básicos | Testes unitários para funções principais e de integração com a automação. |
+
+#### 🚀 FASE 2 – Escalabilidade e deploy (2–3 semanas)
+**Objetivo**: Preparar para múltiplos usuários e execuções confiáveis.
+
+| Tarefa | Descrição |
+|--------|-----------|
+| 🐳 Dockerização | Criar Dockerfile para rodar em qualquer lugar com ambiente isolado. |
+| ☁️ Deploy escalável | Deploy em nuvem com suporte a múltiplas instâncias (ex: AWS ECS, Railway, Vercel Functions, etc.) |
+| 📆 Agendador de tarefas | Implementar cron jobs (ex: cron no Node, Agenda, Bull) para execuções programadas. |
+| 📊 Dashboard simples | Interface web para mostrar status das automações, logs e erros recentes. |
+| 🔒 Autenticação segura | Incluir autenticação JWT ou com Google para controlar acesso se for público. |
+
+#### 🧠 FASE 3 – Aplicações com IA generativa (3–4 semanas)
+**Objetivo**: Criar diferenciais com IA que agregam valor para os usuários.
+
+| Tarefa | IA aplicada |
+|--------|-------------|
+| 🤖 Geração de resposta inteligente | Usar GPT para sugerir respostas automáticas em mensagens comuns. |
+| 🧠 Análise de sentimentos | Detectar tom das conversas (negativo, positivo, neutro) e priorizar tickets. |
+| 📌 Classificação de tickets | IA classifica automaticamente tipo de atendimento (suporte, cobrança, elogio, etc). |
+| 📝 Sumário automático | Gerar resumo de conversas longas para acompanhamento. |
+| 📈 Insights por dashboard | Mostrar estatísticas e sugestões baseadas em dados analisados pela IA. |
+
+### 🛒 Landing Pages Específicas por Segmento
+
+**Públicos-alvo e valores do serviço:**
+
+| Público | Valor do serviço | Sugestão de texto ou foco |
+|---------|------------------|----------------------------|
+| 🏪 Lojistas online (e-commerce) | Atendimento pós-venda, rastreamento de pedidos, suporte via chat | "Otimize o atendimento da sua loja com automações e inteligência artificial." |
+| 🎥 Criadores de conteúdo | Agendamento de mensagens, respostas automáticas para seguidores | "Responda fãs e parceiros sem perder tempo. Automatize seu inbox." |
+| 🧑‍💻 Freelancers | Suporte a clientes, cobrança, lembretes | "Ganhe tempo com automações e concentre-se no que realmente importa: criar." |
+| 📚 Educadores / cursos online | Responder dúvidas, mandar materiais, organizar listas de alunos | "Automatize a comunicação com alunos e aumente a retenção." |
+| 🏢 Empresas de RH / recrutamento | Agendamento de entrevistas, envio automático de feedback | "Transforme o contato com candidatos em uma experiência moderna e eficiente." |
+| 🧾 Contadores / advogados | Atualizações de processos, envio de documentos, lembretes | "Menos WhatsApp manual, mais foco nos seus clientes e prazos." |
+
+**Estrutura sugerida para Landing Pages:**
+- Headline clara: "Automatize seu atendimento com IA em [seu segmento]"
+- Problema comum: "Você perde horas respondendo mensagens iguais todos os dias?"
+- Solução: Mostrar como seu sistema resolve isso com automação e IA
+- Demonstração / vídeo curto
+- Depoimentos
+- Chamada para ação (CTA): "Comece grátis", "Fale com um especialista", etc.
+
 ## Status de Prontidão para Implantação
 
-O sistema está pronto para implantação em ambiente de produção, com todas as fases principais (1-6) concluídas. Recomendações antes do lançamento completo:
+O sistema está pronto para implantação em ambiente de produção, com todas as fases principais (1-8 e TechCare Connect Automator) planejadas. Recomendações antes do lançamento completo:
 
 1. ✓ **Testes de Carga**: Verificar desempenho sob alta demanda
 2. ✓ **Testes de Segurança**: Concluir análise de vulnerabilidades
@@ -148,6 +206,5 @@ O sistema está pronto para implantação em ambiente de produção, com todas a
 
 ---
 
-**Última atualização:** 20 de maio de 2025  
+**Última atualização:** 21 de maio de 2025  
 **Autor:** Equipe EngageFlow
-
