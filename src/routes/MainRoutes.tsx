@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route, Navigate } from "react-router-dom";
+import { Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import RouteGroup from "./RouteGroup";
 
@@ -16,8 +16,9 @@ import RatingsPage from "@/pages/RatingsPage";
 import SocialMediaPage from "@/pages/SocialMediaPage";
 
 const MainRoutes: React.FC = () => {
+  // Retorna os elementos Route diretamente, sem o componente RouteGroup
   return (
-    <RouteGroup>
+    <>
       <Route path="/index" element={<Index />} />
       <Route path="/dashboard" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
       <Route path="/messages" element={<DashboardLayout><MessagesPage /></DashboardLayout>} />
@@ -27,7 +28,7 @@ const MainRoutes: React.FC = () => {
       <Route path="/notificacoes" element={<DashboardLayout><NotificacoesPage /></DashboardLayout>} />
       <Route path="/ratings" element={<DashboardLayout><RatingsPage /></DashboardLayout>} />
       <Route path="/social-media" element={<DashboardLayout><SocialMediaPage /></DashboardLayout>} />
-    </RouteGroup>
+    </>
   );
 };
 
