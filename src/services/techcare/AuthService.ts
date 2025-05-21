@@ -4,6 +4,7 @@
  */
 import { toast } from "sonner";
 import { getEnvVariable } from "../../utils/environment";
+import logger from "../../utils/logger";
 
 // Interfaces
 interface AuthConfig {
@@ -26,9 +27,10 @@ class AuthService {
   private token: string | null = null;
   private loginAttempts = 0;
   private readonly MAX_LOGIN_ATTEMPTS = 3;
+  private config: AuthConfig = {};
 
   private constructor() {
-    console.log('[AuthService] Inicializado');
+    logger.info('[AuthService] Inicializado');
   }
 
   /**
@@ -42,14 +44,26 @@ class AuthService {
   }
 
   /**
+   * Configura o serviço com credenciais
+   * @param config Configuração de autenticação
+   */
+  public configure(config: AuthConfig): void {
+    this.config = {
+      ...this.config,
+      ...config
+    };
+    logger.info('[AuthService] Configurado');
+  }
+
+  /**
    * Realiza login no sistema
    */
   public async login(): Promise<AuthResponse> {
     try {
-      // Obter credenciais das variáveis de ambiente
-      const username = getEnvVariable('TECHCARE_USER');
-      const password = getEnvVariable('TECHCARE_PASS');
-      const baseUrl = getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com');
+      // Obter credenciais das variáveis de ambiente ou configuração
+      const username = this.config.username || getEnvVariable('TECHCARE_USER');
+      const password = this.config.password || getEnvVariable('TECHCARE_PASS');
+      const baseUrl = this.config.baseUrl || getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com');
       
       if (!username || !password) {
         throw new Error("Credenciais não configuradas. Verifique as variáveis de ambiente TECHCARE_USER e TECHCARE_PASS.");
@@ -60,7 +74,7 @@ class AuthService {
       }
 
       this.loginAttempts++;
-      console.log(`[AuthService] Tentativa de login ${this.loginAttempts}/${this.MAX_LOGIN_ATTEMPTS}`);
+      logger.info(`[AuthService] Tentativa de login ${this.loginAttempts}/${this.MAX_LOGIN_ATTEMPTS}`);
 
       // Em produção, isto seria uma chamada real à API
       const response = await this.performLoginRequest(username, password, baseUrl);
@@ -68,15 +82,15 @@ class AuthService {
       if (response.success && response.token) {
         this.token = response.token;
         this.loginAttempts = 0;
-        console.log('[AuthService] Login realizado com sucesso');
+        logger.info('[AuthService] Login realizado com sucesso');
         return { success: true, token: response.token };
       } else {
-        console.error('[AuthService] Falha no login:', response.error);
+        logger.error('[AuthService] Falha no login:', response.error);
         return { success: false, error: response.error };
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante login';
-      console.error('[AuthService] Erro durante login:', errorMessage);
+      logger.error('[AuthService] Erro durante login:', errorMessage);
       toast.error(`Erro de autenticação: ${errorMessage}`);
       return { success: false, error: errorMessage };
     }
@@ -101,7 +115,7 @@ class AuthService {
    */
   public logout(): void {
     this.token = null;
-    console.log('[AuthService] Logout realizado');
+    logger.info('[AuthService] Logout realizado');
   }
 
   /**
@@ -111,9 +125,10 @@ class AuthService {
   private async performLoginRequest(username: string, password: string, baseUrl: string): Promise<AuthResponse> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Simulação de API para fins de demonstração
-        // Em produção, isso seria substituído por uma chamada HTTP real
-        if (username && password) {
+        // Para testes de desenvolvimento, aceitar usuário hardcoded "admin"/"password" 
+        // (será removido em produção)
+        if (username === "admin" && password === "password" || 
+            (username && username.length > 3 && password && password.length > 3)) {
           resolve({ 
             success: true, 
             token: `auth-token-${Date.now()}` 

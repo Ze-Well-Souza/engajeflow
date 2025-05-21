@@ -1,144 +1,162 @@
 
 /**
- * Circuit Breaker para evitar falhas em cascata
+ * Implementação de Circuit Breaker para resiliência do sistema
  */
-import logger from './logger';
 
-// Estados do circuit breaker
-enum CircuitState {
-  CLOSED,    // Funcionamento normal
-  OPEN,      // Circuito aberto, falhas detectadas
-  HALF_OPEN  // Teste de recuperação
+interface CircuitBreakerConfig {
+  failureThreshold: number;      // Número de falhas consecutivas para abrir o circuito
+  resetTimeout: number;          // Tempo em ms antes de tentar resetar o circuito
+  onStateChange?: (state: CircuitBreakerState, context: any) => void; // Callback para mudança de estado
 }
 
-// Opções de configuração
-interface CircuitBreakerOptions {
-  failureThreshold: number;   // Número de falhas necessárias para abrir o circuito
-  resetTimeout: number;       // Tempo em ms para tentar fechar o circuito novamente
-  halfOpenSuccessThreshold?: number;  // Número de sucessos necessários para fechar completamente
-}
+type CircuitBreakerState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
 /**
- * Implementação de Circuit Breaker
+ * Circuit Breaker para evitar falhas em cascata
  */
 export class CircuitBreaker {
-  private state: CircuitState = CircuitState.CLOSED;
+  private state: CircuitBreakerState = 'CLOSED';
   private failureCount: number = 0;
-  private successCount: number = 0;
-  private nextAttempt: number = Date.now();
-  private readonly options: Required<CircuitBreakerOptions>;
+  private resetTimer: NodeJS.Timeout | null = null;
+  private lastFailureTime: number = 0;
+  private readonly config: CircuitBreakerConfig;
 
-  constructor(options: CircuitBreakerOptions) {
-    // Configuração padrão
-    this.options = {
-      halfOpenSuccessThreshold: 1,
-      ...options
+  constructor(config: CircuitBreakerConfig) {
+    this.config = {
+      failureThreshold: config.failureThreshold || 3,
+      resetTimeout: config.resetTimeout || 30000,
+      onStateChange: config.onStateChange
     };
 
-    logger.debug('Circuit breaker inicializado', this.options);
+    console.info('[CircuitBreaker] Inicializado com configuração:', {
+      failureThreshold: this.config.failureThreshold,
+      resetTimeout: this.config.resetTimeout
+    });
   }
 
   /**
-   * Executa uma função protegida pelo circuit breaker
+   * Executa uma função com proteção de circuit breaker
    */
   public async execute<T>(fn: () => Promise<T>): Promise<T> {
-    // Verificar se o circuito está aberto
-    if (this.state === CircuitState.OPEN) {
-      // Verificar se é hora de tentar novamente
-      if (this.nextAttempt <= Date.now()) {
-        logger.info('Circuit breaker entrando em estado semi-aberto');
-        this.state = CircuitState.HALF_OPEN;
+    if (this.state === 'OPEN') {
+      // Se o circuito estiver aberto, verificar se já passou o tempo de reset
+      const now = Date.now();
+      if (now - this.lastFailureTime >= this.config.resetTimeout) {
+        this.toHalfOpen('Timeout de reset atingido');
       } else {
-        const err = new Error('Circuito aberto, falha rápida');
-        logger.warn('Circuit breaker recusando requisição', {
-          nextAttempt: new Date(this.nextAttempt).toISOString()
-        });
-        throw err;
+        throw new Error(`Circuit Breaker aberto. Tente novamente em ${Math.ceil((this.lastFailureTime + this.config.resetTimeout - now) / 1000)} segundos`);
       }
     }
 
     try {
-      // Executar função protegida
+      // Executar a função protegida
       const result = await fn();
-
-      // Atualizar contador de sucessos
-      this.recordSuccess();
-
+      this.onSuccess();
       return result;
     } catch (error) {
-      // Atualizar contador de falhas
-      this.recordFailure();
-
-      // Relançar o erro
+      this.onFailure();
       throw error;
     }
   }
 
   /**
-   * Registra um sucesso
+   * Registra sucesso e fecha o circuito se estiver em meio-aberto
    */
-  private recordSuccess(): void {
-    if (this.state === CircuitState.HALF_OPEN) {
-      this.successCount++;
-      
-      // Verificar se atingiu o threshold para fechar o circuito
-      if (this.successCount >= this.options.halfOpenSuccessThreshold) {
-        logger.info('Circuit breaker fechando após recuperação');
-        this.state = CircuitState.CLOSED;
-        this.reset();
-      }
-    } else if (this.state === CircuitState.CLOSED) {
-      // Resetar contadores em caso de sucesso
-      this.reset();
+  private onSuccess(): void {
+    if (this.state === 'HALF_OPEN') {
+      this.toClosed('Operação bem-sucedida em estado HALF_OPEN');
     }
-  }
-
-  /**
-   * Registra uma falha
-   */
-  private recordFailure(): void {
-    this.failureCount++;
-
-    if (this.state === CircuitState.CLOSED) {
-      // Verificar se atingiu o threshold para abrir o circuito
-      if (this.failureCount >= this.options.failureThreshold) {
-        logger.warn('Circuit breaker abrindo após múltiplas falhas');
-        this.state = CircuitState.OPEN;
-        this.nextAttempt = Date.now() + this.options.resetTimeout;
-      }
-    } else if (this.state === CircuitState.HALF_OPEN) {
-      // Falha durante teste, voltar para aberto
-      logger.warn('Circuit breaker voltando para estado aberto após falha no teste');
-      this.state = CircuitState.OPEN;
-      this.nextAttempt = Date.now() + this.options.resetTimeout;
-    }
-  }
-
-  /**
-   * Reseta contadores internos
-   */
-  private reset(): void {
+    
     this.failureCount = 0;
-    this.successCount = 0;
   }
 
   /**
-   * Obtém o estado atual do circuit breaker
+   * Registra falha e abre o circuito se atingir o limite
    */
-  public getState(): string {
-    switch (this.state) {
-      case CircuitState.CLOSED: return 'CLOSED';
-      case CircuitState.OPEN: return 'OPEN';
-      case CircuitState.HALF_OPEN: return 'HALF_OPEN';
+  private onFailure(): void {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+
+    if (this.state === 'HALF_OPEN' || (this.state === 'CLOSED' && this.failureCount >= this.config.failureThreshold)) {
+      this.toOpen(`Limite de falhas atingido (${this.failureCount})`);
     }
   }
 
   /**
-   * Força o fechamento do circuit breaker
+   * Muda o estado do circuit breaker para fechado
    */
-  public forceClose(): void {
-    this.state = CircuitState.CLOSED;
-    this.reset();
-    logger.info('Circuit breaker forçado para estado fechado');
+  private toClosed(reason: string): void {
+    if (this.state !== 'CLOSED') {
+      console.info(`[CircuitBreaker] Estado alterado de ${this.state} para CLOSED. Motivo: ${reason}`);
+      
+      this.state = 'CLOSED';
+      this.failureCount = 0;
+      
+      if (this.resetTimer) {
+        clearTimeout(this.resetTimer);
+        this.resetTimer = null;
+      }
+
+      if (this.config.onStateChange) {
+        this.config.onStateChange('CLOSED', { reason });
+      }
+    }
+  }
+
+  /**
+   * Muda o estado do circuit breaker para aberto
+   */
+  private toOpen(reason: string): void {
+    if (this.state !== 'OPEN') {
+      console.warn(`[CircuitBreaker] Estado alterado de ${this.state} para OPEN. Motivo: ${reason}`);
+      
+      this.state = 'OPEN';
+      
+      if (this.resetTimer) {
+        clearTimeout(this.resetTimer);
+      }
+      
+      this.resetTimer = setTimeout(() => {
+        this.toHalfOpen('Timeout de reset atingido');
+      }, this.config.resetTimeout);
+
+      if (this.config.onStateChange) {
+        this.config.onStateChange('OPEN', { reason, failureCount: this.failureCount });
+      }
+    }
+  }
+
+  /**
+   * Muda o estado do circuit breaker para meio-aberto
+   */
+  private toHalfOpen(reason: string): void {
+    if (this.state !== 'HALF_OPEN') {
+      console.info(`[CircuitBreaker] Estado alterado de ${this.state} para HALF_OPEN. Motivo: ${reason}`);
+      
+      this.state = 'HALF_OPEN';
+      
+      if (this.resetTimer) {
+        clearTimeout(this.resetTimer);
+        this.resetTimer = null;
+      }
+
+      if (this.config.onStateChange) {
+        this.config.onStateChange('HALF_OPEN', { reason });
+      }
+    }
+  }
+
+  /**
+   * Retorna o estado atual do circuit breaker
+   */
+  public getState(): CircuitBreakerState {
+    return this.state;
+  }
+
+  /**
+   * Força o reset do circuit breaker para o estado fechado
+   */
+  public reset(): void {
+    this.toClosed('Reset manual');
   }
 }
