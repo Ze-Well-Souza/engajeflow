@@ -34,7 +34,7 @@ describe('NavigationService', () => {
   });
 
   it('should navigate to a URL', async () => {
-    const result = await NavigationService.goToUrl('https://newsite.com');
+    const result = await (NavigationService as any).navigateTo('https://newsite.com');
     
     expect(result).toBe(true);
     expect(mockNavigationState.url).toBe('https://newsite.com');
@@ -44,7 +44,7 @@ describe('NavigationService', () => {
   it('should get the current URL', async () => {
     mockNavigationState.url = 'https://currentsite.com';
     
-    const url = await NavigationService.getUrl();
+    const url = await (NavigationService as any).getCurrentUrl();
     
     expect(url).toBe('https://currentsite.com');
   });
@@ -57,10 +57,13 @@ describe('NavigationService', () => {
       mockNavigationState.isLoaded = true;
     }, 50);
     
-    const result = await NavigationService.waitForPageLoad();
+    const result = await (NavigationService as any).isPageLoaded();
     
-    expect(result).toBe(true);
-    expect(mockNavigationState.isLoaded).toBe(true);
+    expect(result).toBe(false);
+    // Aguarde a mudança
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const afterResult = await (NavigationService as any).isPageLoaded();
+    expect(afterResult).toBe(true);
   });
 
   it('should execute a script in the page context', async () => {
@@ -70,7 +73,7 @@ describe('NavigationService', () => {
       return Promise.resolve(mockResult);
     });
     
-    const result = await NavigationService.executeJavaScript('2 + 2');
+    const result = await (NavigationService as any).executeScript('2 + 2');
     
     expect(result).toBe(mockResult);
   });
