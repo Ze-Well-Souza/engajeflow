@@ -1,5 +1,6 @@
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NavigationService } from '../../services/techcare/NavigationService';
+import NavigationService from '../../services/techcare/NavigationService';
 
 interface MockNavigationState {
   url: string;
