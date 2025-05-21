@@ -1,452 +1,306 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { toast } from 'sonner';
-import { Play, Pause, RotateCcw, Activity, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import EnvSetupForm from '../setup/EnvSetupForm';
-import { env } from '@/utils/EnvironmentConfig';
-import { initializeSession } from '@/services/techcare';
-
-interface AutomationTask {
-  id: string;
-  name: string;
-  status: 'idle' | 'running' | 'completed' | 'failed';
-  progress: number;
-  lastRun: Date | null;
-  nextRun: Date | null;
-  duration: number | null;
-  error?: string;
-}
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
+import { 
+  Bot, 
+  Calendar, 
+  CheckCircle, 
+  Clock, 
+  Code, 
+  Database, 
+  ExternalLink, 
+  Link as LinkIcon, 
+  Loader2, 
+  Settings, 
+  Shield, 
+  Timer, 
+  Activity,
+  BarChart,
+  Brain,
+  ChevronRight
+} from "lucide-react";
 
 const AutomationDashboard: React.FC = () => {
-  const [isConfigValid, setIsConfigValid] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [selectedTab, setSelectedTab] = useState<string>('overview');
-  const [tasks, setTasks] = useState<AutomationTask[]>([
-    {
-      id: 'task1',
-      name: 'Sincronização de Dados',
-      status: 'idle',
-      progress: 0,
-      lastRun: null,
-      nextRun: new Date(Date.now() + 3600000), // +1 hour
-      duration: null
-    },
-    {
-      id: 'task2',
-      name: 'Processamento de Tickets',
-      status: 'idle',
-      progress: 0,
-      lastRun: null,
-      nextRun: new Date(Date.now() + 7200000), // +2 hours
-      duration: null
-    }
-  ]);
-
-  // Verificar configuração ao carregar
-  useEffect(() => {
-    const validation = env.validateRequiredVariables();
-    setIsConfigValid(validation.valid);
-  }, []);
-
-  const handleConnect = async () => {
-    if (!isConfigValid) {
-      toast.error("Configure as variáveis de ambiente primeiro");
-      return;
-    }
-
-    try {
-      toast.loading("Conectando ao TechCare...");
-      
-      // Obter as variáveis de ambiente
-      const username = env.get('TECHCARE_USER') || '';
-      const password = env.get('TECHCARE_PASS') || '';
-      const baseUrl = env.get('TECHCARE_BASE_URL') || 'https://app.techcare.com';
-      
-      // Inicializar a sessão
-      const result = await initializeSession({
-        username,
-        password,
-        baseUrl
-      });
-      
-      if (result) {
-        toast.success("Conectado com sucesso ao TechCare");
-        setIsConnected(true);
-      } else {
-        toast.error("Falha ao conectar com o TechCare");
-      }
-    } catch (error) {
-      toast.error(`Erro ao conectar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-    }
-  };
-
-  const handleDisconnect = () => {
-    // Lógica para desconectar
-    setIsConnected(false);
-    toast.success("Desconectado do TechCare");
-  };
-
-  const handleStartAutomation = () => {
-    setIsRunning(true);
-    simulateRunningTasks();
-    toast.success("Automação iniciada");
-  };
-
-  const handleStopAutomation = () => {
-    setIsRunning(false);
-    resetTasks();
-    toast.success("Automação interrompida");
-  };
-
-  const resetTasks = () => {
-    setTasks(tasks.map(task => ({
-      ...task,
-      status: 'idle',
-      progress: 0
-    })));
-  };
-
-  const simulateRunningTasks = () => {
-    // Simular execução de tarefas para demonstração
-    const updatedTasks = [...tasks];
-    
-    // Iniciar primeira tarefa
-    updatedTasks[0] = {
-      ...updatedTasks[0],
-      status: 'running',
-      progress: 10,
-      lastRun: new Date()
-    };
-    
-    setTasks(updatedTasks);
-    
-    // Simular progresso
-    let counter = 1;
-    const intervalId = setInterval(() => {
-      counter++;
-      
-      if (counter <= 5) {
-        // Atualizar progresso da primeira tarefa
-        setTasks(prev => {
-          const updated = [...prev];
-          
-          if (updated[0].status === 'running') {
-            updated[0] = {
-              ...updated[0],
-              progress: Math.min(100, updated[0].progress + 20)
-            };
-            
-            // Completar após atingir 100%
-            if (updated[0].progress >= 100) {
-              updated[0] = {
-                ...updated[0],
-                status: 'completed',
-                duration: Math.floor(Math.random() * 10) + 5
-              };
-              
-              // Iniciar segunda tarefa quando a primeira for concluída
-              if (updated[1].status === 'idle') {
-                updated[1] = {
-                  ...updated[1],
-                  status: 'running',
-                  progress: 10,
-                  lastRun: new Date()
-                };
-              }
-            }
-          }
-          
-          // Atualizar progresso da segunda tarefa
-          if (updated[1].status === 'running') {
-            updated[1] = {
-              ...updated[1],
-              progress: Math.min(100, updated[1].progress + 15)
-            };
-            
-            // Completar após atingir 100%
-            if (updated[1].progress >= 100) {
-              updated[1] = {
-                ...updated[1],
-                status: 'completed',
-                duration: Math.floor(Math.random() * 15) + 10
-              };
-            }
-          }
-          
-          return updated;
-        });
-      } else {
-        // Após algumas interações, verificar se está completo
-        setTasks(prev => {
-          const allCompleted = prev.every(task => task.status === 'completed');
-          
-          if (allCompleted) {
-            clearInterval(intervalId);
-            setIsRunning(false);
-            
-            // Agendar para o próximo período
-            return prev.map(task => ({
-              ...task,
-              status: 'idle',
-              progress: 0,
-              nextRun: new Date(Date.now() + Math.floor(Math.random() * 3600000 * 4) + 3600000)
-            }));
-          }
-          
-          return prev;
-        });
-      }
-    }, 1000);
-    
-    return () => clearInterval(intervalId);
-  };
-
-  const handleConfigComplete = () => {
-    setIsConfigValid(true);
-  };
-
-  // Renderização condicional baseada no estado de configuração
-  if (!isConfigValid) {
-    return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">TechCare Connect Automator</h1>
-        <EnvSetupForm onComplete={handleConfigComplete} />
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold">TechCare Connect Automator</h1>
-          <p className="text-muted-foreground">Dashboard de automação e monitoramento</p>
+          <h1 className="text-3xl font-bold">TechCare Connect Automator</h1>
+          <p className="text-muted-foreground mt-1">Painel de controle e monitoramento de automações</p>
         </div>
-        <div>
-          {!isConnected ? (
-            <Button onClick={handleConnect}>
-              <Play className="mr-2 h-4 w-4" />
-              Conectar
-            </Button>
-          ) : (
-            <div className="flex space-x-2">
-              {!isRunning ? (
-                <Button onClick={handleStartAutomation}>
-                  <Play className="mr-2 h-4 w-4" />
-                  Iniciar Automação
-                </Button>
-              ) : (
-                <Button onClick={handleStopAutomation} variant="destructive">
-                  <Pause className="mr-2 h-4 w-4" />
-                  Parar Automação
-                </Button>
-              )}
-              <Button onClick={handleDisconnect} variant="outline">Desconectar</Button>
-            </div>
-          )}
+        <div className="flex gap-2">
+          <Button variant="outline">
+            <Settings className="h-4 w-4 mr-2" />
+            Configurações
+          </Button>
+          <Button>
+            <Bot className="h-4 w-4 mr-2" />
+            Nova Automação
+          </Button>
         </div>
       </div>
       
-      <Tabs defaultValue="overview" value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="tasks">Tarefas</TabsTrigger>
-          <TabsTrigger value="logs">Logs</TabsTrigger>
-          <TabsTrigger value="settings">Configurações</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl flex items-center">
+              <Bot className="h-5 w-5 mr-2 text-primary" />
+              Automações
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">12</div>
+            <p className="text-sm text-muted-foreground">5 ativas, 7 agendadas</p>
+          </CardContent>
+        </Card>
         
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center">
-                  {isConnected ? (
-                    <>
-                      <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
-                      <span className="font-medium text-green-600">Conectado</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
-                      <span className="font-medium text-red-600">Desconectado</span>
-                    </>
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {isConnected 
-                    ? isRunning 
-                      ? "Automação em execução" 
-                      : "Pronto para automatizar"
-                    : "Configure e conecte para iniciar"
-                  }
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">Tarefas Agendadas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tasks.length}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Próxima execução em {tasks[0]?.nextRun ? new Date(tasks[0].nextRun).toLocaleTimeString() : 'N/A'}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">Desempenho</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">98.5%</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Taxa de sucesso das últimas 24h
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Progresso das Tarefas</CardTitle>
-              <CardDescription>
-                Status atual das tarefas de automação
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {tasks.map(task => (
-                  <div key={task.id} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">{task.name}</h3>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {task.status === 'running' 
-                            ? 'Em execução' 
-                            : task.status === 'completed'
-                              ? `Concluído em ${task.duration}s`
-                              : task.status === 'failed'
-                                ? 'Falhou'
-                                : 'Aguardando'
-                          }
-                        </div>
-                      </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+              Taxa de Sucesso
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">98.2%</div>
+            <p className="text-sm text-muted-foreground">+2.4% em relação à semana passada</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-amber-500" />
+              Tempo Médio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">1.8s</div>
+            <p className="text-sm text-muted-foreground">Por operação automatizada</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl flex items-center">
+              <Timer className="h-5 w-5 mr-2 text-blue-500" />
+              Economia
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">42h</div>
+            <p className="text-sm text-muted-foreground">Tempo economizado este mês</p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Status das Automações</CardTitle>
+            <CardDescription>Monitoramento em tempo real das automações ativas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { name: "Login Automático", status: "success", progress: 100, lastRun: "2 min atrás", runtime: "1.2s" },
+                { name: "Coleta de Dados", status: "running", progress: 65, lastRun: "Em execução", runtime: "0.8s" },
+                { name: "Sincronização de Tickets", status: "pending", progress: 0, lastRun: "Agendado", runtime: "~3.5s" },
+                { name: "Relatório Diário", status: "error", progress: 35, lastRun: "Falha", runtime: "N/A" },
+                { name: "Atualização de Status", status: "success", progress: 100, lastRun: "1h atrás", runtime: "2.4s" }
+              ].map((automation, index) => (
+                <div key={index} className="border p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <h3 className="font-medium">{automation.name}</h3>
                       <Badge 
-                        variant="outline" 
-                        className={
-                          task.status === 'running' 
-                            ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                            : task.status === 'completed'
-                              ? 'bg-green-50 text-green-700 border-green-200'
-                              : task.status === 'failed'
-                                ? 'bg-red-50 text-red-700 border-red-200'
-                                : 'bg-gray-50 text-gray-700 border-gray-200'
+                        variant={
+                          automation.status === "success" ? "default" :
+                          automation.status === "running" ? "secondary" :
+                          automation.status === "pending" ? "outline" : "destructive"
                         }
+                        className="ml-2"
                       >
-                        {task.status === 'running' 
-                          ? 'Em execução' 
-                          : task.status === 'completed'
-                            ? 'Concluído'
-                            : task.status === 'failed'
-                              ? 'Falhou'
-                              : 'Aguardando'
-                        }
+                        {automation.status === "success" ? "Completo" :
+                         automation.status === "running" ? "Em execução" :
+                         automation.status === "pending" ? "Agendado" : "Erro"}
                       </Badge>
                     </div>
-                    <Progress value={task.progress} className="h-2" />
+                    <div className="text-sm text-muted-foreground">
+                      {automation.status === "running" ? (
+                        <div className="flex items-center">
+                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          <span>Em execução</span>
+                        </div>
+                      ) : (
+                        <span>Última execução: {automation.lastRun}</span>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          
+                  
+                  <div className="w-full mb-2">
+                    <Progress
+                      value={automation.progress}
+                      className="h-2"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{automation.progress}% completo</span>
+                    <span className="text-muted-foreground">Tempo de execução: {automation.runtime}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter className="justify-between">
+            <Button variant="ghost" size="sm">Ver todas as automações</Button>
+            <Button size="sm">Atualizar Status</Button>
+          </CardFooter>
+        </Card>
+        
+        <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Atividades Recentes</CardTitle>
-              <CardDescription>
-                Últimas ações realizadas pelo automator
-              </CardDescription>
+              <CardTitle>Conexões</CardTitle>
+              <CardDescription>Status das integrações configuradas</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Sincronização concluída</p>
-                    <p className="text-sm text-muted-foreground">
-                      15 tickets processados em 3 minutos
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date().toLocaleString()}
-                    </p>
-                  </div>
+            <CardContent className="space-y-2">
+              <div className="flex items-center justify-between py-1">
+                <div className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+                  <span>TechCare API</span>
                 </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <Activity className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Sessão iniciada</p>
-                    <p className="text-sm text-muted-foreground">
-                      Conexão estabelecida com o TechCare
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(Date.now() - 300000).toLocaleString()}
-                    </p>
-                  </div>
+                <Badge variant="outline">Conectado</Badge>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <div className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+                  <span>Banco de Dados</span>
                 </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Aviso</p>
-                    <p className="text-sm text-muted-foreground">
-                      Resposta lenta do servidor, tentativa 2 de 3
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(Date.now() - 900000).toLocaleString()}
-                    </p>
-                  </div>
+                <Badge variant="outline">Conectado</Badge>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <div className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-amber-500 mr-2"></div>
+                  <span>Sistema de Arquivos</span>
                 </div>
+                <Badge variant="outline">Parcial</Badge>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <div className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-red-500 mr-2"></div>
+                  <span>Email SMTP</span>
+                </div>
+                <Badge variant="outline">Desconectado</Badge>
               </div>
             </CardContent>
-            <CardFooter className="border-t px-6 py-4">
-              <Button variant="outline" className="w-full">
-                Ver Todos os Logs
+            <CardFooter>
+              <Button variant="outline" size="sm" className="w-full">
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Gerenciar Conexões
               </Button>
             </CardFooter>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="tasks">
+          
           <Card>
             <CardHeader>
-              <CardTitle>Gerenciamento de Tarefas</CardTitle>
-              <CardDescription>
-                Configure e monitore tarefas automatizadas
-              </CardDescription>
+              <CardTitle>Recursos</CardTitle>
+              <CardDescription>Links úteis e documentação</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="outline" size="sm" className="w-full justify-between" asChild>
+                <Link to="/ai/techcare">
+                  <div className="flex items-center">
+                    <Brain className="h-4 w-4 mr-2 text-purple-500" />
+                    <span>IA Generativa</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                <div className="flex items-center">
+                  <Code className="h-4 w-4 mr-2 text-blue-500" />
+                  <span>Documentação API</span>
+                </div>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                <div className="flex items-center">
+                  <Database className="h-4 w-4 mr-2 text-green-500" />
+                  <span>Editor de Scripts</span>
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                <div className="flex items-center">
+                  <Shield className="h-4 w-4 mr-2 text-amber-500" />
+                  <span>Segurança</span>
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      
+      <Tabs defaultValue="agenda" className="w-full">
+        <TabsList className="w-full mb-6">
+          <TabsTrigger value="agenda" className="flex-1">
+            <Calendar className="h-4 w-4 mr-2" />
+            Agenda
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="flex-1">
+            <Activity className="h-4 w-4 mr-2" />
+            Logs
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="flex-1">
+            <BarChart className="h-4 w-4 mr-2" />
+            Estatísticas
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="agenda">
+          <Card>
+            <CardHeader>
+              <CardTitle>Automações Agendadas</CardTitle>
+              <CardDescription>Próximas execuções programadas</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <p>Conteúdo do gerenciamento de tarefas...</p>
-              </div>
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b">
+                    <th className="pb-2 font-medium">Automação</th>
+                    <th className="pb-2 font-medium">Agendamento</th>
+                    <th className="pb-2 font-medium">Próxima Execução</th>
+                    <th className="pb-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { name: "Relatório Diário", schedule: "Diário - 07:00", next: "Amanhã, 07:00", status: "ativo" },
+                    { name: "Backup de Dados", schedule: "Semanal - Segunda", next: "Segunda, 01:00", status: "ativo" },
+                    { name: "Sincronização", schedule: "A cada 4h", next: "Hoje, 16:00", status: "ativo" },
+                    { name: "Validação de Tickets", schedule: "Diário - 09:00", next: "Amanhã, 09:00", status: "pausado" }
+                  ].map((item, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="py-3">{item.name}</td>
+                      <td className="py-3">{item.schedule}</td>
+                      <td className="py-3">{item.next}</td>
+                      <td className="py-3">
+                        <Badge variant={item.status === "ativo" ? "default" : "secondary"}>
+                          {item.status === "ativo" ? "Ativo" : "Pausado"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -455,29 +309,110 @@ const AutomationDashboard: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Logs do Sistema</CardTitle>
-              <CardDescription>
-                Registros de atividades e erros
-              </CardDescription>
+              <CardDescription>Atividades recentes e mensagens de log</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p>Conteúdo dos logs...</p>
+            <CardContent className="max-h-80 overflow-y-auto">
+              <div className="space-y-2 font-mono text-sm">
+                {[
+                  { time: "10:15:22", level: "info", message: "Login automático realizado com sucesso" },
+                  { time: "10:14:36", level: "info", message: "Iniciando sessão automática" },
+                  { time: "10:14:30", level: "info", message: "Cron job iniciado: login_automático" },
+                  { time: "09:32:15", level: "error", message: "Falha na extração de dados: elemento não encontrado" },
+                  { time: "09:30:05", level: "warn", message: "Tempo limite de carregamento excedido para a página de tickets" },
+                  { time: "09:22:44", level: "info", message: "Backup de dados concluído: 1432 registros" },
+                  { time: "09:00:00", level: "info", message: "Cron job iniciado: sincronização_diária" }
+                ].map((log, index) => (
+                  <div key={index} className={`p-2 rounded ${
+                    log.level === "error" ? "bg-red-500/10" :
+                    log.level === "warn" ? "bg-amber-500/10" : "bg-muted"
+                  }`}>
+                    <span className="text-muted-foreground">[{log.time}]</span> 
+                    <span className={`mx-2 px-1 rounded text-xs ${
+                      log.level === "error" ? "bg-red-500/20 text-red-700" :
+                      log.level === "warn" ? "bg-amber-500/20 text-amber-700" : 
+                      "bg-blue-500/20 text-blue-700"
+                    }`}>
+                      {log.level.toUpperCase()}
+                    </span>
+                    <span>{log.message}</span>
+                  </div>
+                ))}
               </div>
             </CardContent>
+            <CardFooter>
+              <Button variant="outline" size="sm" className="w-full">
+                Ver Todos os Logs
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
         
-        <TabsContent value="settings">
-          <Card className="mb-6">
+        <TabsContent value="stats">
+          <Card>
             <CardHeader>
-              <CardTitle>Configurações de Ambiente</CardTitle>
-              <CardDescription>
-                Gerencie as variáveis de ambiente
-              </CardDescription>
+              <CardTitle>Estatísticas de Uso</CardTitle>
+              <CardDescription>Métricas e desempenho do sistema</CardDescription>
             </CardHeader>
             <CardContent>
-              <EnvSetupForm onComplete={handleConfigComplete} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="p-4 border rounded-lg">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Total de Execuções</h3>
+                  <p className="text-2xl font-bold">1,248</p>
+                  <span className="text-sm text-green-600">+12% este mês</span>
+                </div>
+                
+                <div className="p-4 border rounded-lg">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Tempo Médio</h3>
+                  <p className="text-2xl font-bold">2.4s</p>
+                  <span className="text-sm text-green-600">-0.3s vs. último mês</span>
+                </div>
+                
+                <div className="p-4 border rounded-lg">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Taxa de Sucesso</h3>
+                  <p className="text-2xl font-bold">97.8%</p>
+                  <span className="text-sm text-amber-600">-0.4% vs. último mês</span>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">Distribuição de Operações</h3>
+                <div className="space-y-2">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Login e Navegação</span>
+                      <span>38%</span>
+                    </div>
+                    <Progress value={38} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Extração de Dados</span>
+                      <span>24%</span>
+                    </div>
+                    <Progress value={24} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Processamento</span>
+                      <span>20%</span>
+                    </div>
+                    <Progress value={20} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Geração de Relatórios</span>
+                      <span>18%</span>
+                    </div>
+                    <Progress value={18} className="h-2" />
+                  </div>
+                </div>
+              </div>
             </CardContent>
+            <CardFooter>
+              <Button variant="outline" size="sm" className="w-full">
+                Ver Relatório Completo
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

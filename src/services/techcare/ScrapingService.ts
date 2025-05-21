@@ -1,4 +1,3 @@
-
 /**
  * Serviço de scraping para o TechCare Connect Automator
  */

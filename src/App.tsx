@@ -53,6 +53,10 @@ import ContentGeneratorPage from "./pages/ai/ContentGeneratorPage";
 import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage";
 import ProductRecommendationsPage from "./pages/ai/ProductRecommendationsPage";
 import LandingSegmentsPage from "./pages/landing/LandingSegmentsPage";
+import TechCareAIPage from "./pages/ai/TechCareAIPage";
+
+// TechCare Pages
+import TechCareAutomatorPage from "./pages/system/TechCareAutomatorPage";
 
 function App() {
   return (
@@ -114,6 +118,7 @@ function App() {
               <Route path="/ai/content" element={<ContentGeneratorPage />} />
               <Route path="/ai/campaign" element={<CampaignAnalyticsPage />} />
               <Route path="/ai/recommendations" element={<ProductRecommendationsPage />} />
+              <Route path="/ai/techcare" element={<TechCareAIPage />} />
               
               {/* Security Routes - Fase 4 */}
               <Route path="/security/audit" element={<SecurityAuditPage />} />
@@ -128,6 +133,9 @@ function App() {
               
               {/* Internationalization Routes - Fase 6 */}
               <Route path="/system/internationalization" element={<InternationalizationPage />} />
+              
+              {/* TechCare Routes */}
+              <Route path="/system/techcare" element={<TechCareAutomatorPage />} />
               
               {/* System Routes */}
               <Route path="/configuracoes" element={<ConfiguracoesPage />} />
