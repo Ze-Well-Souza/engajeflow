@@ -2,7 +2,6 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import RouteGroup from "./RouteGroup";
 
 // System Pages
 import DistributedCachePage from "@/pages/system/DistributedCachePage";
@@ -17,7 +16,7 @@ import AgendamentosPage from "@/pages/system/AgendamentosPage";
 
 const SystemRoutes: React.FC = () => {
   return (
-    <RouteGroup>
+    <>
       <Route path="/system/cache" element={<DashboardLayout><DistributedCachePage /></DashboardLayout>} />
       <Route path="/system/queue" element={<DashboardLayout><QueueSystemPage /></DashboardLayout>} />
       <Route path="/system/microservices" element={<DashboardLayout><MicroservicesPage /></DashboardLayout>} />
@@ -27,7 +26,7 @@ const SystemRoutes: React.FC = () => {
       <Route path="/system/agendamentos" element={<DashboardLayout><AgendamentosPage /></DashboardLayout>} />
       <Route path="/system/financial" element={<DashboardLayout><FinancialPage /></DashboardLayout>} />
       <Route path="/system/techcare" element={<DashboardLayout><TechCareAutomatorPage /></DashboardLayout>} />
-    </RouteGroup>
+    </>
   );
 };
 

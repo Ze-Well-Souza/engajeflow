@@ -2,7 +2,6 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import RouteGroup from "./RouteGroup";
 
 // Store Pages
 import ProdutosPage from "@/pages/store/ProdutosPage";
@@ -15,7 +14,7 @@ import StripeIntegrationPage from "@/pages/store/StripeIntegrationPage";
 
 const StoreRoutes: React.FC = () => {
   return (
-    <RouteGroup>
+    <>
       <Route path="/store/produtos" element={<DashboardLayout><ProdutosPage /></DashboardLayout>} />
       <Route path="/store/clientes" element={<DashboardLayout><ClientesPage /></DashboardLayout>} />
       <Route path="/store/vendas" element={<DashboardLayout><VendasPage /></DashboardLayout>} />
@@ -23,7 +22,7 @@ const StoreRoutes: React.FC = () => {
       <Route path="/store/catalogo" element={<DashboardLayout><CatalogoProdutosPage /></DashboardLayout>} />
       <Route path="/store/payment" element={<DashboardLayout><PaymentTestPage /></DashboardLayout>} />
       <Route path="/store/stripe" element={<DashboardLayout><StripeIntegrationPage /></DashboardLayout>} />
-    </RouteGroup>
+    </>
   );
 };
 

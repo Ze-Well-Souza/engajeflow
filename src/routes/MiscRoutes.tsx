@@ -1,7 +1,6 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import RouteGroup from "./RouteGroup";
 
 // Security Pages
 import MfaSetupPage from "@/pages/security/MfaSetupPage";
@@ -19,7 +18,7 @@ import NotFound from "@/pages/NotFound";
 
 const MiscRoutes: React.FC = () => {
   return (
-    <RouteGroup>
+    <>
       <Route path="/channels" element={<DashboardLayout><ChannelsPage /></DashboardLayout>} />
       <Route path="/funnel" element={<DashboardLayout><FunilVendasPage /></DashboardLayout>} />
       <Route path="/marketplace" element={<DashboardLayout><MarketplacePage /></DashboardLayout>} />
@@ -30,7 +29,7 @@ const MiscRoutes: React.FC = () => {
       <Route path="/compliance" element={<DashboardLayout><CompliancePage /></DashboardLayout>} />
       <Route path="/salesbot" element={<DashboardLayout><SalesBotPage /></DashboardLayout>} />
       <Route path="*" element={<NotFound />} />
-    </RouteGroup>
+    </>
   );
 };
 

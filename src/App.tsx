@@ -22,23 +22,21 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/landing" replace />} />
-        {/* Usando o elemento Fragment para envolver os componentes de rotas */}
-        <Route>
-          {/* Usando o elemento como função para renderizar as rotas aninhadas */}
-          <Route>{MainRoutes()}</Route>
-          <Route>{AdminRoutes()}</Route>
-          <Route>{SystemRoutes()}</Route>
-          <Route>{AIRoutes()}</Route>
-          <Route>{GatewayRoutes()}</Route>
-          <Route>{StoreRoutes()}</Route>
-          <Route>{DeveloperRoutes()}</Route>
-          <Route>{LandingRoutes()}</Route>
-          <Route>{ContentRoutes()}</Route>
-          <Route>{AutomationRoutes()}</Route>
-          <Route>{ReportsRoutes()}</Route>
-          <Route>{AuthRoutes()}</Route>
-          <Route>{MiscRoutes()}</Route>
-        </Route>
+        
+        {/* Integrando todos os grupos de rotas via fragmentos */}
+        {MainRoutes()}
+        {AdminRoutes()}
+        {SystemRoutes()}
+        {AIRoutes()}
+        {GatewayRoutes()}
+        {StoreRoutes()}
+        {DeveloperRoutes()}
+        {LandingRoutes()}
+        {ContentRoutes()}
+        {AutomationRoutes()}
+        {ReportsRoutes()}
+        {AuthRoutes()}
+        {MiscRoutes()}
       </Routes>
     </Router>
   );

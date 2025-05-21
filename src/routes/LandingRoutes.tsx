@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Route } from "react-router-dom";
-import RouteGroup from "./RouteGroup";
 
 // Landing Pages
 import LandingPage from "@/pages/landing/LandingPage";
@@ -18,7 +17,7 @@ import PricingPage from "@/pages/plans/PricingPage";
 
 const LandingRoutes: React.FC = () => {
   return (
-    <RouteGroup>
+    <>
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/landing/segments" element={<LandingSegmentsPage />} />
       <Route path="/landing/beauty" element={<BeautyLandingPage />} />
@@ -30,7 +29,7 @@ const LandingRoutes: React.FC = () => {
       <Route path="/landing/hr" element={<HRLandingPage />} />
       <Route path="/landing/accounting" element={<AccountingLandingPage />} />
       <Route path="/landing/pricing" element={<PricingPage />} />
-    </RouteGroup>
+    </>
   );
 };
 
