@@ -54,6 +54,7 @@ import CampaignAnalyticsPage from "./pages/ai/CampaignAnalyticsPage";
 import ProductRecommendationsPage from "./pages/ai/ProductRecommendationsPage";
 import LandingSegmentsPage from "./pages/landing/LandingSegmentsPage";
 import TechCareAIPage from "./pages/ai/TechCareAIPage";
+import TechCareConsultantPage from "./pages/ai/TechCareConsultantPage";
 
 // TechCare Pages
 import TechCareAutomatorPage from "./pages/system/TechCareAutomatorPage";
@@ -112,13 +113,14 @@ function App() {
               <Route path="/developer/data-migration" element={<DataMigrationPage />} />
               <Route path="/marketplace" element={<MarketplacePage />} />
               
-              {/* AI Pages - Fase 2 */}
+              {/* AI Pages - Fase 3 */}
               <Route path="/ai/sentiment" element={<SentimentAnalysisPage />} />
               <Route path="/ai/forecast" element={<SalesForecastPage />} />
               <Route path="/ai/content" element={<ContentGeneratorPage />} />
               <Route path="/ai/campaign" element={<CampaignAnalyticsPage />} />
               <Route path="/ai/recommendations" element={<ProductRecommendationsPage />} />
               <Route path="/ai/techcare" element={<TechCareAIPage />} />
+              <Route path="/ai/consultant" element={<TechCareConsultantPage />} />
               
               {/* Security Routes - Fase 4 */}
               <Route path="/security/audit" element={<SecurityAuditPage />} />

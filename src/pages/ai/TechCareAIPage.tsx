@@ -15,7 +15,7 @@ import TicketClassifierWidget from "@/components/techcare/ai/TicketClassifierWid
 import ResponseGeneratorWidget from "@/components/techcare/ai/ResponseGeneratorWidget";
 import TextSummarizerWidget from "@/components/techcare/ai/TextSummarizerWidget";
 import InsightsWidget from "@/components/techcare/ai/InsightsWidget";
-import AIService from "@/services/techcare/AIService";
+import AIService from '@/services/techcare/AIService';
 
 const TechCareAIPage: React.FC = () => {
   const [sampleText, setSampleText] = useState<string>(
@@ -77,7 +77,7 @@ const TechCareAIPage: React.FC = () => {
                     Configurar
                   </Button>
                 </div>
-                <Alert variant="warning" className="mt-4">
+                <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Ambiente de demonstração</AlertTitle>
                   <AlertDescription>
