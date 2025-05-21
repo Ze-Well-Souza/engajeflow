@@ -22,6 +22,7 @@ class NavigationService {
   private static instance: NavigationService;
   private baseUrl: string;
   private lastPage: string | null = null;
+  private history: string[] = [];
   private circuitBreaker: CircuitBreaker;
   
   private constructor() {
@@ -69,6 +70,28 @@ class NavigationService {
   public getLastPage(): string | null {
     return this.lastPage;
   }
+
+  /**
+   * Obtém a página atual
+   */
+  public getCurrentPage(): string | null {
+    return this.lastPage;
+  }
+  
+  /**
+   * Obtém o histórico de navegação
+   */
+  public getHistory(): string[] {
+    return [...this.history]; // Retorna uma cópia para evitar modificações externas
+  }
+  
+  /**
+   * Limpa o histórico de navegação
+   */
+  public clearHistory(): void {
+    this.history = [];
+    logger.info('[NavigationService] Histórico de navegação limpo');
+  }
   
   /**
    * Navega para uma página específica
@@ -104,7 +127,8 @@ class NavigationService {
         // Por enquanto, apenas simulamos a navegação
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Atualizar última página
+        // Atualizar histórico e última página
+        this.history.push(path);
         this.lastPage = path;
         
         logger.info('[NavigationService] Navegação concluída com sucesso');
@@ -128,6 +152,15 @@ class NavigationService {
         
         // Em produção, aqui seria implementada a lógica real com Puppeteer
         await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Remover a página atual do histórico e definir a anterior como atual
+        if (this.history.length > 1) {
+          this.history.pop(); // Remove a página atual
+          this.lastPage = this.history[this.history.length - 1]; // Define a anterior como atual
+        } else if (this.history.length === 1) {
+          this.lastPage = null; // Se só tiver uma página no histórico, volta para null
+          this.history = [];
+        }
         
         return { success: true };
       } catch (error) {
