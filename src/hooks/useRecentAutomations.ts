@@ -2,29 +2,28 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from './useUserProfile';
 
-export interface ScheduledPost {
+export interface RecentAutomation {
   id: string;
-  caption: string | null;
-  platform: string;
-  scheduled_for: string;
+  task_type: string;
   status: string;
-  media_id: string;
+  scheduled_for: string | null;
+  executed_at: string | null;
+  created_at: string;
   client_id: string;
   client_name?: string;
-  media_url?: string;
   error_message?: string | null;
 }
 
-export interface ScheduledPostsResult {
-  posts: ScheduledPost[];
+export interface RecentAutomationsResult {
+  automations: RecentAutomation[];
   isLoading: boolean;
   error: string | null;
   totalCount: number;
 }
 
-export const useScheduledPosts = (limit = 5, page = 1) => {
-  const [result, setResult] = useState<ScheduledPostsResult>({
-    posts: [],
+export const useRecentAutomations = (limit = 5, page = 1) => {
+  const [result, setResult] = useState<RecentAutomationsResult>({
+    automations: [],
     isLoading: true,
     error: null,
     totalCount: 0
@@ -32,7 +31,7 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
   
   const { profile } = useUserProfile();
   
-  const fetchScheduledPosts = async () => {
+  const fetchRecentAutomations = async () => {
     if (!profile) return;
     
     try {
@@ -58,11 +57,11 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
       // Calcular offset para paginação
       const offset = (page - 1) * limit;
       
-      // Buscar publicações agendadas
+      // Buscar automações recentes
       const query = supabase
-        .from('scheduled_posts')
-        .select('id, caption, platform, scheduled_for, status, media_id, client_id, error_message', { count: 'exact' })
-        .order('scheduled_for', { ascending: true })
+        .from('automation_tasks')
+        .select('id, task_type, status, scheduled_for, executed_at, created_at, client_id, error_message', { count: 'exact' })
+        .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
         
       // Aplicar filtro de cliente se necessário
@@ -70,15 +69,15 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
         query.in('client_id', clientFilter.clientIds);
       }
       
-      const { data: posts, error, count } = await query;
+      const { data: automations, error, count } = await query;
       
       if (error) {
-        throw new Error('Erro ao buscar publicações agendadas');
+        throw new Error('Erro ao buscar automações recentes');
       }
       
       // Buscar nomes dos clientes
-      if (posts && posts.length > 0) {
-        const clientIds = [...new Set(posts.map(p => p.client_id))];
+      if (automations && automations.length > 0) {
+        const clientIds = [...new Set(automations.map(a => a.client_id))];
         
         const { data: clients, error: clientsError } = await supabase
           .from('clients')
@@ -86,24 +85,24 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
           .in('id', clientIds);
           
         if (!clientsError && clients) {
-          // Mapear nomes dos clientes para as publicações
-          const postsWithClientNames = posts.map(post => {
-            const client = clients.find(c => c.id === post.client_id);
+          // Mapear nomes dos clientes para as automações
+          const automationsWithClientNames = automations.map(automation => {
+            const client = clients.find(c => c.id === automation.client_id);
             return {
-              ...post,
+              ...automation,
               client_name: client?.name || 'Cliente desconhecido'
             };
           });
           
           setResult({
-            posts: postsWithClientNames,
+            automations: automationsWithClientNames,
             isLoading: false,
             error: null,
             totalCount: count || 0
           });
         } else {
           setResult({
-            posts: posts,
+            automations: automations,
             isLoading: false,
             error: null,
             totalCount: count || 0
@@ -111,7 +110,7 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
         }
       } else {
         setResult({
-          posts: [],
+          automations: [],
           isLoading: false,
           error: null,
           totalCount: count || 0
@@ -119,7 +118,7 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
       }
       
     } catch (error) {
-      console.error('Erro ao buscar publicações agendadas:', error);
+      console.error('Erro ao buscar automações recentes:', error);
       setResult(prev => ({
         ...prev,
         isLoading: false,
@@ -129,20 +128,20 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
   };
   
   useEffect(() => {
-    fetchScheduledPosts();
+    fetchRecentAutomations();
   }, [profile, limit, page]);
   
-  const refreshPosts = () => {
-    fetchScheduledPosts();
+  const refreshAutomations = () => {
+    fetchRecentAutomations();
   };
   
   return {
     ...result,
-    refreshPosts,
+    refreshAutomations,
     page,
     limit,
     totalPages: Math.ceil(result.totalCount / limit)
   };
 };
 
-export default useScheduledPosts;
+export default useRecentAutomations;

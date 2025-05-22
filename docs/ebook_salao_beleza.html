@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechCare Connect Automator: Guia Completo do Módulo Salão de Beleza</title>
+    <style>
+        /* Estilos importados do arquivo ebook_styles.css */
+        body {
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm; /* Tamanho A4 */
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #2563eb;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            color: #1e40af;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 24px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 20px;
+            color: #1e40af;
+        }
+
+        p {
+            margin-bottom: 1em;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 15px 0;
+            display: block;
+        }
+
+        .caption {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .step {
+            background-color: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tip {
+            background-color: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .warning {
+            background-color: #fff7ed;
+            border-left: 4px solid #f97316;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .note {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .cover {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 50px 0;
+        }
+
+        .cover h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        .cover h2 {
+            font-size: 22px;
+            color: #64748b;
+            font-weight: normal;
+            border: none;
+            margin-bottom: 30px;
+        }
+
+        .cover .logo {
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 72px;
+            font-weight: bold;
+        }
+
+        .cover .date {
+            margin-top: 50px;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .toc {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 30px 0;
+        }
+
+        .page-break {
+            page-break-after: always;
+            height: 0;
+            margin: 0;
+            border: 0;
+        }
+
+        .screenshot {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+
+        .placeholder-image {
+            background-color: #f1f5f9;
+            border: 1px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #64748b;
+            margin: 20px 0;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            color: white;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .flex-item {
+            flex: 1;
+        }
+
+        @media print {
+            .page-break {
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cover">
+        <div class="logo">TC</div>
+        <h1>TechCare Connect Automator</h1>
+        <h2>Guia Completo do Módulo Salão de Beleza</h2>
+        <p>Passo a passo para configuração e uso do sistema de agendamento inteligente</p>
+        <p class="date">Maio de 2025</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h1>Sumário</h1>
+    <div class="toc">
+        <ul>
+            <li><a href="#introducao">1. Introdução</a></li>
+            <li><a href="#primeiros-passos">2. Primeiros Passos</a></li>
+            <li><a href="#especialidades">3. Cadastro de Especialidades</a></li>
+            <li><a href="#profissionais">4. Cadastro de Profissionais</a></li>
+            <li><a href="#servicos">5. Cadastro de Serviços</a></li>
+            <li><a href="#horarios">6. Configuração de Horários</a></li>
+            <li><a href="#agendamento">7. Agendamento Inteligente</a></li>
+            <li><a href="#automacao">8. Automação de Mensagens</a></li>
+            <li><a href="#dicas">9. Dicas Avançadas</a></li>
+            <li><a href="#solucao-problemas">10. Solução de Problemas</a></li>
+        </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <section id="introducao">
+        <h1>1. Introdução</h1>
+        
+        <p>Bem-vindo ao guia completo do módulo Salão de Beleza do TechCare Connect Automator! Este e-book foi desenvolvido para ajudar você a configurar e utilizar todas as funcionalidades do sistema de forma rápida e eficiente.</p>
+        
+        <h3>O que é o módulo Salão de Beleza?</h3>
+        
+        <p>O módulo Salão de Beleza é uma solução completa para gerenciamento de salões, com foco em agendamento inteligente, automação de mensagens e gestão eficiente de profissionais e serviços.</p>
+        
+        <div class="placeholder-image">
+            [Imagem: Visão geral do dashboard do módulo Salão de Beleza]
+        </div>
+        
+        <h3>Principais funcionalidades</h3>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h4><span class="icon">1</span> Agendamento Inteligente</h4>
+                <p>Sistema que calcula automaticamente a disponibilidade com base nos horários dos profissionais, duração dos serviços e especialidades necessárias.</p>
+            </div>
+            <div class="flex-item">
+                <h4><span class="icon">2</span> Gestão de Profissionais</h4>
+                <p>Cadastro completo de profissionais com suas especialidades e horários de trabalho.</p>
+            </div>
+        </div>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h4><span class="icon">3</span> Gestão de Serviços</h4>
+                <p>Cadastro de serviços com duração, preço e especialidades necessárias.</p>
+            </div>
+            <div class="flex-item">
+                <h4><span class="icon">4</span> Automação de Mensagens</h4>
+                <p>Envio automático de confirmações, lembretes e reagendamentos via WhatsApp.</p>
+            </div>
+        </div>
+        
+        <div class="note">
+            <p>Este guia aborda todas as etapas necessárias para configurar e utilizar o módulo Salão de Beleza, desde o cadastro inicial até as funcionalidades avançadas de automação.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="primeiros-passos">
+        <h1>2. Primeiros Passos</h1>
+        
+        <h3>Acessando o sistema</h3>
+        
+        <p>Para começar a utilizar o módulo Salão de Beleza, siga os passos abaixo:</p>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Acesse o TechCare Connect Automator através do seu navegador usando o endereço fornecido pelo administrador.</p>
+            <div class="placeholder-image">
+                [Imagem: Tela de login do sistema]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Faça login com suas credenciais (e-mail e senha).</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> No menu lateral, clique em "Salão de Beleza" para acessar o módulo.</p>
+            <div class="placeholder-image">
+                [Imagem: Menu lateral com destaque para a opção "Salão de Beleza"]
+            </div>
+        </div>
+        
+        <h3>Visão geral da interface</h3>
+        
+        <p>A interface do módulo Salão de Beleza é dividida em quatro áreas principais:</p>
+        
+        <div class="placeholder-image">
+            [Imagem: Interface principal do módulo com áreas destacadas]
+        </div>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h4><span class="icon">1</span> Agendamento</h4>
+                <p>Área para criar e gerenciar agendamentos de forma inteligente.</p>
+            </div>
+            <div class="flex-item">
+                <h4><span class="icon">2</span> Profissionais</h4>
+                <p>Gerenciamento de profissionais e suas especialidades.</p>
+            </div>
+        </div>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h4><span class="icon">3</span> Especialidades</h4>
+                <p>Cadastro e gerenciamento de especialidades disponíveis.</p>
+            </div>
+            <div class="flex-item">
+                <h4><span class="icon">4</span> Serviços</h4>
+                <p>Configuração dos serviços oferecidos pelo salão.</p>
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Recomendamos seguir a ordem de configuração apresentada neste guia: primeiro cadastre as especialidades, depois os profissionais, em seguida os serviços e, por fim, configure os horários de trabalho.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="especialidades">
+        <h1>3. Cadastro de Especialidades</h1>
+        
+        <p>O primeiro passo para configurar seu salão é cadastrar as especialidades disponíveis (ex: cabeleireiro, manicure, esteticista, etc.).</p>
+        
+        <h3>Acessando o módulo de especialidades</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na interface principal, clique na aba "Especialidades".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Especialidades" destacada na interface]
+            </div>
+        </div>
+        
+        <h3>Criando uma nova especialidade</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Clique na aba "Nova Especialidade".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Nova Especialidade" destacada]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Preencha o campo "Nome" com o nome da especialidade (ex: "Cabeleireiro").</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Opcionalmente, adicione uma descrição para a especialidade.</p>
+            <div class="placeholder-image">
+                [Imagem: Formulário de cadastro de especialidade preenchido]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Clique no botão "Adicionar Especialidade" para salvar.</p>
+        </div>
+        
+        <div class="note">
+            <p>As especialidades são fundamentais para o funcionamento do agendamento inteligente, pois permitem vincular profissionais aos serviços que podem realizar.</p>
+        </div>
+        
+        <h3>Editando especialidades existentes</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na lista de especialidades, localize a que deseja editar e clique no ícone de edição (lápis).</p>
+            <div class="placeholder-image">
+                [Imagem: Lista de especialidades com ícone de edição destacado]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Faça as alterações necessárias e clique em "Salvar Alterações".</p>
+        </div>
+        
+        <h3>Removendo especialidades</h3>
+        
+        <div class="warning">
+            <p>Só é possível remover especialidades que não estejam associadas a nenhum profissional. Caso contrário, você receberá uma mensagem de erro.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na lista de especialidades, clique no ícone de exclusão (lixeira) da especialidade que deseja remover.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Confirme a exclusão na janela de confirmação.</p>
+            <div class="placeholder-image">
+                [Imagem: Janela de confirmação de exclusão]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Crie especialidades específicas para melhor organização. Por exemplo, em vez de apenas "Cabeleireiro", considere especialidades como "Colorista", "Corte Masculino", "Corte Feminino", etc.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="profissionais">
+        <h1>4. Cadastro de Profissionais</h1>
+        
+        <p>Após cadastrar as especialidades, o próximo passo é cadastrar os profissionais do seu salão.</p>
+        
+        <h3>Acessando o módulo de profissionais</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na interface principal, clique na aba "Profissionais".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Profissionais" destacada na interface]
+            </div>
+        </div>
+        
+        <h3>Adicionando um novo profissional</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Clique na aba "Novo Profissional".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Novo Profissional" destacada]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Preencha os campos obrigatórios:</p>
+            <ul>
+                <li>Nome: nome completo do profissional</li>
+                <li>Email (opcional): email para contato</li>
+                <li>Telefone (opcional): telefone para contato</li>
+                <li>Biografia (opcional): breve descrição sobre o profissional</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Formulário de cadastro de profissional]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Selecione as especialidades do profissional marcando as caixas correspondentes.</p>
+            <div class="placeholder-image">
+                [Imagem: Seleção de especialidades no formulário]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Clique no botão "Adicionar Profissional" para salvar.</p>
+        </div>
+        
+        <div class="note">
+            <p>É fundamental atribuir as especialidades corretas a cada profissional, pois isso determinará quais serviços eles poderão realizar no sistema de agendamento.</p>
+        </div>
+        
+        <h3>Editando informações de profissionais</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na lista de profissionais, localize o que deseja editar e clique no ícone de edição (lápis).</p>
+            <div class="placeholder-image">
+                [Imagem: Lista de profissionais com ícone de edição destacado]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Faça as alterações necessárias e clique em "Salvar Alterações".</p>
+        </div>
+        
+        <h3>Desativando profissionais</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na lista de profissionais, clique no ícone de exclusão (lixeira) do profissional que deseja desativar.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Confirme a desativação na janela de confirmação.</p>
+            <div class="placeholder-image">
+                [Imagem: Janela de confirmação de desativação]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Ao desativar um profissional, ele não será excluído permanentemente do sistema, apenas ficará indisponível para novos agendamentos. Isso preserva o histórico de atendimentos realizados.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="servicos">
+        <h1>5. Cadastro de Serviços</h1>
+        
+        <p>Com as especialidades e profissionais cadastrados, agora é hora de configurar os serviços oferecidos pelo seu salão.</p>
+        
+        <h3>Acessando o módulo de serviços</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na interface principal, clique na aba "Serviços".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Serviços" destacada na interface]
+            </div>
+        </div>
+        
+        <h3>Criando um novo serviço</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Clique na aba "Novo Serviço".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Novo Serviço" destacada]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Preencha os campos obrigatórios:</p>
+            <ul>
+                <li>Nome: nome do serviço (ex: "Corte Feminino")</li>
+                <li>Duração (minutos): tempo necessário para realizar o serviço</li>
+                <li>Preço (opcional): valor cobrado pelo serviço</li>
+                <li>Descrição (opcional): detalhes sobre o serviço</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Formulário de cadastro de serviço]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Selecione as especialidades necessárias para realizar este serviço.</p>
+            <div class="placeholder-image">
+                [Imagem: Seleção de especialidades no formulário de serviço]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Clique no botão "Adicionar Serviço" para salvar.</p>
+        </div>
+        
+        <div class="note">
+            <p>A definição correta da duração do serviço é crucial para o funcionamento do agendamento inteligente, pois determina os intervalos de tempo disponíveis na agenda.</p>
+        </div>
+        
+        <h3>Editando serviços existentes</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na lista de serviços, localize o que deseja editar e clique no ícone de edição (lápis).</p>
+            <div class="placeholder-image">
+                [Imagem: Lista de serviços com ícone de edição destacado]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Faça as alterações necessárias e clique em "Salvar Alterações".</p>
+        </div>
+        
+        <h3>Desativando serviços</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na lista de serviços, clique no ícone de exclusão (lixeira) do serviço que deseja desativar.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Confirme a desativação na janela de confirmação.</p>
+            <div class="placeholder-image">
+                [Imagem: Janela de confirmação de desativação]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Crie pacotes de serviços combinando múltiplos procedimentos em um único serviço. Por exemplo, "Pacote Noiva" pode incluir maquiagem, penteado e manicure, com a duração total adequada.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="horarios">
+        <h1>6. Configuração de Horários</h1>
+        
+        <p>A configuração dos horários de trabalho dos profissionais é essencial para o funcionamento do agendamento inteligente.</p>
+        
+        <h3>Acessando a configuração de horários</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na aba "Profissionais", localize o profissional desejado e clique no botão "Horários".</p>
+            <div class="placeholder-image">
+                [Imagem: Botão "Horários" na lista de profissionais]
+            </div>
+        </div>
+        
+        <h3>Definindo horários regulares</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Selecione o dia da semana no menu suspenso.</p>
+            <div class="placeholder-image">
+                [Imagem: Seleção de dia da semana]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Defina o horário de início e término do expediente.</p>
+            <div class="placeholder-image">
+                [Imagem: Campos de horário de início e término]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Clique em "Adicionar Horário" para salvar.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Repita o processo para cada dia da semana em que o profissional trabalha.</p>
+            <div class="placeholder-image">
+                [Imagem: Lista de horários configurados para um profissional]
+            </div>
+        </div>
+        
+        <div class="warning">
+            <p>O sistema não permitirá a sobreposição de horários para o mesmo profissional no mesmo dia. Caso tente adicionar um horário que se sobreponha a outro já existente, você receberá uma mensagem de erro.</p>
+        </div>
+        
+        <h3>Configurando exceções (folgas e férias)</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na tela de horários do profissional, clique na aba "Folgas e Férias".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Folgas e Férias" destacada]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Clique em "Adicionar Período de Folga".</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Selecione a data de início e fim do período de folga.</p>
+            <div class="placeholder-image">
+                [Imagem: Seleção de período de folga]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Adicione um motivo (opcional) e clique em "Salvar".</p>
+        </div>
+        
+        <div class="note">
+            <p>Durante os períodos de folga cadastrados, o profissional não aparecerá como disponível no sistema de agendamento, mesmo que tenha horários regulares configurados para aqueles dias.</p>
+        </div>
+        
+        <h3>Visualizando agenda de profissionais</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na tela de horários do profissional, clique na aba "Visualizar Agenda".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Visualizar Agenda" destacada]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Selecione o período que deseja visualizar no calendário.</p>
+            <div class="placeholder-image">
+                [Imagem: Calendário com agenda do profissional]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Configure intervalos entre atendimentos adicionando pequenos períodos de folga (ex: 15 minutos) após cada atendimento previsto. Isso dará tempo para o profissional se preparar entre um cliente e outro.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="agendamento">
+        <h1>7. Agendamento Inteligente</h1>
+        
+        <p>O agendamento inteligente é o coração do módulo Salão de Beleza, permitindo marcar horários com base na disponibilidade real dos profissionais.</p>
+        
+        <h3>Acessando o módulo de agendamento</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na interface principal, clique na aba "Agendamento".</p>
+            <div class="placeholder-image">
+                [Imagem: Aba "Agendamento" destacada na interface]
+            </div>
+        </div>
+        
+        <h3>Selecionando serviços</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> No campo "Serviço", selecione o serviço desejado no menu suspenso.</p>
+            <div class="placeholder-image">
+                [Imagem: Seleção de serviço no agendamento]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Opcionalmente, selecione um profissional específico no campo "Profissional". Se deixar em branco, o sistema mostrará todos os profissionais disponíveis para o serviço selecionado.</p>
+            <div class="placeholder-image">
+                [Imagem: Seleção de profissional no agendamento]
+            </div>
+        </div>
+        
+        <h3>Escolhendo data e visualizando horários disponíveis</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Selecione a data desejada no calendário.</p>
+            <div class="placeholder-image">
+                [Imagem: Calendário para seleção de data]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> O sistema calculará automaticamente os horários disponíveis com base em:</p>
+            <ul>
+                <li>Horários de trabalho dos profissionais</li>
+                <li>Duração do serviço selecionado</li>
+                <li>Agendamentos já existentes</li>
+                <li>Especialidades necessárias para o serviço</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Lista de horários disponíveis]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Clique no horário desejado para selecioná-lo.</p>
+        </div>
+        
+        <h3>Confirmando agendamento</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Após selecionar o horário, você verá um resumo do agendamento.</p>
+            <div class="placeholder-image">
+                [Imagem: Resumo do agendamento]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Clique em "Continuar" para prosseguir.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Preencha as informações do cliente:</p>
+            <ul>
+                <li>Nome completo (obrigatório)</li>
+                <li>Telefone (obrigatório)</li>
+                <li>Email (opcional)</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Formulário de informações do cliente]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Clique em "Confirmar Agendamento" para finalizar.</p>
+        </div>
+        
+        <div class="note">
+            <p>Após a confirmação, o sistema enviará automaticamente uma mensagem de confirmação para o cliente, caso a integração com WhatsApp esteja configurada.</p>
+        </div>
+        
+        <h3>Reagendamento e cancelamento</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Para gerenciar agendamentos existentes, clique na aba "Agendamentos" na tela principal.</p>
+            <div class="placeholder-image">
+                [Imagem: Lista de agendamentos existentes]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Para reagendar, clique no ícone de calendário ao lado do agendamento desejado.</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Para cancelar, clique no ícone de exclusão (lixeira) e confirme a ação.</p>
+            <div class="placeholder-image">
+                [Imagem: Confirmação de cancelamento]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Ao reagendar um horário, o sistema automaticamente enviará uma notificação ao cliente informando sobre a mudança, caso a integração com WhatsApp esteja ativa.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="automacao">
+        <h1>8. Automação de Mensagens</h1>
+        
+        <p>A automação de mensagens permite enviar lembretes e confirmações automáticas para os clientes via WhatsApp.</p>
+        
+        <div class="note">
+            <p>Para utilizar esta funcionalidade, é necessário configurar a integração com a API do WhatsApp Business. Consulte o administrador do sistema para mais informações.</p>
+        </div>
+        
+        <h3>Configurando templates de mensagens</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Na interface principal, clique em "Configurações" e depois em "Templates de Mensagens".</p>
+            <div class="placeholder-image">
+                [Imagem: Menu de configurações com opção de templates]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Selecione o tipo de mensagem que deseja configurar:</p>
+            <ul>
+                <li>Confirmação de agendamento</li>
+                <li>Lembrete (24h antes)</li>
+                <li>Reagendamento</li>
+                <li>Cancelamento</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Seleção de tipo de mensagem]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Edite o texto do template, utilizando as variáveis disponíveis:</p>
+            <ul>
+                <li>{cliente_nome}: Nome do cliente</li>
+                <li>{servico_nome}: Nome do serviço</li>
+                <li>{profissional_nome}: Nome do profissional</li>
+                <li>{data}: Data do agendamento</li>
+                <li>{horario}: Horário do agendamento</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Editor de template de mensagem]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Clique em "Salvar Template" para confirmar.</p>
+        </div>
+        
+        <h3>Lembretes automáticos</h3>
+        
+        <p>O sistema enviará automaticamente lembretes 24 horas antes do horário agendado. Para configurar:</p>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Em "Configurações", clique em "Automação de Mensagens".</p>
+            <div class="placeholder-image">
+                [Imagem: Menu de configurações de automação]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Ative ou desative a opção "Enviar lembretes automáticos".</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Configure o tempo de antecedência para o envio (padrão: 24 horas).</p>
+            <div class="placeholder-image">
+                [Imagem: Configuração de tempo de antecedência]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">4</span> Clique em "Salvar Configurações".</p>
+        </div>
+        
+        <h3>Confirmações de agendamento</h3>
+        
+        <p>As confirmações são enviadas imediatamente após a criação de um novo agendamento.</p>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Em "Configurações" > "Automação de Mensagens", ative ou desative a opção "Enviar confirmações automáticas".</p>
+            <div class="placeholder-image">
+                [Imagem: Opção de confirmações automáticas]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Clique em "Salvar Configurações".</p>
+        </div>
+        
+        <h3>Reagendamento automático</h3>
+        
+        <p>O sistema pode sugerir horários alternativos quando um agendamento é cancelado.</p>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Em "Configurações" > "Automação de Mensagens", ative a opção "Sugerir reagendamento automático".</p>
+            <div class="placeholder-image">
+                [Imagem: Opção de reagendamento automático]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Configure o número de sugestões a serem enviadas (1-3).</p>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Clique em "Salvar Configurações".</p>
+        </div>
+        
+        <div class="tip">
+            <p>Personalize as mensagens com o nome do salão e um toque pessoal para aumentar o engajamento dos clientes. Evite mensagens muito longas ou formais.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="dicas">
+        <h1>9. Dicas Avançadas</h1>
+        
+        <h3>Otimização da agenda</h3>
+        
+        <div class="tip">
+            <p><strong>Agrupamento de serviços similares</strong></p>
+            <p>Configure os horários dos profissionais para realizar serviços similares em sequência. Por exemplo, reserve as manhãs para colorações e as tardes para cortes. Isso otimiza o uso de recursos e equipamentos.</p>
+            <div class="placeholder-image">
+                [Imagem: Exemplo de agenda otimizada]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p><strong>Intervalos estratégicos</strong></p>
+            <p>Adicione pequenos intervalos (10-15 minutos) entre atendimentos mais complexos para dar tempo ao profissional de se preparar e evitar atrasos em cascata.</p>
+        </div>
+        
+        <div class="tip">
+            <p><strong>Horários de pico</strong></p>
+            <p>Reserve os horários de maior demanda (finais de tarde e fins de semana) para os serviços mais rentáveis ou que atraem novos clientes.</p>
+        </div>
+        
+        <h3>Maximizando a produtividade</h3>
+        
+        <div class="tip">
+            <p><strong>Duração realista dos serviços</strong></p>
+            <p>Analise o tempo real que cada serviço leva para ser executado e ajuste as durações no sistema. Serviços com duração subestimada causam atrasos e insatisfação.</p>
+            <div class="placeholder-image">
+                [Imagem: Ajuste de duração de serviços]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p><strong>Distribuição de carga</strong></p>
+            <p>Configure as especialidades dos profissionais de forma a distribuir a carga de trabalho uniformemente, evitando que alguns fiquem sobrecarregados enquanto outros ficam ociosos.</p>
+        </div>
+        
+        <h3>Análise de dados e relatórios</h3>
+        
+        <div class="step">
+            <p><span class="step-number">1</span> Acesse a seção "Relatórios" no menu principal.</p>
+            <div class="placeholder-image">
+                [Imagem: Menu de relatórios]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">2</span> Selecione o tipo de relatório desejado:</p>
+            <ul>
+                <li>Ocupação por profissional</li>
+                <li>Serviços mais populares</li>
+                <li>Horários de maior demanda</li>
+                <li>Taxa de cancelamentos</li>
+            </ul>
+            <div class="placeholder-image">
+                [Imagem: Tipos de relatórios disponíveis]
+            </div>
+        </div>
+        
+        <div class="step">
+            <p><span class="step-number">3</span> Defina o período de análise e clique em "Gerar Relatório".</p>
+            <div class="placeholder-image">
+                [Imagem: Exemplo de relatório gerado]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p>Analise regularmente os relatórios para identificar tendências e oportunidades de melhoria na gestão do salão.</p>
+        </div>
+        
+        <h3>Fidelização de clientes</h3>
+        
+        <div class="tip">
+            <p><strong>Lembretes de retorno</strong></p>
+            <p>Configure mensagens automáticas para sugerir retorno após um período específico. Por exemplo, 45 dias após um corte de cabelo ou 15 dias após uma manicure.</p>
+            <div class="placeholder-image">
+                [Imagem: Configuração de lembretes de retorno]
+            </div>
+        </div>
+        
+        <div class="tip">
+            <p><strong>Promoções personalizadas</strong></p>
+            <p>Utilize o histórico de serviços para enviar promoções personalizadas. Por exemplo, desconto em coloração para clientes que costumam fazer apenas corte.</p>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="solucao-problemas">
+        <h1>10. Solução de Problemas</h1>
+        
+        <h3>Problemas de disponibilidade</h3>
+        
+        <div class="warning">
+            <p><strong>Problema: Não aparecem horários disponíveis para um serviço</strong></p>
+            <p>Possíveis causas:</p>
+            <ol>
+                <li>Não há profissionais com as especialidades necessárias para o serviço</li>
+                <li>Os profissionais não têm horários de trabalho configurados para a data selecionada</li>
+                <li>Todos os horários já estão ocupados com outros agendamentos</li>
+            </ol>
+            <p>Solução: Verifique se os profissionais têm as especialidades corretas atribuídas e se seus horários de trabalho estão configurados adequadamente.</p>
+            <div class="placeholder-image">
+                [Imagem: Verificação de especialidades de profissionais]
+            </div>
+        </div>
+        
+        <h3>Conflitos de horários</h3>
+        
+        <div class="warning">
+            <p><strong>Problema: Sobreposição de agendamentos</strong></p>
+            <p>Possíveis causas:</p>
+            <ol>
+                <li>A duração de um serviço foi alterada após o agendamento</li>
+                <li>Múltiplos usuários agendaram simultaneamente</li>
+            </ol>
+            <p>Solução: Verifique a duração dos serviços e, se necessário, reagende um dos horários conflitantes.</p>
+            <div class="placeholder-image">
+                [Imagem: Detecção de conflito de horários]
+            </div>
+        </div>
+        
+        <h3>Falhas em notificações</h3>
+        
+        <div class="warning">
+            <p><strong>Problema: Mensagens automáticas não estão sendo enviadas</strong></p>
+            <p>Possíveis causas:</p>
+            <ol>
+                <li>Integração com WhatsApp não está configurada corretamente</li>
+                <li>Número de telefone do cliente está em formato inválido</li>
+                <li>Limite de mensagens da API foi atingido</li>
+            </ol>
+            <p>Solução: Verifique as configurações de integração e o formato dos números de telefone cadastrados.</p>
+            <div class="placeholder-image">
+                [Imagem: Configurações de integração WhatsApp]
+            </div>
+        </div>
+        
+        <h3>Perguntas frequentes</h3>
+        
+        <div class="note">
+            <p><strong>Como cancelar múltiplos agendamentos de uma vez?</strong></p>
+            <p>Acesse "Agendamentos" > "Gerenciamento em Lote" e selecione os agendamentos que deseja cancelar. Em seguida, clique em "Ações em Lote" e escolha "Cancelar Selecionados".</p>
+            <div class="placeholder-image">
+                [Imagem: Gerenciamento em lote de agendamentos]
+            </div>
+        </div>
+        
+        <div class="note">
+            <p><strong>Como bloquear horários para manutenção ou reuniões?</strong></p>
+            <p>Crie um "serviço interno" chamado "Manutenção" ou "Reunião" e faça um agendamento normal selecionando esse serviço. Isso bloqueará o horário na agenda dos profissionais.</p>
+        </div>
+        
+        <div class="note">
+            <p><strong>Como transferir um agendamento para outro profissional?</strong></p>
+            <p>Acesse o agendamento, clique em "Editar", selecione o novo profissional no menu suspenso e salve as alterações. O sistema verificará automaticamente se o novo profissional tem disponibilidade no horário.</p>
+            <div class="placeholder-image">
+                [Imagem: Edição de profissional em um agendamento]
+            </div>
+        </div>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section id="contato">
+        <h1>Contato e Suporte</h1>
+        
+        <p>Para obter ajuda adicional ou reportar problemas, entre em contato com nossa equipe de suporte:</p>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h3>Email</h3>
+                <p>suporte@techcareconnect.com</p>
+            </div>
+            <div class="flex-item">
+                <h3>Telefone</h3>
+                <p>(11) 1234-5678</p>
+            </div>
+        </div>
+        
+        <div class="flex-container">
+            <div class="flex-item">
+                <h3>Horário de Atendimento</h3>
+                <p>Segunda a sexta, das 8h às 18h</p>
+            </div>
+            <div class="flex-item">
+                <h3>Site</h3>
+                <p>www.techcareconnect.com/suporte</p>
+            </div>
+        </div>
+        
+        <div class="note">
+            <p>Ao reportar um problema, forneça o máximo de detalhes possível, incluindo capturas de tela e os passos para reproduzir o erro.</p>
+        </div>
+        
+        <h3>Solicitação de novas funcionalidades</h3>
+        
+        <p>Sugestões para novas funcionalidades são sempre bem-vindas! Envie suas ideias para:</p>
+        <p>feedback@techcareconnect.com</p>
+        
+        <div class="tip">
+            <p>Acompanhe nosso blog e redes sociais para ficar por dentro das novidades e atualizações do sistema.</p>
+        </div>
+        
+        <div class="center">
+            <p>© 2025 TechCare Connect Automator. Todos os direitos reservados.</p>
+        </div>
+    </section>
+</body>
+</html>
