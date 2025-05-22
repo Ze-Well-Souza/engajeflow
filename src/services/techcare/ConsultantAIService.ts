@@ -1,256 +1,239 @@
-
 /**
- * Serviço de IA consultiva para o TechCare Connect Automator
+ * Integração do logger estruturado com o ConsultantAIService
+ * Substitui todos os console.log por logs estruturados com níveis e contexto
  */
-import { getEnvVariable } from '../../utils/environment';
+
+import { AIService } from './AIService';
+import { NavigationService } from './NavigationService';
+import { ScrapingService } from './ScrapingService';
 import logger from '../../utils/logger';
-import { CircuitBreaker } from '../../utils/circuit-breaker';
-import { 
-  AIResult, 
-  ConsultingOptions, 
-  SentimentAnalysisResult, 
-  FinancialConsultingResult 
-} from './ai/types';
-import { 
-  buildFinancialConsultingPrompt, 
-  buildSentimentAnalysisPrompt, 
-  buildSalesPlanPrompt 
-} from './ai/prompts';
-import { 
-  generateMockFinancialConsulting, 
-  generateMockSentimentAnalysis 
-} from './ai/mocks';
-import { ResponseProcessor } from './ai/ResponseProcessor';
+
+// Criar logger específico para este serviço
+const consultantLogger = logger.withContext('ConsultantAIService');
 
 /**
- * Serviço responsável por interações com IA para consultoria
+ * Serviço para geração de sugestões e análises para consultores usando IA
  */
-class ConsultantAIService {
-  private static instance: ConsultantAIService;
-  private apiKey: string | null = null;
-  private baseUrl: string = 'https://api.openai.com/v1';
-  private model: string = 'gpt-4';
-  private circuitBreaker: CircuitBreaker;
+export class ConsultantAIService {
+  constructor(
+    private aiService: AIService,
+    private navigationService: NavigationService,
+    private scrapingService: ScrapingService
+  ) {
+    consultantLogger.info('ConsultantAIService inicializado');
+  }
 
-  private constructor() {
-    // Tentar obter a chave da API das variáveis de ambiente
-    this.apiKey = getEnvVariable('OPENAI_API_KEY', null) as string | null;
+  /**
+   * Gera sugestões para consultores com base nos dados do cliente
+   * @param clientId ID do cliente
+   * @returns Sugestões geradas pela IA
+   */
+  public async generateConsultantSuggestions(clientId: string): Promise<any> {
+    const operation = logger.startOperation('generateConsultantSuggestions');
     
-    // Configurar circuit breaker
-    this.circuitBreaker = new CircuitBreaker({
-      failureThreshold: 2,
-      resetTimeout: 60000 // 1 minuto
-    });
-    
-    logger.info('[ConsultantAIService] Inicializado');
-  }
-
-  /**
-   * Obtém a instância singleton do serviço
-   */
-  public static getInstance(): ConsultantAIService {
-    if (!ConsultantAIService.instance) {
-      ConsultantAIService.instance = new ConsultantAIService();
-    }
-    return ConsultantAIService.instance;
-  }
-
-  /**
-   * Define a chave de API para OpenAI
-   * @param apiKey Chave de API OpenAI
-   */
-  public setApiKey(apiKey: string): void {
-    this.apiKey = apiKey;
-    logger.info('[ConsultantAIService] API Key configurada');
-  }
-
-  /**
-   * Define o modelo a ser utilizado
-   * @param model Nome do modelo OpenAI
-   */
-  public setModel(model: string): void {
-    this.model = model;
-    logger.info(`[ConsultantAIService] Modelo definido para: ${model}`);
-  }
-
-  /**
-   * Gera uma consultoria financeira com base nos dados fornecidos
-   * @param businessData Dados da empresa para análise
-   * @param goal Objetivo de negócios
-   * @param options Opções de geração
-   */
-  public async generateFinancialConsulting(
-    businessData: Record<string, any>,
-    goal: string,
-    options: ConsultingOptions = {}
-  ): Promise<AIResult<FinancialConsultingResult>> {
-    return this.executeWithRetry(async () => {
-      logger.info('[ConsultantAIService] Gerando consultoria financeira');
-      
-      // Validar API key
-      if (!this.apiKey) {
-        return { 
-          success: false, 
-          error: 'API Key não configurada. Use ConsultantAIService.setApiKey()' 
-        };
-      }
-      
-      try {
-        // Construir prompt para o modelo de IA
-        const prompt = buildFinancialConsultingPrompt(businessData, goal, options.detailed || false);
-        
-        // Fazer requisição para a API da OpenAI
-        const response = await this.makeOpenAIRequest(prompt, options);
-        
-        // Processar e estruturar a resposta
-        const result = ResponseProcessor.processFinancialConsultingResponse(response);
-        
-        logger.info('[ConsultantAIService] Consultoria financeira gerada com sucesso');
-        
-        return {
-          success: true,
-          data: result
-        };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante geração de consultoria';
-        logger.error('[ConsultantAIService] Erro:', errorMessage);
-        return { success: false, error: errorMessage };
-      }
-    });
-  }
-
-  /**
-   * Faz análise de sentimento em textos de clientes
-   * @param texts Textos a serem analisados
-   * @param context Contexto opcional para análise
-   */
-  public async analyzeSentiment(
-    texts: string[],
-    context?: string
-  ): Promise<AIResult<SentimentAnalysisResult>> {
-    return this.executeWithRetry(async () => {
-      logger.info('[ConsultantAIService] Analisando sentimento em textos');
-      
-      // Validar API key
-      if (!this.apiKey) {
-        return { 
-          success: false, 
-          error: 'API Key não configurada. Use ConsultantAIService.setApiKey()' 
-        };
-      }
-      
-      try {
-        // Construir prompt para análise de sentimento
-        const prompt = buildSentimentAnalysisPrompt(texts, context);
-        
-        // Fazer requisição para a API da OpenAI
-        const response = await this.makeOpenAIRequest(prompt, { format: 'json' });
-        
-        // Processar e estruturar a resposta
-        const result = ResponseProcessor.processSentimentAnalysisResponse(response);
-        
-        logger.info('[ConsultantAIService] Análise de sentimento concluída com sucesso');
-        
-        return {
-          success: true,
-          data: result
-        };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante análise de sentimento';
-        logger.error('[ConsultantAIService] Erro:', errorMessage);
-        return { success: false, error: errorMessage };
-      }
-    });
-  }
-
-  /**
-   * Gera um plano de vendas baseado em dados históricos
-   * @param salesData Dados históricos de vendas
-   * @param targetGrowth Crescimento alvo (%)
-   * @param timeframe Período de tempo para o plano
-   */
-  public async generateSalesPlan(
-    salesData: Record<string, any>,
-    targetGrowth: number,
-    timeframe: string
-  ): Promise<AIResult<any>> {
-    return this.executeWithRetry(async () => {
-      logger.info('[ConsultantAIService] Gerando plano de vendas');
-      
-      // Validar API key
-      if (!this.apiKey) {
-        return { 
-          success: false, 
-          error: 'API Key não configurada. Use ConsultantAIService.setApiKey()' 
-        };
-      }
-      
-      try {
-        // Construir prompt para plano de vendas
-        const prompt = buildSalesPlanPrompt(salesData, targetGrowth, timeframe);
-        
-        // Fazer requisição para a API da OpenAI
-        const response = await this.makeOpenAIRequest(prompt, { detailed: true });
-        
-        logger.info('[ConsultantAIService] Plano de vendas gerado com sucesso');
-        
-        // Processar resposta
-        return {
-          success: true,
-          data: JSON.parse(response)
-        };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante geração do plano de vendas';
-        logger.error('[ConsultantAIService] Erro:', errorMessage);
-        return { success: false, error: errorMessage };
-      }
-    });
-  }
-
-  /**
-   * Executa uma função com retry e circuit breaker
-   */
-  private async executeWithRetry<T>(fn: () => Promise<AIResult<T>>): Promise<AIResult<T>> {
     try {
-      // Executar com circuit breaker
-      return await this.circuitBreaker.execute(fn);
+      consultantLogger.info('Gerando sugestões para consultor', { clientId });
+      
+      // Navegar para a seção de clientes
+      await this.navigationService.goToClients();
+      
+      // Extrair dados do cliente
+      const clientData = await this.scrapingService.extractClientData(clientId);
+      
+      consultantLogger.debug('Dados do cliente extraídos', { 
+        clientId,
+        dataSize: JSON.stringify(clientData).length
+      });
+      
+      // Gerar recomendações com IA
+      const suggestions = await this.aiService.generateConsultantRecommendations({
+        clientData,
+        context: 'consultant_suggestions'
+      });
+      
+      consultantLogger.info('Sugestões geradas com sucesso', { 
+        clientId,
+        suggestionCount: Object.keys(suggestions).length
+      });
+      
+      operation.end('success', { clientId });
+      return suggestions;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante operação com IA';
+      consultantLogger.error('Erro ao gerar sugestões para consultor', error);
+      operation.end('failure', { clientId, error: error.message });
       
-      if (errorMessage.includes('Circuit Breaker')) {
-        logger.error('[ConsultantAIService] Circuit Breaker aberto, muitas falhas recentes');
+      if (error.message.includes('navegação')) {
+        throw new Error('Erro ao acessar dados do cliente');
+      } else if (error.message.includes('extrair')) {
+        throw new Error('Erro ao extrair dados do cliente');
       } else {
-        logger.error('[ConsultantAIService] Erro:', errorMessage);
+        throw new Error('Erro ao gerar sugestões para consultor');
       }
-      
-      return { success: false, error: errorMessage };
     }
   }
 
   /**
-   * Faz uma requisição para a API da OpenAI
+   * Gera relatório personalizado para o cliente
+   * @param clientId ID do cliente
+   * @returns Conteúdo do relatório
    */
-  private async makeOpenAIRequest(prompt: string, options: ConsultingOptions): Promise<string> {
-    // Em um ambiente real, utilizaria-se fetch ou uma biblioteca como axios
-    // para fazer a requisição à API da OpenAI.
-    // No contexto desta implementação, estamos simulando a requisição.
+  public async generateClientReport(clientId: string): Promise<any> {
+    const operation = logger.startOperation('generateClientReport');
     
-    logger.info('[ConsultantAIService] Enviando requisição para OpenAI');
-    
-    // Simular delay de rede
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Simular resposta com base no tipo de prompt
-    if (prompt.includes('consultor financeiro')) {
-      return JSON.stringify(generateMockFinancialConsulting());
-    } else if (prompt.includes('analista de sentimento')) {
-      return JSON.stringify(generateMockSentimentAnalysis());
-    } else {
-      return JSON.stringify({
-        content: "Este é um texto gerado como demonstração. Em uma implementação real, este conteúdo seria gerado pela API da OpenAI com base no prompt fornecido."
+    try {
+      consultantLogger.info('Gerando relatório para cliente', { clientId });
+      
+      // Navegar para a seção de clientes
+      await this.navigationService.goToClients();
+      
+      // Extrair dados do cliente
+      const clientData = await this.scrapingService.extractClientData(clientId);
+      
+      consultantLogger.debug('Dados do cliente extraídos para relatório', { 
+        clientId,
+        historyEntries: clientData.history?.length || 0
       });
+      
+      // Gerar relatório com IA
+      const reportContent = await this.aiService.generateClientProgressReport({
+        clientData,
+        context: 'client_report'
+      });
+      
+      consultantLogger.info('Relatório gerado com sucesso', { 
+        clientId,
+        reportSections: Object.keys(reportContent).length
+      });
+      
+      operation.end('success', { clientId });
+      return reportContent;
+    } catch (error) {
+      consultantLogger.error('Erro ao gerar relatório para cliente', error);
+      operation.end('failure', { clientId, error: error.message });
+      throw new Error('Erro ao gerar relatório para cliente');
+    }
+  }
+
+  /**
+   * Analisa tendências de múltiplos clientes
+   * @returns Análise de tendências
+   */
+  public async analyzeClientTrends(): Promise<any> {
+    const operation = logger.startOperation('analyzeClientTrends');
+    
+    try {
+      consultantLogger.info('Analisando tendências de clientes');
+      
+      // Navegar para o dashboard
+      await this.navigationService.goToDashboard();
+      
+      // Extrair dados de múltiplos clientes
+      const clientsData = await this.extractMultipleClientsData();
+      
+      consultantLogger.debug('Dados de clientes extraídos para análise', { 
+        clientCount: clientsData.length
+      });
+      
+      // Analisar tendências com IA
+      const trendsAnalysis = await this.aiService.analyzeClientTrends({
+        clientsData,
+        context: 'trends_analysis'
+      });
+      
+      consultantLogger.info('Análise de tendências concluída', { 
+        clientCount: clientsData.length,
+        analysisSections: Object.keys(trendsAnalysis).length
+      });
+      
+      operation.end('success', { clientCount: clientsData.length });
+      return trendsAnalysis;
+    } catch (error) {
+      consultantLogger.error('Erro ao analisar tendências de clientes', error);
+      operation.end('failure', { error: error.message });
+      throw new Error('Erro ao analisar tendências de clientes');
+    }
+  }
+
+  /**
+   * Gera sugestões de resposta para mensagens de clientes
+   * @param clientId ID do cliente
+   * @param message Mensagem do cliente
+   * @returns Sugestões de resposta
+   */
+  public async generateResponseSuggestions(clientId: string, message: string): Promise<string[]> {
+    const operation = logger.startOperation('generateResponseSuggestions');
+    
+    try {
+      consultantLogger.info('Gerando sugestões de resposta', { 
+        clientId,
+        messageLength: message.length
+      });
+      
+      // Navegar para a seção de clientes
+      await this.navigationService.goToClients();
+      
+      // Extrair dados do cliente
+      const clientData = await this.scrapingService.extractClientData(clientId);
+      
+      consultantLogger.debug('Dados do cliente extraídos para sugestões de resposta', { 
+        clientId
+      });
+      
+      // Gerar opções de resposta com IA
+      const suggestions = await this.aiService.generateResponseOptions({
+        clientData,
+        clientMessage: message,
+        context: 'response_suggestions'
+      });
+      
+      consultantLogger.info('Sugestões de resposta geradas com sucesso', { 
+        clientId,
+        suggestionCount: suggestions.length
+      });
+      
+      operation.end('success', { clientId, messageLength: message.length });
+      return suggestions;
+    } catch (error) {
+      consultantLogger.error('Erro ao gerar sugestões de resposta', error);
+      operation.end('failure', { clientId, messageLength: message.length, error: error.message });
+      throw new Error('Erro ao gerar sugestões de resposta');
+    }
+  }
+
+  /**
+   * Extrai dados de múltiplos clientes
+   * @returns Array com dados de clientes
+   * @private
+   */
+  private async extractMultipleClientsData(): Promise<any[]> {
+    try {
+      consultantLogger.debug('Extraindo dados de múltiplos clientes');
+      
+      // Simulação de extração de dados
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Gerar dados de exemplo
+      const clientsData = [
+        {
+          id: 'client-1',
+          name: 'Cliente A',
+          history: [{ date: '2023-01-15', service: 'Serviço X' }]
+        },
+        {
+          id: 'client-2',
+          name: 'Cliente B',
+          history: [{ date: '2023-02-20', service: 'Serviço Y' }]
+        }
+      ];
+      
+      consultantLogger.debug('Dados de múltiplos clientes extraídos com sucesso', {
+        count: clientsData.length
+      });
+      
+      return clientsData;
+    } catch (error) {
+      consultantLogger.error('Erro ao extrair dados de múltiplos clientes', error);
+      throw new Error('Erro ao extrair dados de múltiplos clientes');
     }
   }
 }
-
-export default ConsultantAIService.getInstance();

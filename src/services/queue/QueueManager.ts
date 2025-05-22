@@ -1,5 +1,6 @@
 /**
- * Implementação refatorada do QueueManager com injeção de dependências e melhor separação de responsabilidades
+ * Integração do logger estruturado com o QueueManager
+ * Substitui todos os console.log por logs estruturados com níveis e contexto
  */
 
 import { 
@@ -16,6 +17,9 @@ import { QueueProcessor, RetryError, FinalError } from './QueueProcessor';
 import { QueuePriority } from './QueuePriority';
 import { QueueEventEmitter } from './QueueEventEmitter';
 import logger from '../../utils/logger';
+
+// Criar logger específico para o QueueManager
+const queueLogger = logger.withContext('QueueManager');
 
 /**
  * Gerenciador de fila com suporte a prioridades, retentativas e concorrência
@@ -75,7 +79,11 @@ export class QueueManager<T = any> {
     // Registrar handlers de eventos
     this.setupEventHandlers();
     
-    logger.info('[QueueManager] Inicializado com concorrência:', this.options.concurrency);
+    queueLogger.info('QueueManager inicializado', { 
+      concurrency: this.options.concurrency,
+      maxRetries: this.options.maxRetries,
+      retryStrategy: this.options.retryStrategy
+    });
     
     // Iniciar processamento da fila se não estiver pausada
     if (!this.options.paused) {
@@ -103,6 +111,12 @@ export class QueueManager<T = any> {
       // Atualizar estado
       this.stateManager.moveToCompleted(item.id, data?.result);
       
+      queueLogger.info(`Item ${item.id} processado com sucesso`, {
+        itemId: item.id,
+        duration: data?.duration,
+        result: data?.result ? 'disponível' : 'não disponível'
+      });
+      
       // Continuar processamento
       this.scheduleProcessing();
     });
@@ -113,6 +127,12 @@ export class QueueManager<T = any> {
       
       // Atualizar estado
       this.stateManager.moveToFailed(item.id, data?.error);
+      
+      queueLogger.error(`Falha ao processar item ${item.id}`, {
+        itemId: item.id,
+        error: data?.error,
+        attempt: item.attempt
+      });
       
       // Continuar processamento
       this.scheduleProcessing();
@@ -126,6 +146,15 @@ export class QueueManager<T = any> {
       const updatedItem = this.stateManager.prepareForRetry(item.id);
       
       if (updatedItem) {
+        const retryDelay = data?.retryDelay || this.options.retryDelay;
+        
+        queueLogger.warn(`Agendando nova tentativa para item ${item.id}`, {
+          itemId: item.id,
+          attempt: updatedItem.attempt,
+          retryDelay,
+          error: data?.error
+        });
+        
         // Agendar nova tentativa após o delay
         setTimeout(() => {
           // Adicionar novamente à fila pendente
@@ -135,7 +164,7 @@ export class QueueManager<T = any> {
           if (!this.isProcessing) {
             this.processQueue();
           }
-        }, data?.retryDelay || this.options.retryDelay);
+        }, retryDelay);
       }
       
       // Continuar processamento
@@ -153,7 +182,9 @@ export class QueueManager<T = any> {
   public enqueue(id: string, data: T, priority: number = 0): QueueItem<T> {
     // Verificar se o ID já está na fila
     if (this.stateManager.getItem(id)) {
-      throw new Error(`Item com ID '${id}' já está na fila`);
+      const error = `Item com ID '${id}' já está na fila`;
+      queueLogger.error(error, { itemId: id });
+      throw new Error(error);
     }
     
     // Criar item da fila
@@ -172,7 +203,11 @@ export class QueueManager<T = any> {
     // Emitir evento
     this.eventEmitter.emit('item:added', item);
     
-    logger.info(`[QueueManager] Item adicionado à fila: ${id} (prioridade: ${priority})`);
+    queueLogger.info(`Item adicionado à fila: ${id}`, {
+      itemId: id,
+      priority,
+      queueSize: this.stateManager.getPendingItems().size
+    });
     
     // Verificar se o processamento está parado e reiniciar
     if (!this.isProcessing && !this.options.paused) {
@@ -193,7 +228,12 @@ export class QueueManager<T = any> {
     
     if (removed && item) {
       this.eventEmitter.emit('item:removed', item);
-      logger.info(`[QueueManager] Item removido da fila: ${id}`);
+      queueLogger.info(`Item removido da fila: ${id}`, { 
+        itemId: id, 
+        status: item.status 
+      });
+    } else if (!removed) {
+      queueLogger.warn(`Tentativa de remover item inexistente: ${id}`);
     }
     
     return removed;
@@ -208,7 +248,9 @@ export class QueueManager<T = any> {
     
     if (count > 0) {
       this.eventEmitter.emit('queue:cleared', undefined, { count });
-      logger.info(`[QueueManager] Fila limpa: ${count} itens removidos`);
+      queueLogger.info(`Fila limpa: ${count} itens removidos`, { count });
+    } else {
+      queueLogger.info('Tentativa de limpar fila vazia');
     }
     
     return count;
@@ -221,7 +263,10 @@ export class QueueManager<T = any> {
     if (!this.options.paused) {
       this.options.paused = true;
       this.eventEmitter.emit('queue:paused');
-      logger.info('[QueueManager] Processamento da fila pausado');
+      queueLogger.info('Processamento da fila pausado', {
+        pendingItems: this.stateManager.getPendingItems().size,
+        processingItems: this.stateManager.getProcessingItems().size
+      });
     }
   }
   
@@ -232,7 +277,9 @@ export class QueueManager<T = any> {
     if (this.options.paused) {
       this.options.paused = false;
       this.eventEmitter.emit('queue:resumed');
-      logger.info('[QueueManager] Processamento da fila retomado');
+      queueLogger.info('Processamento da fila retomado', {
+        pendingItems: this.stateManager.getPendingItems().size
+      });
       
       // Reiniciar processamento
       if (!this.isProcessing) {
@@ -324,7 +371,9 @@ export class QueueManager<T = any> {
         const item = this.stateManager.moveToProcessing(nextItem.id);
         
         if (!item) {
-          logger.warn(`[QueueManager] Item ${nextItem.id} não encontrado para processamento`);
+          queueLogger.warn(`Item ${nextItem.id} não encontrado para processamento`, {
+            itemId: nextItem.id
+          });
           continue;
         }
         
@@ -337,13 +386,18 @@ export class QueueManager<T = any> {
           this.waitTimes.shift();
         }
         
-        logger.info(`[QueueManager] Processando item ${item.id} (tentativa: ${item.attempt + 1}/${this.options.maxRetries})`);
+        queueLogger.info(`Processando item ${item.id}`, {
+          itemId: item.id,
+          attempt: item.attempt + 1,
+          maxRetries: this.options.maxRetries,
+          waitTime
+        });
         
         // Processar em uma Promise separada para não bloquear o loop
         this.processor.process(item).catch(error => {
           // Erros já são tratados pelos handlers de eventos
           if (!(error instanceof RetryError) && !(error instanceof FinalError)) {
-            logger.error(`[QueueManager] Erro não tratado ao processar item ${item.id}:`, error);
+            queueLogger.error(`Erro não tratado ao processar item ${item.id}`, error);
           }
         });
       }
@@ -354,11 +408,10 @@ export class QueueManager<T = any> {
       } else {
         this.isProcessing = false;
         this.eventEmitter.emit('queue:empty');
-        logger.debug('[QueueManager] Fila vazia, processamento pausado');
+        queueLogger.debug('Fila vazia, processamento pausado');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      logger.error('[QueueManager] Erro no loop de processamento:', errorMessage);
+      queueLogger.error('Erro no loop de processamento', error);
       
       // Pequena pausa para evitar loop rápido demais em caso de erros
       this.isProcessing = false;
