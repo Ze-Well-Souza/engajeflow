@@ -17,6 +17,8 @@
 
 O TechCare Connect Automator é uma solução completa para automatizar interações com a plataforma TechCare, permitindo a extração de dados, geração de relatórios e execução de tarefas rotineiras sem intervenção manual.
 
+![Página Inicial](../screenshots/landing_page.png)
+
 ### Principais Funcionalidades
 
 - **Automação de Tarefas**: Configure tarefas para serem executadas automaticamente em horários específicos.
@@ -118,9 +120,30 @@ A instalação do TechCare Connect Automator pode ser realizada de duas formas: 
 
 Após a instalação, siga estes passos para começar a usar o TechCare Connect Automator:
 
-1. Acesse o Dashboard em `http://localhost:3000`
+1. Acesse o Dashboard em `http://localhost:3000` ou `http://localhost:8080` (dependendo da configuração)
 2. Faça login com as credenciais configuradas no arquivo `.env`
-3. Configure suas primeiras automações seguindo o assistente de configuração
-4. Verifique o status das automações no painel principal
+
+   ![Tela de Login](../screenshots/login_page.png)
+
+3. Preencha seu email e senha
+
+   ![Login Preenchido](../screenshots/login_filled.png)
+
+4. Clique em "Entrar" para acessar o sistema
+
+   > **Nota**: Se você receber uma mensagem de erro "Email not confirmed", será necessário confirmar seu email antes de prosseguir. Verifique sua caixa de entrada ou entre em contato com o administrador do sistema.
+   
+   ![Erro de Login](../screenshots/login_error.png)
+
+5. Configure suas primeiras automações seguindo o assistente de configuração
+6. Verifique o status das automações no painel principal
+
+### Resolução de Problemas Comuns no Login
+
+Se você encontrar problemas ao fazer login:
+
+1. **Email não confirmado**: Verifique sua caixa de entrada para o email de confirmação
+2. **Credenciais incorretas**: Verifique se as credenciais estão corretas e se correspondem às configuradas no arquivo `.env`
+3. **Serviço indisponível**: Verifique se todos os serviços estão em execução usando `docker-compose ps`
 
 Nas próximas seções, detalharemos cada funcionalidade do sistema.

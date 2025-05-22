@@ -1,9 +1,8 @@
-# Implementação de Feature Flags para Implantação Gradual
-
-Este módulo implementa um sistema de feature flags para permitir a implantação gradual de funcionalidades no TechCare Connect Automator.
-
-```typescript
-// src/utils/feature-flags/index.ts
+/**
+ * Implementação de Feature Flags para Implantação Gradual
+ * 
+ * Este módulo implementa um sistema de feature flags para permitir a implantação gradual de funcionalidades no TechCare Connect Automator.
+ */
 
 import { createClient } from 'redis';
 import { Logger } from '../logger';
@@ -238,4 +237,3 @@ export const initializeFeatureFlags = async (): Promise<FeatureFlags> => {
   await featureFlags.initialize();
   return featureFlags;
 };
-```

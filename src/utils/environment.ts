@@ -1,4 +1,3 @@
-
 /**
  * Utilitários para gerenciamento de variáveis de ambiente
  */
@@ -12,8 +11,16 @@
 export function getEnvVariable(name: string, defaultValue: string = ''): string {
   // Em ambiente browser, procurar no localStorage
   if (typeof window !== 'undefined') {
-    const localValue = localStorage.getItem(`env.${name}`);
-    if (localValue) return localValue;
+    try {
+      // Verificar se localStorage está disponível
+      if (window.localStorage) {
+        const localValue = window.localStorage.getItem(`env.${name}`);
+        if (localValue) return localValue;
+      }
+    } catch (error) {
+      // Ignorar erros de acesso ao localStorage (pode ocorrer em alguns navegadores)
+      console.warn(`Erro ao acessar localStorage: ${error}`);
+    }
   }
   
   // Em ambiente Node.js, procurar em process.env
@@ -34,7 +41,15 @@ export function getEnvVariable(name: string, defaultValue: string = ''): string 
 export function setEnvVariable(name: string, value: string): void {
   // Armazenar no localStorage
   if (typeof window !== 'undefined') {
-    localStorage.setItem(`env.${name}`, value);
+    try {
+      // Verificar se localStorage está disponível
+      if (window.localStorage) {
+        window.localStorage.setItem(`env.${name}`, value);
+      }
+    } catch (error) {
+      // Ignorar erros de acesso ao localStorage
+      console.warn(`Erro ao escrever no localStorage: ${error}`);
+    }
   }
 }
 
@@ -45,7 +60,15 @@ export function setEnvVariable(name: string, value: string): void {
 export function removeEnvVariable(name: string): void {
   // Remover do localStorage
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(`env.${name}`);
+    try {
+      // Verificar se localStorage está disponível
+      if (window.localStorage) {
+        window.localStorage.removeItem(`env.${name}`);
+      }
+    } catch (error) {
+      // Ignorar erros de acesso ao localStorage
+      console.warn(`Erro ao remover do localStorage: ${error}`);
+    }
   }
 }
 
