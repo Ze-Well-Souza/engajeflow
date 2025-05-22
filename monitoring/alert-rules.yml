@@ -1,0 +1,56 @@
+groups:
+  - name: techcare-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(techcare_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta taxa de erros detectada"
+          description: "A taxa de erros está acima de 10% nos últimos 5 minutos"
+
+      - alert: QueueBacklog
+        expr: techcare_queue_size > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Acúmulo de tarefas na fila"
+          description: "Mais de 100 tarefas na fila por mais de 5 minutos"
+
+      - alert: SlowProcessingTime
+        expr: techcare_task_duration_seconds_sum / techcare_task_duration_seconds_count > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tempo de processamento elevado"
+          description: "O tempo médio de processamento está acima de 30 segundos"
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instância inativa"
+          description: "A instância {{ $labels.instance }} está inativa há mais de 1 minuto"
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alto uso de memória"
+          description: "A instância {{ $labels.instance }} está usando mais de 500MB de memória"
+
+      - alert: CircuitBreakerOpen
+        expr: techcare_circuit_breaker_state{state="open"} > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Circuit Breaker aberto"
+          description: "O Circuit Breaker para {{ $labels.service }} está no estado aberto"
