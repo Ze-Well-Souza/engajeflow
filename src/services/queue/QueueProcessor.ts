@@ -1,92 +1,142 @@
+/**
+ * Implementação atualizada do QueueProcessor com melhor tratamento de erros e suporte a eventos
+ */
 
-import { QueueItem, QueueOptions } from './types';
-import { QueueStatistics } from './QueueStats';
+import { QueueItem, QueueOptions, IQueueItemProcessor, IQueueEventEmitter, QueueEventType } from './interfaces';
 import logger from '../../utils/logger';
 
 /**
- * Classe responsável por processar itens da fila
+ * Processador de itens da fila com suporte a retentativas e eventos
  */
-export class QueueProcessor<T = any> {
+export class QueueProcessor<T = any> implements IQueueItemProcessor<T> {
   private jobFunction: (data: T) => Promise<any>;
   private options: QueueOptions;
-  private statistics: QueueStatistics;
+  private eventEmitter: IQueueEventEmitter<T>;
   
+  /**
+   * Cria uma nova instância do processador de itens
+   * @param jobFunction Função que será executada para cada item
+   * @param options Opções de configuração
+   * @param eventEmitter Emissor de eventos para notificações
+   */
   constructor(
     jobFunction: (data: T) => Promise<any>,
     options: QueueOptions,
-    statistics: QueueStatistics
+    eventEmitter: IQueueEventEmitter<T>
   ) {
     this.jobFunction = jobFunction;
     this.options = options;
-    this.statistics = statistics;
+    this.eventEmitter = eventEmitter;
+    
+    logger.debug('[QueueProcessor] Inicializado com configurações:', JSON.stringify({
+      maxRetries: options.maxRetries,
+      retryDelay: options.retryDelay,
+      retryStrategy: options.retryStrategy || 'fixed'
+    }));
   }
   
   /**
-   * Processa um único item da fila
+   * Processa um item da fila
    * @param item Item a ser processado
-   * @param onComplete Callback chamado quando o processamento for concluído
-   * @param onError Callback chamado quando ocorrer um erro
-   * @param onRetry Callback chamado quando for necessário tentar novamente
+   * @returns Promise com o resultado do processamento
    */
-  public async processItem(
-    item: QueueItem<T>,
-    onComplete: (item: QueueItem<T>, result: any) => void,
-    onError: (item: QueueItem<T>, error: string) => void,
-    onRetry: (item: QueueItem<T>, error: string, delay: number) => void
-  ): Promise<void> {
+  public async process(item: QueueItem<T>): Promise<any> {
     try {
-      // Incrementar contador de tentativas
-      item.attempt++;
+      logger.info(`[QueueProcessor] Processando item ${item.id} (tentativa: ${item.attempt + 1}/${this.options.maxRetries})`);
       
-      // Executar função de processamento
+      // Emitir evento de início de processamento
+      this.eventEmitter.emit('item:started', item);
+      
+      // Registrar tempo de início para cálculo de duração
+      const startTime = Date.now();
+      
+      // Executar a função de processamento
       const result = await this.jobFunction(item.data);
       
-      // Atualizar item como concluído
-      item.status = 'completed';
-      item.completedAt = new Date();
-      item.result = result;
+      // Calcular duração do processamento
+      const duration = Date.now() - startTime;
       
-      // Calcular tempo de processamento
-      const processTime = item.completedAt.getTime() - (item.startedAt as Date).getTime();
-      this.statistics.addProcessTime(processTime);
+      logger.info(`[QueueProcessor] Item ${item.id} processado com sucesso em ${duration}ms`);
       
-      logger.info(`[QueueProcessor] Item ${item.id} processado com sucesso`);
+      // Emitir evento de conclusão
+      this.eventEmitter.emit('item:completed', item, { result, duration });
       
-      // Chamar callback de conclusão
-      onComplete(item, result);
+      return result;
     } catch (error) {
+      // Extrair mensagem de erro
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      
+      logger.error(`[QueueProcessor] Erro ao processar item ${item.id}:`, errorMessage);
       
       // Verificar se deve tentar novamente
       if (item.attempt < this.options.maxRetries) {
-        logger.warn(
-          `[QueueProcessor] Erro ao processar item ${item.id} (tentativa ${item.attempt}/${this.options.maxRetries}):`, 
-          errorMessage
-        );
+        // Calcular delay para próxima tentativa
+        const retryDelay = this.calculateRetryDelay(item.attempt);
         
-        // Atualizar status para retry
-        item.status = 'retry';
-        item.error = errorMessage;
+        logger.info(`[QueueProcessor] Agendando nova tentativa para item ${item.id} em ${retryDelay}ms`);
         
-        // Calcular delay para nova tentativa - aumenta com base no número de tentativas
-        const retryDelay = this.options.retryDelay * item.attempt;
+        // Emitir evento de retry
+        this.eventEmitter.emit('item:retry', item, { error: errorMessage, retryDelay });
         
-        // Chamar callback de retry
-        onRetry(item, errorMessage, retryDelay);
+        // Rejeitar com informações para retry
+        throw new RetryError(errorMessage, retryDelay);
       } else {
-        // Sem mais tentativas, marcar como falha
-        logger.error(
-          `[QueueProcessor] Falha ao processar item ${item.id} após ${item.attempt} tentativas:`, 
-          errorMessage
-        );
+        logger.warn(`[QueueProcessor] Item ${item.id} falhou após ${item.attempt + 1} tentativas`);
         
-        item.status = 'failed';
-        item.error = errorMessage;
-        item.failedAt = new Date();
+        // Emitir evento de falha
+        this.eventEmitter.emit('item:failed', item, { error: errorMessage });
         
-        // Chamar callback de erro
-        onError(item, errorMessage);
+        // Rejeitar com erro final
+        throw new FinalError(errorMessage);
       }
     }
+  }
+  
+  /**
+   * Calcula o delay para a próxima tentativa com base na estratégia configurada
+   * @param attempt Número da tentativa atual (0-based)
+   * @returns Delay em milissegundos
+   */
+  private calculateRetryDelay(attempt: number): number {
+    const { retryDelay, retryStrategy, retryMultiplier } = this.options;
+    const multiplier = retryMultiplier || 2;
+    
+    switch (retryStrategy) {
+      case 'exponential':
+        // Crescimento exponencial: delay * (multiplier ^ attempt)
+        return retryDelay * Math.pow(multiplier, attempt);
+        
+      case 'linear':
+        // Crescimento linear: delay * (1 + attempt * multiplier)
+        return retryDelay * (1 + attempt * multiplier);
+        
+      case 'fixed':
+      default:
+        // Delay fixo
+        return retryDelay;
+    }
+  }
+}
+
+/**
+ * Erro que indica que o item deve ser tentado novamente
+ */
+export class RetryError extends Error {
+  public retryDelay: number;
+  
+  constructor(message: string, retryDelay: number) {
+    super(message);
+    this.name = 'RetryError';
+    this.retryDelay = retryDelay;
+  }
+}
+
+/**
+ * Erro que indica que o item falhou definitivamente
+ */
+export class FinalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FinalError';
   }
 }
