@@ -46,7 +46,11 @@ TECHCARE_BASE_URL=https://app.techcare.com
 NODE_ENV=production
 OPERATION_MODE=dashboard
 MAX_CONCURRENCY=3
+
+# Configurações de logs
 LOG_LEVEL=info
+LOG_DIR=logs
+LOG_FORMAT=json
 
 # Configurações de Redis
 REDIS_HOST=redis
@@ -95,18 +99,18 @@ docker images | grep techcare-connect-automator
 ### Logs Esperados na Inicialização
 
 ```
-techcare-automator    | Iniciando TechCare Connect Automator...
-techcare-automator    | Verificando conexão com Redis...
-techcare-automator    | Conexão com Redis estabelecida com sucesso.
-techcare-automator    | Criando diretório /app/logs...
-techcare-automator    | Criando diretório /app/config...
-techcare-automator    | Criando diretório /app/data...
-techcare-automator    | Configurando timezone: America/Sao_Paulo
-techcare-automator    | Executando verificação de saúde do sistema...
-techcare-automator    | Conexão com TechCare estabelecida com sucesso.
-techcare-automator    | Verificação de saúde concluída.
-techcare-automator    | Iniciando aplicação no modo: automator
-techcare-automator    | Iniciando no modo automator...
+techcare-automator    | 2025-05-22 01:45:12.345 [INFO]: Iniciando TechCare Connect Automator...
+techcare-automator    | 2025-05-22 01:45:12.456 [INFO]: Verificando conexão com Redis...
+techcare-automator    | 2025-05-22 01:45:12.567 [INFO]: Conexão com Redis estabelecida com sucesso.
+techcare-automator    | 2025-05-22 01:45:12.678 [INFO]: Criando diretório /app/logs...
+techcare-automator    | 2025-05-22 01:45:12.789 [INFO]: Criando diretório /app/config...
+techcare-automator    | 2025-05-22 01:45:12.890 [INFO]: Criando diretório /app/data...
+techcare-automator    | 2025-05-22 01:45:13.001 [INFO]: Configurando timezone: America/Sao_Paulo
+techcare-automator    | 2025-05-22 01:45:13.112 [INFO]: Executando verificação de saúde do sistema...
+techcare-automator    | 2025-05-22 01:45:14.223 [INFO]: Conexão com TechCare estabelecida com sucesso.
+techcare-automator    | 2025-05-22 01:45:14.334 [INFO]: Verificação de saúde concluída.
+techcare-automator    | 2025-05-22 01:45:14.445 [INFO]: Iniciando aplicação no modo: automator
+techcare-automator    | 2025-05-22 01:45:14.556 [INFO]: Iniciando no modo automator...
 ```
 
 ## 🧪 Testes
@@ -136,9 +140,32 @@ O projeto inclui testes de fluxo que simulam a navegação sem necessidade de um
 npm test -- --testPathPattern=Flow
 ```
 
-## 📊 Monitoramento
+## 📊 Monitoramento e Logs
 
-### Logs
+### Sistema de Logs Estruturados
+
+O TechCare Connect Automator utiliza um sistema de logs estruturados baseado em Winston, que oferece:
+
+- **Níveis de log**: debug, info, warn, error
+- **Formato estruturado**: JSON para fácil processamento
+- **Timestamps precisos**: em todas as entradas de log
+- **Contexto**: identificação clara do módulo e operação
+- **Medição de tempo**: para operações críticas
+
+### Configuração de Logs
+
+Os logs podem ser configurados através das seguintes variáveis de ambiente:
+
+```
+LOG_LEVEL=info       # Nível mínimo de log (debug, info, warn, error)
+LOG_DIR=logs         # Diretório onde os logs serão armazenados
+LOG_FORMAT=json      # Formato dos logs (json ou text)
+LOG_MAX_SIZE=10m     # Tamanho máximo de cada arquivo de log
+LOG_MAX_FILES=7      # Número máximo de arquivos de log para retenção
+LOG_CONSOLE=true     # Se deve exibir logs no console em desenvolvimento
+```
+
+### Visualização de Logs
 
 Os logs são armazenados em:
 
@@ -153,6 +180,28 @@ docker-compose logs -f automator
 
 # Ver logs específicos
 docker-compose logs -f scheduler
+
+# Filtrar logs por nível
+grep "ERROR" logs/automator.log
+
+# Analisar logs em formato JSON
+cat logs/automator.log | jq '.'
+```
+
+### Exemplo de Log Estruturado
+
+```json
+{
+  "level": "info",
+  "message": "Processando item 12345",
+  "timestamp": "2025-05-22T01:45:12.345Z",
+  "service": "automator",
+  "context": "QueueManager",
+  "itemId": "12345",
+  "attempt": 1,
+  "maxRetries": 3,
+  "waitTime": 1500
+}
 ```
 
 ### Métricas
@@ -218,7 +267,7 @@ Verifique:
 
 Logs típicos:
 ```
-Erro ao acessar TechCare: Authentication failed
+2025-05-22T01:45:12.345Z [ERROR]: Erro ao acessar TechCare: Authentication failed
 ```
 
 #### Erro de Conexão com Redis
@@ -230,7 +279,7 @@ Verifique:
 
 Logs típicos:
 ```
-Erro ao conectar ao Redis: Connection refused
+2025-05-22T01:45:12.345Z [ERROR]: Erro ao conectar ao Redis: Connection refused
 ```
 
 #### Tarefas Travadas
@@ -240,6 +289,30 @@ Execute:
 # Limpar filas travadas
 docker-compose exec app npm run queue:clean
 ```
+
+### Análise de Logs para Troubleshooting
+
+Para analisar problemas usando os logs estruturados:
+
+1. **Identificar erros**:
+   ```bash
+   grep "ERROR" logs/automator.log | jq '.'
+   ```
+
+2. **Rastrear operações por contexto**:
+   ```bash
+   cat logs/automator.log | jq 'select(.context=="QueueManager")'
+   ```
+
+3. **Analisar tempos de operação**:
+   ```bash
+   cat logs/automator.log | jq 'select(.duration != null) | {message, duration, status}'
+   ```
+
+4. **Verificar tentativas de retry**:
+   ```bash
+   cat logs/automator.log | jq 'select(.attempt > 1)'
+   ```
 
 ## 📚 Documentação Adicional
 
