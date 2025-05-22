@@ -2,17 +2,21 @@ import { ConsultantAIService } from '../../../services/techcare/ConsultantAIServ
 import { AIService } from '../../../services/techcare/AIService';
 import { NavigationService } from '../../../services/techcare/NavigationService';
 import { ScrapingService } from '../../../services/techcare/ScrapingService';
+import logger from '../../../utils/logger';
 
 // Mock das dependências
 jest.mock('../../../services/techcare/AIService');
 jest.mock('../../../services/techcare/NavigationService');
 jest.mock('../../../services/techcare/ScrapingService');
+jest.mock('../../../utils/logger');
 
 describe('ConsultantAIService', () => {
   let consultantAIService: ConsultantAIService;
   let mockAIService: jest.Mocked<AIService>;
   let mockNavigationService: jest.Mocked<NavigationService>;
   let mockScrapingService: jest.Mocked<ScrapingService>;
+  let mockLogger: any;
+  let mockOperation: any;
 
   beforeEach(() => {
     // Limpar todos os mocks antes de cada teste
@@ -22,6 +26,19 @@ describe('ConsultantAIService', () => {
     mockAIService = new AIService() as jest.Mocked<AIService>;
     mockNavigationService = new NavigationService() as jest.Mocked<NavigationService>;
     mockScrapingService = new ScrapingService() as jest.Mocked<ScrapingService>;
+    
+    // Mock do logger
+    mockOperation = {
+      end: jest.fn()
+    };
+    mockLogger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    };
+    (logger.withContext as jest.Mock).mockReturnValue(mockLogger);
+    (logger.startOperation as jest.Mock).mockReturnValue(mockOperation);
     
     // Criar instância do serviço a ser testado com as dependências mockadas
     consultantAIService = new ConsultantAIService(
@@ -64,6 +81,16 @@ describe('ConsultantAIService', () => {
         expect.objectContaining({ clientData: mockClientData })
       );
       expect(result).toEqual(mockSuggestions);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('generateConsultantSuggestions');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Gerando sugestões para consultor'),
+        expect.objectContaining({ clientId: mockClientId })
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientId: mockClientId
+      }));
     });
 
     it('deve lançar erro quando a navegação falha', async () => {
@@ -81,6 +108,16 @@ describe('ConsultantAIService', () => {
       // Verificar que os outros métodos não foram chamados
       expect(mockScrapingService.extractClientData).not.toHaveBeenCalled();
       expect(mockAIService.generateConsultantRecommendations).not.toHaveBeenCalled();
+      
+      // Verificar logs de erro
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Erro ao gerar sugestões para consultor'),
+        mockError
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('failure', expect.objectContaining({
+        clientId: mockClientId,
+        error: expect.any(String)
+      }));
     });
 
     it('deve lançar erro quando a extração de dados falha', async () => {
@@ -98,6 +135,12 @@ describe('ConsultantAIService', () => {
       
       // Verificar que o AI service não foi chamado
       expect(mockAIService.generateConsultantRecommendations).not.toHaveBeenCalled();
+      
+      // Verificar logs de erro
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Erro ao gerar sugestões para consultor'),
+        mockError
+      );
     });
   });
 
@@ -133,6 +176,16 @@ describe('ConsultantAIService', () => {
         expect.objectContaining({ clientData: mockClientData })
       );
       expect(result).toEqual(mockReportContent);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('generateClientReport');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Gerando relatório para cliente'),
+        expect.objectContaining({ clientId: mockClientId })
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientId: mockClientId
+      }));
     });
   });
 
@@ -171,6 +224,15 @@ describe('ConsultantAIService', () => {
         expect.objectContaining({ clientsData: mockClientsData })
       );
       expect(result).toEqual(mockTrendsAnalysis);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('analyzeClientTrends');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Analisando tendências de clientes')
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientCount: mockClientsData.length
+      }));
     });
 
     it('deve retornar análise vazia quando não há dados suficientes', async () => {
@@ -192,6 +254,12 @@ describe('ConsultantAIService', () => {
       // Verificar resultados
       expect(result.popularServices).toEqual([]);
       expect(result.recommendations).toContain('Não há dados suficientes para análise');
+      
+      // Verificar logs
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('Dados de clientes extraídos para análise'),
+        expect.objectContaining({ clientCount: 0 })
+      );
     });
   });
 
@@ -229,6 +297,19 @@ describe('ConsultantAIService', () => {
         })
       );
       expect(result).toEqual(mockSuggestions);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('generateResponseSuggestions');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Gerando sugestões de resposta'),
+        expect.objectContaining({ 
+          clientId: mockClientId,
+          messageLength: mockMessage.length
+        })
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientId: mockClientId
+      }));
     });
   });
 });
