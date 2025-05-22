@@ -23,20 +23,20 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/landing" replace />} />
         
-        {/* Corrigimos o modo como os componentes de rota são renderizados */}
-        {MainRoutes()}
-        {AdminRoutes()}
-        {SystemRoutes()}
-        {AIRoutes()}
-        {GatewayRoutes()}
-        {StoreRoutes()}
-        {DeveloperRoutes()}
-        {LandingRoutes()}
-        {ContentRoutes()}
-        {AutomationRoutes()}
-        {ReportsRoutes()}
-        {AuthRoutes()}
-        {MiscRoutes()}
+        {/* Renderizamos os componentes de rota passando um children vazio como argumento */}
+        {MainRoutes({})}
+        {AdminRoutes({})}
+        {SystemRoutes({})}
+        {AIRoutes({})}
+        {GatewayRoutes({})}
+        {StoreRoutes({})}
+        {DeveloperRoutes({})}
+        {LandingRoutes({})}
+        {ContentRoutes({})}
+        {AutomationRoutes({})}
+        {ReportsRoutes({})}
+        {AuthRoutes({})}
+        {MiscRoutes({})}
       </Routes>
     </Router>
   );

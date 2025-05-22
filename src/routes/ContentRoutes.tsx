@@ -6,7 +6,7 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 // Content Pages
 import ContentAssistantPage from "@/pages/content/ContentAssistantPage";
 
-const ContentRoutes: React.FC = () => {
+const ContentRoutes: React.FC = (props) => {
   return (
     <>
       <Route path="/content/assistant" element={<DashboardLayout><ContentAssistantPage /></DashboardLayout>} />

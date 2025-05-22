@@ -45,6 +45,103 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_tasks: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          parameters: Json | null
+          result: Json | null
+          scheduled_for: string | null
+          status: string
+          task_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          parameters?: Json | null
+          result?: Json | null
+          scheduled_for?: string | null
+          status?: string
+          task_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          parameters?: Json | null
+          result?: Json | null
+          scheduled_for?: string | null
+          status?: string
+          task_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_templates: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          parameters: Json | null
+          task_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          parameters?: Json | null
+          task_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          parameters?: Json | null
+          task_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_templates_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_members: {
         Row: {
           client_id: string
@@ -204,6 +301,47 @@ export type Database = {
           },
         ]
       }
+      metrics: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          metric_type: string
+          period_end: string
+          period_start: string
+          value: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          period_end: string
+          period_start: string
+          value: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          period_end?: string
+          period_start?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metrics_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modules: {
         Row: {
           description: string | null
@@ -310,6 +448,599 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          expires_at: string | null
+          file_path: string | null
+          id: string
+          parameters: Json | null
+          report_type: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          id?: string
+          parameters?: Json | null
+          report_type: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          id?: string
+          parameters?: Json | null
+          report_type?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_appointment_history: {
+        Row: {
+          appointment_id: string
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          new_status: string
+          previous_status: string
+          reason: string | null
+        }
+        Insert: {
+          appointment_id: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_status: string
+          previous_status: string
+          reason?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          previous_status?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_appointment_history_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "salon_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_appointments: {
+        Row: {
+          appointment_date: string
+          client_id: string
+          confirmation_sent: boolean | null
+          created_at: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          end_time: string
+          id: string
+          notes: string | null
+          professional_id: string
+          reminder_sent: boolean | null
+          service_id: string
+          start_time: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_date: string
+          client_id: string
+          confirmation_sent?: boolean | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          professional_id: string
+          reminder_sent?: boolean | null
+          service_id: string
+          start_time: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_date?: string
+          client_id?: string
+          confirmation_sent?: boolean | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          reminder_sent?: boolean | null
+          service_id?: string
+          start_time?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_appointments_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "salon_professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_appointments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "salon_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_message_logs: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          message_content: string
+          recipient_phone: string
+          sent_at: string | null
+          status: string
+          template_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          message_content: string
+          recipient_phone: string
+          sent_at?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string
+          recipient_phone?: string
+          sent_at?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_message_logs_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "salon_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_message_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_message_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "salon_message_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_message_templates: {
+        Row: {
+          client_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          type: string
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          client_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          type: string
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          client_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          type?: string
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_message_templates_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_professional_specialties: {
+        Row: {
+          created_at: string | null
+          id: string
+          professional_id: string
+          specialty_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          professional_id: string
+          specialty_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          professional_id?: string
+          specialty_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_professional_specialties_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "salon_professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_professional_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "salon_specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_professionals: {
+        Row: {
+          bio: string | null
+          client_id: string
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          profile_image_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bio?: string | null
+          client_id: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          profile_image_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bio?: string | null
+          client_id?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          profile_image_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_professionals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_service_specialties: {
+        Row: {
+          created_at: string | null
+          id: string
+          service_id: string
+          specialty_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          service_id: string
+          specialty_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          service_id?: string
+          specialty_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_service_specialties_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "salon_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_service_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "salon_specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_services: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          description?: string | null
+          duration_minutes: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_settings: {
+        Row: {
+          allow_online_booking: boolean | null
+          business_hours: Json
+          client_id: string
+          created_at: string | null
+          id: string
+          interval_between_appointments: number | null
+          max_concurrent_appointments: number | null
+          reminder_hours_before: number | null
+          second_reminder_hours_before: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          allow_online_booking?: boolean | null
+          business_hours?: Json
+          client_id: string
+          created_at?: string | null
+          id?: string
+          interval_between_appointments?: number | null
+          max_concurrent_appointments?: number | null
+          reminder_hours_before?: number | null
+          second_reminder_hours_before?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          allow_online_booking?: boolean | null
+          business_hours?: Json
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          interval_between_appointments?: number | null
+          max_concurrent_appointments?: number | null
+          reminder_hours_before?: number | null
+          second_reminder_hours_before?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_settings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_specialties: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_specialties_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_time_off: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          professional_id: string
+          reason: string | null
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          professional_id: string
+          reason?: string | null
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          professional_id?: string
+          reason?: string | null
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_time_off_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "salon_professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_working_hours: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean | null
+          professional_id: string
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          professional_id: string
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          professional_id?: string
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_working_hours_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "salon_professionals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scheduled_posts: {
         Row: {
@@ -510,7 +1241,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_salon_availability: {
+        Args: {
+          p_client_id: string
+          p_service_id: string
+          p_date: string
+          p_professional_id?: string
+        }
+        Returns: {
+          professional_id: string
+          professional_name: string
+          available_start_time: string
+          available_end_time: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
