@@ -1,29 +1,62 @@
 # Lista de Tarefas - TechCare Connect Automator
 
-## Configuração e Análise
-- [x] Clonar o repositório do GitHub
-- [x] Analisar a estrutura do código-fonte
-- [x] Verificar os testes existentes e sua cobertura
-- [x] Identificar os segmentos já validados (Beleza e Serviços Domésticos)
+## Adaptação de Componentes para Novos Segmentos
+- [x] Criar página de landing para corretor de imóveis
+- [x] Criar página de landing para diarista
+- [x] Criar página de landing para cozinheira/buffet
+- [x] Criar página de landing para vendedor de WhatsApp
+- [x] Criar página de landing para lojinha de salgados/doces
+- [x] Criar página de landing para eventos
+- [x] Criar página de landing para criador de conteúdo
 
-## Validação de Segmentos
-- [x] Validar acesso ao segmento de Alimentação
-- [x] Validar acesso ao segmento de Eventos
-- [x] Validar acesso ao segmento de Educação
-- [x] Validar acesso aos demais segmentos disponíveis
+## Páginas de Demonstração Específicas
+- [ ] Criar página de demonstração para corretor de imóveis
+- [ ] Criar página de demonstração para diarista
+- [ ] Criar página de demonstração para cozinheira/buffet
+- [ ] Criar página de demonstração para vendedor de WhatsApp
+- [ ] Criar página de demonstração para lojinha de salgados/doces
+- [ ] Criar página de demonstração para eventos
+- [ ] Criar página de demonstração para criador de conteúdo
 
-## Testes de Fluxos Completos
-- [x] Testar fluxo completo de agendamento
-- [x] Testar fluxo completo de postagem
-- [x] Testar fluxo completo de gerenciamento de conteúdo
-- [x] Validar funcionalidades no modo demo/offline
+## Fluxos Personalizados por Nicho
+- [ ] Implementar fluxo de agendamento para corretor de imóveis
+- [ ] Implementar fluxo de agendamento para diarista
+- [ ] Implementar fluxo de pedidos para cozinheira/buffet
+- [ ] Implementar fluxo de divulgação para vendedor de WhatsApp
+- [ ] Implementar fluxo de pedidos para lojinha de salgados/doces
+- [ ] Implementar fluxo de convites para eventos
+- [ ] Implementar fluxo de publicação para criador de conteúdo
 
-## Documentação
-- [x] Capturar imagens das telas restantes
-- [x] Completar a documentação com instruções detalhadas para todos os fluxos
-- [x] Atualizar o manual com as capturas de tela
+## Integração com Mídias Sociais
+- [ ] Desenvolver conector para WhatsApp
+- [ ] Desenvolver conector para Telegram
+- [ ] Desenvolver conector para Facebook
+- [ ] Desenvolver conector para Instagram
+- [ ] Desenvolver conector para TikTok
+- [ ] Desenvolver conector para YouTube
 
-## Finalização
-- [x] Verificar cobertura final de testes
-- [x] Salvar ajustes no repositório
-- [x] Preparar relatório final de progresso
+## Autenticação OAuth
+- [ ] Implementar autenticação OAuth para WhatsApp
+- [ ] Implementar autenticação OAuth para Telegram
+- [ ] Implementar autenticação OAuth para Facebook
+- [ ] Implementar autenticação OAuth para Instagram
+- [ ] Implementar autenticação OAuth para TikTok
+- [ ] Implementar autenticação OAuth para YouTube
+
+## Interface Unificada de Gestão
+- [ ] Criar dashboard unificado para gestão de conteúdo
+- [ ] Implementar calendário de publicações
+- [ ] Implementar análise de métricas cross-platform
+- [ ] Implementar gerenciamento de mídia centralizado
+
+## Testes e Validação
+- [ ] Implementar testes unitários para novos componentes
+- [ ] Implementar testes automatizados para fluxos
+- [ ] Realizar testes reais de integração
+- [ ] Validar funcionalidades em ambiente de produção
+
+## Documentação e Finalização
+- [ ] Atualizar documentação com novos segmentos
+- [ ] Criar guias de uso para cada nicho
+- [ ] Atualizar repositório no GitHub
+- [ ] Preparar relatório final de implementação
