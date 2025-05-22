@@ -61,7 +61,7 @@ const LandingPage: React.FC = () => {
             title="Serviços Domésticos" 
             description="Ideal para diaristas, eletricistas e reformas em geral"
             icon={<Home className="h-10 w-10 text-blue-500" />}
-            href="/landing/home" 
+            href="/landing/freelancer" 
           />
           <SegmentCard 
             title="Alimentação" 
@@ -73,7 +73,7 @@ const LandingPage: React.FC = () => {
             title="Eventos" 
             description="Ideal para fotógrafos, decoradores e organizadores"
             icon={<Camera className="h-10 w-10 text-purple-500" />}
-            href="/landing/events" 
+            href="/landing/content-creator" 
           />
           <SegmentCard 
             title="Educação" 
@@ -85,7 +85,7 @@ const LandingPage: React.FC = () => {
             title="Outros Serviços" 
             description="Soluções personalizáveis para seu tipo de negócio"
             icon={<Users className="h-10 w-10 text-gray-500" />}
-            href="/landing/others" 
+            href="/landing/segments" 
           />
         </div>
       </section>
@@ -168,7 +168,7 @@ const LandingPage: React.FC = () => {
               <div>
                 <h4 className="font-semibold mb-4">Produto</h4>
                 <ul className="space-y-2">
-                  <li><Link to="/landing/features" className="text-gray-600 dark:text-gray-400 hover:text-primary">Funcionalidades</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Funcionalidades</Link></li>
                   <li><Link to="/landing/pricing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Preços</Link></li>
                   <li><Link to="/landing/segments" className="text-gray-600 dark:text-gray-400 hover:text-primary">Segmentos</Link></li>
                 </ul>
@@ -176,16 +176,16 @@ const LandingPage: React.FC = () => {
               <div>
                 <h4 className="font-semibold mb-4">Empresa</h4>
                 <ul className="space-y-2">
-                  <li><Link to="/landing/about" className="text-gray-600 dark:text-gray-400 hover:text-primary">Sobre</Link></li>
-                  <li><Link to="/landing/contact" className="text-gray-600 dark:text-gray-400 hover:text-primary">Contato</Link></li>
-                  <li><Link to="/landing/blog" className="text-gray-600 dark:text-gray-400 hover:text-primary">Blog</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Sobre</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Contato</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Blog</Link></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-4">Legal</h4>
                 <ul className="space-y-2">
-                  <li><Link to="/landing/terms" className="text-gray-600 dark:text-gray-400 hover:text-primary">Termos</Link></li>
-                  <li><Link to="/landing/privacy" className="text-gray-600 dark:text-gray-400 hover:text-primary">Privacidade</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Termos</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-primary">Privacidade</Link></li>
                 </ul>
               </div>
             </div>

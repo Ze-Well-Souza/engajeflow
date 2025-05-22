@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,9 +26,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  
+  // Modo de demonstração ativado
+  const [demoMode] = useState<boolean>(true);
 
   useEffect(() => {
-    // Configurar o listener de mudança de estado
+    // Se o modo de demonstração estiver ativado, criamos um usuário fictício
+    if (demoMode) {
+      const mockUser: UserProfile = {
+        id: "demo-user-id",
+        email: "demo@example.com",
+        name: "Usuário Demonstração",
+        is_admin: true
+      };
+      
+      setCurrentUser(mockUser);
+      setLoading(false);
+      return;
+    }
+    
+    // Configurar o listener de mudança de estado (apenas quando não estiver em modo demo)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
@@ -107,14 +123,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    initializeAuth();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    if (!demoMode) {
+      initializeAuth();
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [demoMode]);
 
   const login = async (email: string, password: string): Promise<void> => {
+    // No modo de demonstração, simulamos um login bem-sucedido
+    if (demoMode) {
+      const mockUser: UserProfile = {
+        id: "demo-user-id",
+        email: email || "demo@example.com",
+        name: "Usuário Demonstração",
+        is_admin: true
+      };
+      
+      setCurrentUser(mockUser);
+      toast.success("Login realizado com sucesso no modo de demonstração!");
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -135,6 +166,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async (): Promise<void> => {
+    // No modo de demonstração, simulamos um logout
+    if (demoMode) {
+      // Não removemos o usuário no modo demo para manter a navegação
+      toast.success("Logout simulado no modo de demonstração!");
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -152,6 +190,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (email: string, password: string, name: string): Promise<void> => {
+    // No modo de demonstração, simulamos um registro bem-sucedido
+    if (demoMode) {
+      toast.success("Conta criada com sucesso no modo de demonstração!");
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -178,6 +222,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const resetPassword = async (email: string): Promise<void> => {
+    // No modo de demonstração, simulamos uma redefinição de senha
+    if (demoMode) {
+      toast.success("Email de redefinição de senha enviado no modo de demonstração!");
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/reset-password',
@@ -195,6 +245,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updatePassword = async (newPassword: string, token?: string): Promise<void> => {
+    // No modo de demonstração, simulamos uma atualização de senha
+    if (demoMode) {
+      toast.success("Senha atualizada com sucesso no modo de demonstração!");
+      return;
+    }
+    
     try {
       // Se um token for fornecido, usamos para definir a senha após redefinição
       if (token) {
