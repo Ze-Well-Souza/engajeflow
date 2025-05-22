@@ -1,117 +1,160 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { toast } from "sonner";
-
+// Versão simplificada da página de registro para diagnóstico
 const RegisterPage: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { register, currentUser } = useAuth();
-  const navigate = useNavigate();
+  console.log("RegisterPage: Iniciando renderização");
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  
+  const [demoMode, setDemoMode] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  // Redirecionar se já estiver logado
-  useEffect(() => {
-    if (currentUser) {
-      navigate("/");
-    }
-  }, [currentUser, navigate]);
+  console.log("RegisterPage: Estado inicializado");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("RegisterPage: Formulário submetido");
     
-    if (password !== confirmPassword) {
-      toast.error("As senhas não coincidem.");
+    // Validação básica
+    if (!formData.name || !formData.email || !formData.password) {
+      setErrorMessage("Todos os campos são obrigatórios");
       return;
     }
-
-    setIsLoading(true);
-
-    try {
-      await register(email, password, name);
-      // O redirecionamento será feito pelo useEffect quando currentUser for atualizado
-    } catch (error) {
-      // Erro já é tratado na função register
-      console.error("Erro no registro:", error);
-    } finally {
-      setIsLoading(false);
+    
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("As senhas não conferem");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setErrorMessage("");
+    
+    // Simulação de registro bem-sucedido no modo demo
+    if (demoMode) {
+      setTimeout(() => {
+        setSuccessMessage("Conta criada com sucesso no modo de demonstração!");
+        setIsSubmitting(false);
+      }, 1500);
+    } else {
+      // Aqui iria a lógica real de registro com Supabase
+      setTimeout(() => {
+        setErrorMessage("Erro ao conectar com Supabase. Use o modo de demonstração.");
+        setIsSubmitting(false);
+      }, 1500);
     }
   };
 
+  console.log("RegisterPage: Renderizando componente");
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="w-full max-w-md">
-        <Card className="border-gray-700">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center font-bold">Criar Conta</CardTitle>
-            <p className="text-center text-gray-400">Preencha os dados para se registrar</p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">Nome</label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Seu nome"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">Email</label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium">Senha</label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">Confirme a senha</label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Registrando..." : "Registrar"}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-gray-400">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Criar Conta</h2>
+        
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {errorMessage}
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+            {successMessage}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nome</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="Seu nome"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="seu@email.com"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Senha</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Confirme a senha</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <button
+            type="submit"
+            className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Processando..." : "Registrar"}
+          </button>
+          
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => setDemoMode(!demoMode)}
+              className="px-3 py-1 text-sm border rounded"
+            >
+              {demoMode ? "Desativar modo demo" : "Ativar modo demo"}
+            </button>
+          </div>
+          
+          <div className="text-center mt-4">
+            <p>
               Já tem uma conta?{" "}
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to="/login" className="text-blue-600 hover:underline">
                 Entrar
               </Link>
             </p>
-          </CardFooter>
-        </Card>
+          </div>
+        </form>
       </div>
     </div>
   );
