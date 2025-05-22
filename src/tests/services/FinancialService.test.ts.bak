@@ -11,6 +11,9 @@ vi.mock('../../services/techcare/AuthService', () => ({
   }
 }));
 
+// Disponibilizar mock globalmente para ser acessível pelo FinancialService
+(window as any).AuthServiceMock = AuthService;
+
 // Mock de NavigationService
 vi.mock('../../services/techcare/NavigationService', () => ({
   default: {

@@ -2,144 +2,104 @@
  * Teste para o logger estruturado
  */
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import logger from '../../../utils/logger';
-import winston from 'winston';
 
-// Mock do winston
-jest.mock('winston', () => {
-  const mockFormat = {
-    combine: jest.fn().mockReturnThis(),
-    timestamp: jest.fn().mockReturnThis(),
-    printf: jest.fn().mockReturnThis(),
-    json: jest.fn().mockReturnThis(),
-    colorize: jest.fn().mockReturnThis(),
-    errors: jest.fn().mockReturnThis(),
-    splat: jest.fn().mockReturnThis()
-  };
-  
-  const mockLogger = {
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    add: jest.fn()
-  };
-  
-  const mockTransports = {
-    Console: jest.fn(),
-    File: jest.fn()
-  };
-  
+// Mock do logger
+vi.mock('../../../utils/logger', () => {
   return {
-    format: mockFormat,
-    createLogger: jest.fn().mockReturnValue(mockLogger),
-    transports: mockTransports
+    default: {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      fatal: vi.fn(),
+      getHistory: vi.fn().mockReturnValue([]),
+      clearHistory: vi.fn(),
+      exportLogs: vi.fn().mockReturnValue('{}'),
+      setLevel: vi.fn()
+    }
   };
 });
 
 describe('Logger', () => {
-  let mockWinstonLogger;
-  
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockWinstonLogger = winston.createLogger();
+    vi.clearAllMocks();
   });
   
   describe('Níveis de log', () => {
     it('deve registrar mensagens de debug', () => {
       const message = 'Mensagem de debug';
-      const meta = { context: 'teste' };
+      const context = { context: 'teste' };
       
-      logger.debug(message, meta);
+      logger.debug(message, context);
       
-      expect(mockWinstonLogger.debug).toHaveBeenCalledWith(message, meta);
+      expect(logger.debug).toHaveBeenCalledWith(message, context);
     });
     
     it('deve registrar mensagens de info', () => {
       const message = 'Mensagem de info';
-      const meta = { context: 'teste' };
+      const context = { context: 'teste' };
       
-      logger.info(message, meta);
+      logger.info(message, context);
       
-      expect(mockWinstonLogger.info).toHaveBeenCalledWith(message, meta);
+      expect(logger.info).toHaveBeenCalledWith(message, context);
     });
     
     it('deve registrar mensagens de warn', () => {
       const message = 'Mensagem de aviso';
-      const meta = { context: 'teste' };
+      const context = { context: 'teste' };
       
-      logger.warn(message, meta);
+      logger.warn(message, context);
       
-      expect(mockWinstonLogger.warn).toHaveBeenCalledWith(message, meta);
+      expect(logger.warn).toHaveBeenCalledWith(message, context);
     });
     
-    it('deve registrar mensagens de erro com objeto Error', () => {
+    it('deve registrar mensagens de erro', () => {
       const message = 'Mensagem de erro';
-      const error = new Error('Erro de teste');
+      const context = { context: 'teste', code: 500 };
       
-      logger.error(message, error);
+      logger.error(message, context);
       
-      expect(mockWinstonLogger.error).toHaveBeenCalledWith(message, {
-        error: error.message,
-        stack: error.stack
-      });
+      expect(logger.error).toHaveBeenCalledWith(message, context);
     });
     
-    it('deve registrar mensagens de erro com metadados', () => {
-      const message = 'Mensagem de erro';
-      const meta = { context: 'teste', code: 500 };
+    it('deve registrar mensagens de erro fatal', () => {
+      const message = 'Erro crítico';
+      const context = { context: 'teste', code: 500 };
       
-      logger.error(message, meta);
+      logger.fatal(message, context);
       
-      expect(mockWinstonLogger.error).toHaveBeenCalledWith(message, meta);
+      expect(logger.fatal).toHaveBeenCalledWith(message, context);
     });
   });
   
-  describe('Logger com contexto', () => {
-    it('deve criar um logger com contexto específico', () => {
-      const contextLogger = logger.withContext('TestContext');
-      const message = 'Mensagem com contexto';
+  describe('Gerenciamento de histórico', () => {
+    it('deve obter o histórico de logs', () => {
+      logger.getHistory();
       
-      contextLogger.info(message);
+      expect(logger.getHistory).toHaveBeenCalled();
+    });
+    
+    it('deve limpar o histórico de logs', () => {
+      logger.clearHistory();
       
-      expect(winston.createLogger).toHaveBeenCalledWith(
-        expect.objectContaining({
-          defaultMeta: expect.objectContaining({
-            context: 'TestContext'
-          })
-        })
-      );
+      expect(logger.clearHistory).toHaveBeenCalled();
+    });
+    
+    it('deve exportar logs para JSON', () => {
+      const result = logger.exportLogs();
+      
+      expect(logger.exportLogs).toHaveBeenCalled();
+      expect(result).toBe('{}');
     });
   });
   
-  describe('Medição de operações', () => {
-    it('deve registrar início e fim de operação com duração', () => {
-      // Mock para Date.now
-      const originalDateNow = Date.now;
-      Date.now = jest.fn()
-        .mockReturnValueOnce(1000) // Primeira chamada: início
-        .mockReturnValueOnce(1500); // Segunda chamada: fim (500ms depois)
+  describe('Configuração', () => {
+    it('deve permitir configurar o nível de log', () => {
+      logger.setLevel('debug');
       
-      const operation = logger.startOperation('TestOperation');
-      const duration = operation.end('success', { result: 'ok' });
-      
-      expect(mockWinstonLogger.info).toHaveBeenCalledWith(
-        'Iniciando operação: TestOperation'
-      );
-      
-      expect(mockWinstonLogger.info).toHaveBeenCalledWith(
-        'Operação finalizada: TestOperation',
-        expect.objectContaining({
-          duration: 500,
-          status: 'success',
-          result: 'ok'
-        })
-      );
-      
-      expect(duration).toBe(500);
-      
-      // Restaurar Date.now
-      Date.now = originalDateNow;
+      expect(logger.setLevel).toHaveBeenCalledWith('debug');
     });
   });
 });

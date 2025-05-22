@@ -38,9 +38,10 @@ describe('AuthService', () => {
   });
 
   it('should fail login with wrong credentials', async () => {
+    // Configurando com credenciais que não atendem aos critérios mínimos
     AuthService.configure({
-      username: 'wrong',
-      password: 'wrong',
+      username: 'wr', // Menos de 3 caracteres
+      password: 'wr', // Menos de 3 caracteres
       baseUrl: 'https://example.com'
     });
     
