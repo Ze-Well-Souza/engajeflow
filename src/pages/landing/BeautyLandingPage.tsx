@@ -1,222 +1,197 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Globe, ArrowRight, Sparkles } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, ArrowRight, Sparkles } from "lucide-react";
 
 const BeautyLandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
       <header className="bg-white dark:bg-gray-950 border-b dark:border-gray-800">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Globe className="h-6 w-6 text-pink-500" />
-            <h1 className="text-2xl font-bold">EngageFlow <span className="text-pink-500">Beleza</span></h1>
+            <Sparkles className="h-6 w-6 text-pink-500" />
+            <h1 className="text-2xl font-bold">Beleza e Estética</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/">
+            <Link to="/landing">
               <Button variant="ghost">Início</Button>
             </Link>
             <Link to="/login">
               <Button variant="ghost">Entrar</Button>
             </Link>
             <Link to="/register">
-              <Button variant="default" className="bg-pink-500 hover:bg-pink-600">Cadastrar</Button>
+              <Button variant="default">Cadastrar</Button>
             </Link>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">A solução completa para profissionais de beleza</h1>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8">
-            Gerencie agendamentos, fotos do seu trabalho e comunicação com clientes em uma só plataforma
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="lg" className="bg-pink-500 hover:bg-pink-600 gap-2">
-                Começar grátis <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="gap-2 border-pink-300 text-pink-600">
-              Agendar demonstração
-            </Button>
+      <section className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Transforme a gestão do seu salão ou barbearia</h1>
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8">
+              Aumente sua presença online, atraia mais clientes e gerencie agendamentos com facilidade
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/register">
+                <Button size="lg" className="gap-2 bg-pink-500 hover:bg-pink-600">
+                  Começar grátis <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/demo/beauty">
+                <Button size="lg" variant="outline" className="gap-2 border-pink-500 text-pink-500 hover:bg-pink-50">
+                  Ver demonstração
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="container mx-auto px-4 py-16 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
-        <h2 className="text-3xl font-bold text-center mb-12">Solução específica para <span className="text-pink-500">beleza e estética</span></h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FeatureCard 
-            title="Portfolio digital" 
-            description="Exiba fotos do antes e depois dos seus trabalhos organizados por categoria"
-            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
-          />
-          <FeatureCard 
-            title="Agendamento online" 
-            description="Permita que seus clientes marquem horários diretamente pelo seu perfil"
-            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
-          />
-          <FeatureCard 
-            title="Automação de lembretes" 
-            description="Envie lembretes automáticos de consultas e retornos para seus clientes"
-            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
-          />
-          <FeatureCard 
-            title="Gestão de produtos" 
-            description="Controle seu estoque de produtos e receba alertas de reposição"
-            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
-          />
-          <FeatureCard 
-            title="Avaliações de clientes" 
-            description="Colete e exiba avaliações dos seus serviços para atrair novos clientes"
-            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
-          />
-          <FeatureCard 
-            title="Marketing personalizado" 
-            description="Crie e agende posts para suas redes sociais com templates específicos para beleza"
-            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
-          />
-        </div>
-      </section>
-
-      {/* Pacote específico */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-4">Pacote Beleza</h2>
-        <p className="text-xl text-gray-600 dark:text-gray-300 text-center mb-12">
-          Desenvolvido especialmente para profissionais de estética, cabelo, maquiagem e afins
-        </p>
-        <div className="max-w-md mx-auto">
-          <Card className="border-pink-300">
-            <CardHeader className="bg-pink-50 dark:bg-pink-900/20">
-              <CardTitle className="text-2xl flex items-center">
-                <Sparkles className="h-5 w-5 text-pink-500 mr-2" />
-                Pacote Beleza Premium
-              </CardTitle>
-              <div className="mt-2">
-                <span className="text-3xl font-bold">R$59,90/mês</span>
-              </div>
-              <CardDescription className="mt-2">Tudo que você precisa para seu salão ou atendimento</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Templates específicos para beleza e estética</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Gestão de clientes com histórico de atendimentos</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Sistema de agendamento avançado</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Galeria de antes e depois</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Integração com WhatsApp</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Geração de conteúdo com IA para o seu nicho</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-pink-500 mr-2 shrink-0" />
-                  <span>Suporte prioritário</span>
-                </li>
-              </ul>
-              <Button className="w-full mt-6 bg-pink-500 hover:bg-pink-600">
-                Começar agora
-              </Button>
-              <p className="text-center text-sm text-gray-500 mt-4">7 dias grátis, cancele quando quiser</p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="container mx-auto px-4 py-16 bg-pink-50 dark:bg-pink-900/10 rounded-lg">
-        <h2 className="text-3xl font-bold text-center mb-12">O que dizem nossos usuários</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <TestimonialCard 
-            quote="Desde que comecei a usar o EngageFlow, meu salão aumentou em 30% o número de clientes. A facilidade de gerenciar as redes sociais e os agendamentos fez toda a diferença."
-            author="Roberta Silva"
-            role="Cabeleireira"
+        <h2 className="text-3xl font-bold text-center mb-12">Soluções para beleza e estética</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <FeatureCard 
+            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
+            title="Agendamento online"
+            description="Sistema completo de agendamentos com confirmação automática e lembretes"
           />
-          <TestimonialCard 
-            quote="Os templates específicos para beleza me ajudam muito na criação de conteúdo. Economizo horas por semana e ainda tenho posts mais bonitos."
-            author="Carlos Eduardo"
-            role="Barbeiro"
+          <FeatureCard 
+            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
+            title="Catálogo de serviços"
+            description="Apresente seus serviços com fotos, descrições e preços atualizados"
           />
-          <TestimonialCard 
-            quote="A possibilidade de os clientes agendarem online direto pelo Instagram revolucionou meu atendimento. Recomendo para todos os profissionais de estética."
-            author="Amanda Souza"
-            role="Esteticista"
+          <FeatureCard 
+            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
+            title="Marketing digital"
+            description="Crie e agende posts para suas redes sociais com nossa interface intuitiva"
+          />
+          <FeatureCard 
+            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
+            title="Fidelização de clientes"
+            description="Programas de fidelidade e cupons personalizados para seus clientes"
+          />
+          <FeatureCard 
+            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
+            title="Gestão de equipe"
+            description="Controle de agenda, comissões e desempenho dos profissionais"
+          />
+          <FeatureCard 
+            icon={<Sparkles className="h-10 w-10 text-pink-500" />}
+            title="Analytics avançados"
+            description="Relatórios detalhados sobre agendamentos, serviços mais populares e horários de pico"
           />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Pronto para transformar seu negócio de beleza?</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-            Comece hoje mesmo e veja a diferença em seu atendimento e presença digital
+      <section className="bg-pink-500 dark:bg-pink-600 py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">Pronto para transformar seu negócio?</h2>
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Junte-se a milhares de profissionais que já estão usando nossa plataforma para crescer
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register">
-              <Button size="lg" className="bg-pink-500 hover:bg-pink-600 gap-2">
-                Criar conta grátis <ArrowRight className="h-4 w-4" />
+              <Button size="lg" variant="default" className="bg-white text-pink-500 hover:bg-gray-100">
+                Começar agora
+              </Button>
+            </Link>
+            <Link to="/demo/beauty">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-pink-600">
+                Ver demonstração
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12">O que nossos clientes dizem</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <TestimonialCard 
+            quote="Reduzi em 70% o tempo gasto com agendamentos e confirmações. Agora posso focar no que realmente importa: meus clientes."
+            author="Fernanda Lima"
+            role="Proprietária, Salão Beleza Natural"
+          />
+          <TestimonialCard 
+            quote="O sistema de marketing digital me ajudou a aumentar minha clientela em 40% em apenas três meses."
+            author="Rafael Santos"
+            role="Barbeiro, Barbearia Vintage"
+          />
+          <TestimonialCard 
+            quote="A gestão de equipe simplificou o cálculo de comissões e melhorou a organização do meu salão."
+            author="Camila Oliveira"
+            role="Gerente, Espaço Beleza Total"
+          />
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-900 py-12 mt-16 border-t border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Globe className="h-6 w-6 text-pink-500" />
-            <h3 className="text-xl font-bold">EngageFlow <span className="text-pink-500">Beleza</span></h3>
+      <footer className="bg-gray-100 dark:bg-gray-900 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between gap-8">
+            <div className="mb-6 md:mb-0">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-6 w-6 text-pink-500" />
+                <h3 className="text-xl font-bold">EngageFlow</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 max-w-xs">
+                Soluções digitais para o setor de beleza e estética desde 2025.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="font-semibold mb-4">Produto</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Funcionalidades</Link></li>
+                  <li><Link to="/landing/pricing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Preços</Link></li>
+                  <li><Link to="/demo/beauty" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Demonstração</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Empresa</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Sobre</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Contato</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Blog</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Legal</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Termos</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">Privacidade</Link></li>
+                </ul>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Transformando a gestão digital para profissionais de beleza
-          </p>
-          <div className="flex justify-center gap-4 mb-6">
-            <Link to="/">Início</Link>
-            <Link to="/landing/pricing">Preços</Link>
-            <Link to="/landing/about">Sobre</Link>
-            <Link to="/landing/contact">Contato</Link>
+          <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
+            <p>© {new Date().getFullYear()} EngageFlow. Todos os direitos reservados.</p>
           </div>
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} EngageFlow. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
   );
 };
 
-// Componente auxiliar para card de feature
+// Componente auxiliar para card de funcionalidade
 const FeatureCard = ({ 
+  icon, 
   title, 
-  description, 
-  icon,
+  description 
 }: { 
+  icon: React.ReactNode; 
   title: string; 
   description: string;
-  icon: React.ReactNode;
 }) => (
-  <Card className="h-full border-pink-100 dark:border-pink-900/20 hover:shadow-md transition-shadow duration-300">
+  <Card className="h-full hover:shadow-md transition-shadow duration-300">
     <CardHeader>
       <div className="mb-4">{icon}</div>
       <CardTitle>{title}</CardTitle>
@@ -225,22 +200,22 @@ const FeatureCard = ({
   </Card>
 );
 
-// Componente auxiliar para testimonial
+// Componente auxiliar para card de depoimento
 const TestimonialCard = ({ 
   quote, 
   author, 
-  role,
+  role 
 }: { 
-  quote: string;
-  author: string;
+  quote: string; 
+  author: string; 
   role: string;
 }) => (
-  <Card className="h-full border-pink-100 dark:border-pink-900/20">
+  <Card className="h-full hover:shadow-md transition-shadow duration-300">
     <CardContent className="pt-6">
-      <p className="italic mb-4">{quote}</p>
+      <p className="italic text-gray-600 dark:text-gray-300 mb-4">"{quote}"</p>
       <div>
         <p className="font-semibold">{author}</p>
-        <p className="text-sm text-gray-500">{role}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{role}</p>
       </div>
     </CardContent>
   </Card>

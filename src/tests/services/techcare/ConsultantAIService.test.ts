@@ -1,211 +1,315 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import ConsultantAIService from '../../../services/techcare/ConsultantAIService';
-import logger from '../../../utils/logger';
+import { ConsultantAIService } from '../../../services/techcare/ConsultantAIService';
+import { AIService } from '../../../services/techcare/AIService';
 import { NavigationService } from '../../../services/techcare/NavigationService';
 import { ScrapingService } from '../../../services/techcare/ScrapingService';
-import { AIService } from '../../../services/techcare/AIService';
+import logger from '../../../utils/logger';
 
 // Mock das dependências
-vi.mock('../../../services/techcare/NavigationService', () => {
-  return {
-    NavigationService: vi.fn().mockImplementation(() => ({
-      goToClients: vi.fn().mockResolvedValue(undefined),
-      goToDashboard: vi.fn().mockResolvedValue(undefined)
-    }))
-  };
-});
-
-vi.mock('../../../services/techcare/ScrapingService', () => {
-  return {
-    ScrapingService: vi.fn().mockImplementation(() => ({
-      extractClientData: vi.fn().mockResolvedValue({
-        id: 'client-123',
-        name: 'Cliente Teste',
-        history: [{ date: '2025-01-01', action: 'login' }]
-      })
-    }))
-  };
-});
-
-vi.mock('../../../services/techcare/AIService', () => {
-  return {
-    AIService: vi.fn().mockImplementation(() => ({
-      generateConsultantRecommendations: vi.fn().mockResolvedValue({
-        recommendations: ['Recomendação 1', 'Recomendação 2'],
-        insights: { key: 'value' }
-      }),
-      generateClientProgressReport: vi.fn().mockResolvedValue({
-        summary: 'Resumo do progresso',
-        sections: ['Seção 1', 'Seção 2']
-      }),
-      analyzeClientTrends: vi.fn().mockResolvedValue({
-        trends: ['Tendência 1', 'Tendência 2'],
-        analysis: 'Análise detalhada'
-      })
-    }))
-  };
-});
-
-// Mock do logger
-vi.mock('../../../utils/logger', () => {
-  return {
-    default: {
-      info: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-      startOperation: vi.fn().mockReturnValue({
-        end: vi.fn()
-      })
-    }
-  };
-});
+jest.mock('../../../services/techcare/AIService');
+jest.mock('../../../services/techcare/NavigationService');
+jest.mock('../../../services/techcare/ScrapingService');
+jest.mock('../../../utils/logger');
 
 describe('ConsultantAIService', () => {
+  let consultantAIService: ConsultantAIService;
+  let mockAIService: jest.Mocked<AIService>;
+  let mockNavigationService: jest.Mocked<NavigationService>;
+  let mockScrapingService: jest.Mocked<ScrapingService>;
+  let mockLogger: any;
+  let mockOperation: any;
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Limpar todos os mocks antes de cada teste
+    jest.clearAllMocks();
+    
+    // Criar instâncias mockadas
+    mockAIService = new AIService() as jest.Mocked<AIService>;
+    mockNavigationService = new NavigationService() as jest.Mocked<NavigationService>;
+    mockScrapingService = new ScrapingService() as jest.Mocked<ScrapingService>;
+    
+    // Mock do logger
+    mockOperation = {
+      end: jest.fn()
+    };
+    mockLogger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    };
+    (logger.withContext as jest.Mock).mockReturnValue(mockLogger);
+    (logger.startOperation as jest.Mock).mockReturnValue(mockOperation);
+    
+    // Criar instância do serviço a ser testado com as dependências mockadas
+    consultantAIService = new ConsultantAIService(
+      mockAIService,
+      mockNavigationService,
+      mockScrapingService
+    );
   });
 
-  describe('setApiKey', () => {
-    it('deve configurar a API key corretamente', () => {
-      // Arrange
-      const apiKey = 'test-api-key-123';
+  describe('generateConsultantSuggestions', () => {
+    it('deve gerar sugestões para consultores com base nos dados do cliente', async () => {
+      // Configurar mocks
+      const mockClientId = 'client-123';
+      const mockClientData = {
+        name: 'Cliente Teste',
+        history: [
+          { date: '2023-01-15', service: 'Consulta', notes: 'Primeira visita' },
+          { date: '2023-02-20', service: 'Acompanhamento', notes: 'Progresso positivo' }
+        ],
+        preferences: ['Atendimento matutino', 'Prefere comunicação por WhatsApp']
+      };
       
-      // Act
-      ConsultantAIService.setApiKey(apiKey);
+      const mockSuggestions = {
+        nextSteps: ['Agendar acompanhamento em 30 dias', 'Oferecer pacote de serviços premium'],
+        communicationTips: ['Manter contato via WhatsApp', 'Enviar lembretes 2 dias antes'],
+        serviceRecommendations: ['Serviço X seria adequado para o perfil']
+      };
       
-      // Assert
-      expect(logger.info).toHaveBeenCalledWith('API Key configurada');
+      mockNavigationService.goToClients.mockResolvedValue();
+      mockScrapingService.extractClientData.mockResolvedValue(mockClientData);
+      mockAIService.generateConsultantRecommendations.mockResolvedValue(mockSuggestions);
+      
+      // Executar método a ser testado
+      const result = await consultantAIService.generateConsultantSuggestions(mockClientId);
+      
+      // Verificar resultados
+      expect(mockNavigationService.goToClients).toHaveBeenCalledTimes(1);
+      expect(mockScrapingService.extractClientData).toHaveBeenCalledWith(mockClientId);
+      expect(mockAIService.generateConsultantRecommendations).toHaveBeenCalledWith(
+        expect.objectContaining({ clientData: mockClientData })
+      );
+      expect(result).toEqual(mockSuggestions);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('generateConsultantSuggestions');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Gerando sugestões para consultor'),
+        expect.objectContaining({ clientId: mockClientId })
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientId: mockClientId
+      }));
+    });
+
+    it('deve lançar erro quando a navegação falha', async () => {
+      // Configurar mock para falhar
+      const mockClientId = 'client-123';
+      const mockError = new Error('Falha na navegação');
+      
+      mockNavigationService.goToClients.mockRejectedValue(mockError);
+      
+      // Verificar que o método lança o erro esperado
+      await expect(consultantAIService.generateConsultantSuggestions(mockClientId))
+        .rejects
+        .toThrow('Erro ao acessar dados do cliente');
+      
+      // Verificar que os outros métodos não foram chamados
+      expect(mockScrapingService.extractClientData).not.toHaveBeenCalled();
+      expect(mockAIService.generateConsultantRecommendations).not.toHaveBeenCalled();
+      
+      // Verificar logs de erro
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Erro ao gerar sugestões para consultor'),
+        mockError
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('failure', expect.objectContaining({
+        clientId: mockClientId,
+        error: expect.any(String)
+      }));
+    });
+
+    it('deve lançar erro quando a extração de dados falha', async () => {
+      // Configurar mock para falhar na extração
+      const mockClientId = 'client-123';
+      const mockError = new Error('Falha na extração');
+      
+      mockNavigationService.goToClients.mockResolvedValue();
+      mockScrapingService.extractClientData.mockRejectedValue(mockError);
+      
+      // Verificar que o método lança o erro esperado
+      await expect(consultantAIService.generateConsultantSuggestions(mockClientId))
+        .rejects
+        .toThrow('Erro ao extrair dados do cliente');
+      
+      // Verificar que o AI service não foi chamado
+      expect(mockAIService.generateConsultantRecommendations).not.toHaveBeenCalled();
+      
+      // Verificar logs de erro
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Erro ao gerar sugestões para consultor'),
+        mockError
+      );
     });
   });
 
-  describe('setModel', () => {
-    it('deve configurar o modelo corretamente', () => {
-      // Arrange
-      const model = 'gpt-4-turbo';
+  describe('generateClientReport', () => {
+    it('deve gerar relatório personalizado para o cliente', async () => {
+      // Configurar mocks
+      const mockClientId = 'client-123';
+      const mockClientData = {
+        name: 'Cliente Teste',
+        history: [
+          { date: '2023-01-15', service: 'Consulta', notes: 'Primeira visita' },
+          { date: '2023-02-20', service: 'Acompanhamento', notes: 'Progresso positivo' }
+        ]
+      };
       
-      // Act
-      ConsultantAIService.setModel(model);
+      const mockReportContent = {
+        summary: 'Resumo do progresso do cliente',
+        achievements: ['Melhoria X', 'Progresso em Y'],
+        recommendations: ['Continuar com Z', 'Adicionar W ao tratamento']
+      };
       
-      // Assert
-      expect(logger.info).toHaveBeenCalledWith('Modelo configurado:', { model });
+      mockNavigationService.goToClients.mockResolvedValue();
+      mockScrapingService.extractClientData.mockResolvedValue(mockClientData);
+      mockAIService.generateClientProgressReport.mockResolvedValue(mockReportContent);
+      
+      // Executar método a ser testado
+      const result = await consultantAIService.generateClientReport(mockClientId);
+      
+      // Verificar resultados
+      expect(mockNavigationService.goToClients).toHaveBeenCalledTimes(1);
+      expect(mockScrapingService.extractClientData).toHaveBeenCalledWith(mockClientId);
+      expect(mockAIService.generateClientProgressReport).toHaveBeenCalledWith(
+        expect.objectContaining({ clientData: mockClientData })
+      );
+      expect(result).toEqual(mockReportContent);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('generateClientReport');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Gerando relatório para cliente'),
+        expect.objectContaining({ clientId: mockClientId })
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientId: mockClientId
+      }));
     });
   });
 
-  describe('generateFinancialConsulting', () => {
-    it('deve retornar erro quando API key não está configurada', async () => {
-      // Arrange
-      const businessData = { revenue: 10000, expenses: 5000 };
-      const goal = 'Aumentar lucro';
+  describe('analyzeClientTrends', () => {
+    it('deve analisar tendências de múltiplos clientes', async () => {
+      // Configurar mocks
+      const mockClientsData = [
+        {
+          id: 'client-1',
+          name: 'Cliente A',
+          history: [{ date: '2023-01-15', service: 'Serviço X' }]
+        },
+        {
+          id: 'client-2',
+          name: 'Cliente B',
+          history: [{ date: '2023-02-20', service: 'Serviço Y' }]
+        }
+      ];
       
-      // Garantir que não há API key configurada
-      ConsultantAIService.setApiKey('');
+      const mockTrendsAnalysis = {
+        popularServices: ['Serviço X', 'Serviço Y'],
+        peakTimes: ['Segunda-feira manhã', 'Quarta-feira tarde'],
+        recommendations: ['Aumentar disponibilidade nos horários de pico']
+      };
       
-      // Act
-      const result = await ConsultantAIService.generateFinancialConsulting(businessData, goal);
+      mockNavigationService.goToDashboard.mockResolvedValue();
+      jest.spyOn(consultantAIService as any, 'extractMultipleClientsData').mockResolvedValue(mockClientsData);
+      mockAIService.analyzeClientTrends.mockResolvedValue(mockTrendsAnalysis);
       
-      // Assert
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('API Key não configurada');
+      // Executar método a ser testado
+      const result = await consultantAIService.analyzeClientTrends();
+      
+      // Verificar resultados
+      expect(mockNavigationService.goToDashboard).toHaveBeenCalledTimes(1);
+      expect(mockAIService.analyzeClientTrends).toHaveBeenCalledWith(
+        expect.objectContaining({ clientsData: mockClientsData })
+      );
+      expect(result).toEqual(mockTrendsAnalysis);
+      
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('analyzeClientTrends');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Analisando tendências de clientes')
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientCount: mockClientsData.length
+      }));
     });
 
-    it('deve gerar consultoria financeira com sucesso', async () => {
-      // Arrange
-      const businessData = { revenue: 10000, expenses: 5000 };
-      const goal = 'Aumentar lucro';
+    it('deve retornar análise vazia quando não há dados suficientes', async () => {
+      // Configurar mocks para retornar dados insuficientes
+      mockNavigationService.goToDashboard.mockResolvedValue();
+      jest.spyOn(consultantAIService as any, 'extractMultipleClientsData').mockResolvedValue([]);
       
-      // Configurar API key
-      ConsultantAIService.setApiKey('test-api-key-123');
+      const mockEmptyAnalysis = {
+        popularServices: [],
+        peakTimes: [],
+        recommendations: ['Não há dados suficientes para análise']
+      };
       
-      // Act
-      const result = await ConsultantAIService.generateFinancialConsulting(businessData, goal);
+      mockAIService.analyzeClientTrends.mockResolvedValue(mockEmptyAnalysis);
       
-      // Assert
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-      expect(result.data.summary).toContain(goal);
-      expect(result.data.recommendations).toHaveLength(3);
-      expect(result.data.projections).toBeDefined();
-      expect(logger.info).toHaveBeenCalledWith('Gerando consultoria financeira', { goal });
+      // Executar método a ser testado
+      const result = await consultantAIService.analyzeClientTrends();
+      
+      // Verificar resultados
+      expect(result.popularServices).toEqual([]);
+      expect(result.recommendations).toContain('Não há dados suficientes para análise');
+      
+      // Verificar logs
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('Dados de clientes extraídos para análise'),
+        expect.objectContaining({ clientCount: 0 })
+      );
     });
   });
 
-  describe('analyzeSentiment', () => {
-    it('deve retornar erro quando API key não está configurada', async () => {
-      // Arrange
-      const texts = ['Produto excelente!', 'Atendimento péssimo'];
+  describe('generateResponseSuggestions', () => {
+    it('deve gerar sugestões de resposta para mensagens de clientes', async () => {
+      // Configurar mocks
+      const mockClientId = 'client-123';
+      const mockMessage = 'Preciso remarcar minha consulta de amanhã';
       
-      // Garantir que não há API key configurada
-      ConsultantAIService.setApiKey('');
+      const mockClientData = {
+        name: 'Cliente Teste',
+        history: [{ date: '2023-01-15', service: 'Consulta' }],
+        appointments: [{ date: '2023-03-15', time: '14:00', status: 'confirmed' }]
+      };
       
-      // Act
-      const result = await ConsultantAIService.analyzeSentiment(texts);
+      const mockSuggestions = [
+        'Claro, posso remarcar sua consulta. Temos horários disponíveis na quinta e sexta.',
+        'Sem problemas! Vamos encontrar um novo horário que funcione para você.'
+      ];
       
-      // Assert
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('API Key não configurada');
-    });
-
-    it('deve analisar sentimento com sucesso', async () => {
-      // Arrange
-      const texts = ['Produto excelente!', 'Atendimento péssimo'];
+      mockNavigationService.goToClients.mockResolvedValue();
+      mockScrapingService.extractClientData.mockResolvedValue(mockClientData);
+      mockAIService.generateResponseOptions.mockResolvedValue(mockSuggestions);
       
-      // Configurar API key
-      ConsultantAIService.setApiKey('test-api-key-123');
+      // Executar método a ser testado
+      const result = await consultantAIService.generateResponseSuggestions(mockClientId, mockMessage);
       
-      // Act
-      const result = await ConsultantAIService.analyzeSentiment(texts);
+      // Verificar resultados
+      expect(mockNavigationService.goToClients).toHaveBeenCalledTimes(1);
+      expect(mockScrapingService.extractClientData).toHaveBeenCalledWith(mockClientId);
+      expect(mockAIService.generateResponseOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ 
+          clientData: mockClientData,
+          clientMessage: mockMessage
+        })
+      );
+      expect(result).toEqual(mockSuggestions);
       
-      // Assert
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-      expect(result.data.overall).toBe('mixed');
-      expect(result.data.aspects).toHaveLength(2);
-      expect(result.data.suggestions).toHaveLength(2);
-      expect(logger.info).toHaveBeenCalledWith('Analisando sentimento em textos', { count: texts.length });
-    });
-  });
-
-  describe('generateSalesPlan', () => {
-    it('deve retornar erro quando API key não está configurada', async () => {
-      // Arrange
-      const salesData = { '2023-Q1': 10000, '2023-Q2': 12000 };
-      const growthTarget = 15;
-      const timeframe = '2024';
-      
-      // Garantir que não há API key configurada
-      ConsultantAIService.setApiKey('');
-      
-      // Act
-      const result = await ConsultantAIService.generateSalesPlan(salesData, growthTarget, timeframe);
-      
-      // Assert
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('API Key não configurada');
-    });
-
-    it('deve gerar plano de vendas com sucesso', async () => {
-      // Arrange
-      const salesData = { '2023-Q1': 10000, '2023-Q2': 12000 };
-      const growthTarget = 15;
-      const timeframe = '2024';
-      
-      // Configurar API key
-      ConsultantAIService.setApiKey('test-api-key-123');
-      
-      // Act
-      const result = await ConsultantAIService.generateSalesPlan(salesData, growthTarget, timeframe);
-      
-      // Assert
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-      expect(result.data.summary).toContain(`${growthTarget}%`);
-      expect(result.data.summary).toContain(timeframe);
-      expect(result.data.strategies).toHaveLength(3);
-      expect(result.data.projections).toBeDefined();
-      expect(logger.info).toHaveBeenCalledWith('Gerando plano de vendas', { 
-        growthTarget, 
-        timeframe 
-      });
+      // Verificar logs
+      expect(logger.startOperation).toHaveBeenCalledWith('generateResponseSuggestions');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Gerando sugestões de resposta'),
+        expect.objectContaining({ 
+          clientId: mockClientId,
+          messageLength: mockMessage.length
+        })
+      );
+      expect(mockOperation.end).toHaveBeenCalledWith('success', expect.objectContaining({
+        clientId: mockClientId
+      }));
     });
   });
 });

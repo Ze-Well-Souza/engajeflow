@@ -1,313 +1,224 @@
-
 import React from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, FileText, Calendar, Clock } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, ArrowRight, FileText } from "lucide-react";
 
 const AccountingLandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <FileText className="h-8 w-8 text-green-600" />
-            <span className="text-2xl font-bold text-gray-800">TechCare Legal</span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-950 border-b dark:border-gray-800">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <FileText className="h-6 w-6 text-gray-500" />
+            <h1 className="text-2xl font-bold">Contadores / Advogados</h1>
           </div>
-          <div className="hidden md:flex items-center space-x-6">
-            <a href="#features" className="text-gray-600 hover:text-green-600">Recursos</a>
-            <a href="#testimonials" className="text-gray-600 hover:text-green-600">Depoimentos</a>
-            <a href="#pricing" className="text-gray-600 hover:text-green-600">Preços</a>
-            <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
-              Login
-            </Button>
+          <div className="flex items-center gap-4">
+            <Link to="/landing">
+              <Button variant="ghost">Início</Button>
+            </Link>
+            <Link to="/login">
+              <Button variant="ghost">Entrar</Button>
+            </Link>
+            <Link to="/register">
+              <Button variant="default">Cadastrar</Button>
+            </Link>
           </div>
-          <Button className="md:hidden">Menu</Button>
         </div>
       </header>
 
-      <main>
-        {/* Hero Section */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Menos WhatsApp manual, mais foco nos seus clientes e prazos
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Sistema inteligente para contadores e advogados automatizarem atualizações de processos, 
-                envio de documentos e lembretes para clientes, economizando tempo valioso.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 text-lg py-6">
-                  Começar gratuitamente
-                </Button>
-                <Button size="lg" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50 text-lg py-6">
-                  Agendar demonstração
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Problem Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Problemas que resolvemos para contadores e advogados
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <div className="rounded-full bg-green-100 w-12 h-12 flex items-center justify-center mb-4">
-                  <Clock className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Cobrança de documentos</h3>
-                <p className="text-gray-600">
-                  Automatize lembretes para entrega de documentos e reduza o tempo gasto com cobranças repetitivas.
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <div className="rounded-full bg-green-100 w-12 h-12 flex items-center justify-center mb-4">
-                  <Calendar className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Prazos importantes</h3>
-                <p className="text-gray-600">
-                  Gerenciamento automático de prazos fiscais e processuais com alertas para você e seus clientes.
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <div className="rounded-full bg-green-100 w-12 h-12 flex items-center justify-center mb-4">
-                  <FileText className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Atualização de status</h3>
-                <p className="text-gray-600">
-                  Mantenha clientes informados sobre o andamento de processos e obrigações sem esforço manual.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section id="features" className="py-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Recursos para otimizar sua comunicação com clientes
-            </h2>
-            <div className="grid md:grid-cols-2 gap-12">
-              <div>
-                <h3 className="text-2xl font-semibold mb-6">Automação de comunicação</h3>
-                <ul className="space-y-4">
-                  {[
-                    "Lembretes automáticos para entrega de documentos",
-                    "Notificações de prazos próximos (DAS, IRPF, processos)",
-                    "Confirmação de recebimento e processamento",
-                    "Atualizações de status de processos",
-                    "Envio programado de relatórios e documentos"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-2 mt-1" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-2xl font-semibold mb-6">Gestão de relacionamento</h3>
-                <ul className="space-y-4">
-                  {[
-                    "Portal do cliente para acompanhamento de status",
-                    "Agendamento automático de reuniões",
-                    "Chatbot para dúvidas frequentes (MEI, CNAE, obrigações)",
-                    "Pesquisas de satisfação programadas",
-                    "Registros completos de comunicações e documentos"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-2 mt-1" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 bg-green-600 text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Pronto para automatizar sua comunicação com clientes?
-            </h2>
-            <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Economize horas por semana e proporcione uma experiência profissional para seus clientes.
-            </p>
-            <Button size="lg" variant="secondary" className="bg-white text-green-600 hover:bg-gray-100 text-lg">
-              Começar agora <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section id="testimonials" className="py-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              O que profissionais dizem sobre nós
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  quote: "Economizei mais de 15 horas por semana em comunicação com clientes. Agora posso me dedicar ao trabalho técnico que realmente importa.",
-                  author: "Carlos Ribeiro",
-                  role: "Contador, CR Contabilidade"
-                },
-                {
-                  quote: "Meus clientes elogiam a comunicação clara e constante. A automação inteligente parece personalizada, mas não exige meu tempo.",
-                  author: "Dra. Ana Paula Sousa",
-                  role: "Advogada Tributarista"
-                },
-                {
-                  quote: "Os lembretes automáticos reduziram em 70% os atrasos na entrega de documentos pelos clientes. Isso melhorou todo nosso fluxo de trabalho.",
-                  author: "Marcos Oliveira",
-                  role: "Escritório Contábil MO"
-                }
-              ].map((testimonial, i) => (
-                <div key={i} className="bg-white p-6 rounded-xl shadow-sm">
-                  <p className="text-gray-600 mb-4 italic">"{testimonial.quote}"</p>
-                  <p className="font-semibold">{testimonial.author}</p>
-                  <p className="text-sm text-gray-500">{testimonial.role}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section id="pricing" className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Planos que cabem no seu escritório
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {[
-                {
-                  name: "Profissional",
-                  price: "R$ 197/mês",
-                  description: "Para profissionais autônomos",
-                  features: [
-                    "Até 30 clientes",
-                    "Automação básica de mensagens",
-                    "Lembretes de prazos",
-                    "Suporte por email"
-                  ]
-                },
-                {
-                  name: "Escritório",
-                  price: "R$ 497/mês",
-                  description: "Para escritórios em crescimento",
-                  features: [
-                    "Até 100 clientes",
-                    "Portal do cliente",
-                    "Automações avançadas",
-                    "Chatbot personalizado",
-                    "Integrações com sistemas"
-                  ],
-                  highlighted: true
-                },
-                {
-                  name: "Enterprise",
-                  price: "R$ 997/mês",
-                  description: "Para escritórios estabelecidos",
-                  features: [
-                    "Clientes ilimitados",
-                    "Personalização completa",
-                    "API avançada",
-                    "Suporte dedicado",
-                    "Onboarding personalizado"
-                  ]
-                }
-              ].map((plan, i) => (
-                <div
-                  key={i}
-                  className={`${
-                    plan.highlighted
-                      ? "bg-white border-2 border-green-600 shadow-lg relative mt-[-1rem] pb-8"
-                      : "bg-white border border-gray-200"
-                  } p-6 rounded-xl`}
-                >
-                  {plan.highlighted && (
-                    <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Mais popular
-                    </span>
-                  )}
-                  <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">{plan.price}</span>
-                  </div>
-                  <p className="text-gray-600 mb-6">{plan.description}</p>
-                  <ul className="mb-8 space-y-3">
-                    {plan.features.map((feature, j) => (
-                      <li key={j} className="flex items-center">
-                        <Check className="h-5 w-5 text-green-500 mr-2" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`w-full ${
-                      plan.highlighted
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-gray-800 hover:bg-gray-900"
-                    }`}
-                  >
-                    Escolher plano
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="bg-gray-800 text-gray-300 py-12">
+      {/* Hero */}
+      <section className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-900 dark:to-gray-800 py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4 text-white">TechCare Legal</h3>
-              <p>Soluções de automação e IA para contadores e advogados.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 text-white">Produto</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">Recursos</a></li>
-                <li><a href="#" className="hover:text-white">Preços</a></li>
-                <li><a href="#" className="hover:text-white">Integrações</a></li>
-                <li><a href="#" className="hover:text-white">FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 text-white">Empresa</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">Sobre nós</a></li>
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-                <li><a href="#" className="hover:text-white">Parceiros</a></li>
-                <li><a href="#" className="hover:text-white">Contato</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 text-white">Legal</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">Termos de uso</a></li>
-                <li><a href="#" className="hover:text-white">Privacidade</a></li>
-                <li><a href="#" className="hover:text-white">Cookies</a></li>
-              </ul>
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Menos WhatsApp manual, mais foco nos seus clientes e prazos</h1>
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8">
+              Automatize comunicações, organize documentos e gerencie prazos com eficiência para escritórios contábeis e jurídicos
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/register">
+                <Button size="lg" className="gap-2 bg-gray-700 hover:bg-gray-800">
+                  Começar grátis <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/demo/accounting">
+                <Button size="lg" variant="outline" className="gap-2 border-gray-500 text-gray-700 hover:bg-gray-100">
+                  Ver demonstração
+                </Button>
+              </Link>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-            <p>&copy; {new Date().getFullYear()} TechCare Legal. Todos os direitos reservados.</p>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12">Soluções para profissionais</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <FeatureCard 
+            icon={<FileText className="h-10 w-10 text-gray-500" />}
+            title="Comunicação automatizada"
+            description="Envio automático de lembretes, solicitações de documentos e atualizações de status"
+          />
+          <FeatureCard 
+            icon={<FileText className="h-10 w-10 text-gray-500" />}
+            title="Gestão de documentos"
+            description="Organização e compartilhamento seguro de documentos com clientes"
+          />
+          <FeatureCard 
+            icon={<FileText className="h-10 w-10 text-gray-500" />}
+            title="Controle de prazos"
+            description="Alertas automáticos para obrigações fiscais, audiências e entregas"
+          />
+          <FeatureCard 
+            icon={<FileText className="h-10 w-10 text-gray-500" />}
+            title="Agendamento inteligente"
+            description="Sistema de agendamento de reuniões com confirmação automática"
+          />
+          <FeatureCard 
+            icon={<FileText className="h-10 w-10 text-gray-500" />}
+            title="Gestão financeira"
+            description="Controle de honorários, faturamento e cobrança automatizada"
+          />
+          <FeatureCard 
+            icon={<FileText className="h-10 w-10 text-gray-500" />}
+            title="Relatórios personalizados"
+            description="Dashboards e relatórios para acompanhamento de desempenho e produtividade"
+          />
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-gray-700 dark:bg-gray-800 py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">Pronto para transformar seu escritório?</h2>
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Junte-se a centenas de profissionais que já estão usando nossa plataforma para otimizar processos
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/register">
+              <Button size="lg" variant="default" className="bg-white text-gray-700 hover:bg-gray-100">
+                Começar agora
+              </Button>
+            </Link>
+            <Link to="/demo/accounting">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-gray-600">
+                Ver demonstração
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12">O que nossos clientes dizem</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <TestimonialCard 
+            quote="Reduzimos em 70% o tempo gasto com comunicações e lembretes para clientes. A automação transformou nosso escritório."
+            author="Roberto Mendes"
+            role="Contador, RM Contabilidade"
+          />
+          <TestimonialCard 
+            quote="O controle de prazos eliminou atrasos em entregas e nos ajudou a manter um relacionamento mais transparente com os clientes."
+            author="Juliana Alves"
+            role="Advogada, Alves & Associados"
+          />
+          <TestimonialCard 
+            quote="A gestão de documentos simplificou nossos processos e melhorou significativamente a experiência dos clientes."
+            author="Carlos Santos"
+            role="Contador, Santos Consultoria"
+          />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-100 dark:bg-gray-900 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between gap-8">
+            <div className="mb-6 md:mb-0">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-6 w-6 text-gray-500" />
+                <h3 className="text-xl font-bold">EngageFlow</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 max-w-xs">
+                Soluções digitais para escritórios contábeis e jurídicos desde 2025.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="font-semibold mb-4">Produto</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Funcionalidades</Link></li>
+                  <li><Link to="/landing/pricing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Preços</Link></li>
+                  <li><Link to="/demo/accounting" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Demonstração</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Empresa</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Sobre</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Contato</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Blog</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Legal</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Termos</Link></li>
+                  <li><Link to="/landing" className="text-gray-600 dark:text-gray-400 hover:text-gray-500">Privacidade</Link></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
+            <p>© {new Date().getFullYear()} EngageFlow. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
     </div>
   );
 };
+
+// Componente auxiliar para card de funcionalidade
+const FeatureCard = ({ 
+  icon, 
+  title, 
+  description 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string;
+}) => (
+  <Card className="h-full hover:shadow-md transition-shadow duration-300">
+    <CardHeader>
+      <div className="mb-4">{icon}</div>
+      <CardTitle>{title}</CardTitle>
+      <CardDescription>{description}</CardDescription>
+    </CardHeader>
+  </Card>
+);
+
+// Componente auxiliar para card de depoimento
+const TestimonialCard = ({ 
+  quote, 
+  author, 
+  role 
+}: { 
+  quote: string; 
+  author: string; 
+  role: string;
+}) => (
+  <Card className="h-full hover:shadow-md transition-shadow duration-300">
+    <CardContent className="pt-6">
+      <p className="italic text-gray-600 dark:text-gray-300 mb-4">"{quote}"</p>
+      <div>
+        <p className="font-semibold">{author}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{role}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default AccountingLandingPage;

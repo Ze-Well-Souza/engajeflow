@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Route } from "react-router-dom";
 
@@ -15,6 +14,9 @@ import HRLandingPage from "@/pages/landing/HRLandingPage";
 import AccountingLandingPage from "@/pages/landing/AccountingLandingPage";
 import PricingPage from "@/pages/plans/PricingPage";
 
+// Demo Page
+import DemoPage from "@/pages/demo/DemoPage";
+
 const LandingRoutes: React.FC = () => {
   return (
     <>
@@ -29,6 +31,10 @@ const LandingRoutes: React.FC = () => {
       <Route path="/landing/hr" element={<HRLandingPage />} />
       <Route path="/landing/accounting" element={<AccountingLandingPage />} />
       <Route path="/landing/pricing" element={<PricingPage />} />
+      
+      {/* Demo Routes */}
+      <Route path="/demo" element={<DemoPage />} />
+      <Route path="/demo/:segment" element={<DemoPage />} />
     </>
   );
 };
