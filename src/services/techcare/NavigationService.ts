@@ -1,195 +1,51 @@
 
 /**
- * Serviço de navegação para o TechCare Connect Automator
+ * Serviço de navegação para TechCare Connect
  */
 
-import logger from '../../utils/logger';
-import { getEnvVariable } from '../../utils/environment';
-import { CircuitBreaker } from '../../utils/circuit-breaker';
-
-/**
- * Resultado da navegação
- */
-interface NavigationResult {
+export interface NavigationResponse {
   success: boolean;
+  data?: any;
   error?: string;
 }
 
-/**
- * Serviço responsável pela navegação no sistema TechCare
- */
 class NavigationService {
-  private static instance: NavigationService;
-  private baseUrl: string;
-  private lastPage: string | null = null;
-  private history: string[] = [];
-  private circuitBreaker: CircuitBreaker;
-  
-  private constructor() {
-    // Definir URL base padrão
-    this.baseUrl = getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com');
-    
-    // Configurar circuit breaker
-    this.circuitBreaker = new CircuitBreaker({
-      failureThreshold: 3,
-      resetTimeout: 30000
-    });
-    
-    logger.info('[NavigationService] Inicializado com base URL:', this.baseUrl);
-  }
-  
-  /**
-   * Obtém a instância singleton do serviço
-   */
-  public static getInstance(): NavigationService {
-    if (!NavigationService.instance) {
-      NavigationService.instance = new NavigationService();
+  async navigateToUrl(url: string): Promise<NavigationResponse> {
+    try {
+      // Simular navegação
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return {
+        success: true,
+        data: {
+          url,
+          timestamp: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Erro na navegação'
+      };
     }
-    return NavigationService.instance;
-  }
-  
-  /**
-   * Configura a URL base para o serviço
-   * @param baseUrl URL base do sistema TechCare
-   */
-  public configure(baseUrl: string): void {
-    this.baseUrl = baseUrl;
-    logger.info('[NavigationService] URL base configurada:', baseUrl);
-  }
-  
-  /**
-   * Obtém a URL base atual
-   */
-  public getBaseUrl(): string {
-    return this.baseUrl;
-  }
-  
-  /**
-   * Obtém a última página visitada
-   */
-  public getLastPage(): string | null {
-    return this.lastPage;
   }
 
-  /**
-   * Obtém a página atual
-   */
-  public getCurrentPage(): string | null {
-    return this.lastPage;
-  }
-  
-  /**
-   * Obtém o histórico de navegação
-   */
-  public getHistory(): string[] {
-    return [...this.history]; // Retorna uma cópia para evitar modificações externas
-  }
-  
-  /**
-   * Limpa o histórico de navegação
-   */
-  public clearHistory(): void {
-    this.history = [];
-    logger.info('[NavigationService] Histórico de navegação limpo');
-  }
-  
-  /**
-   * Navega para uma página específica
-   * @param path Caminho da página (relativo à URL base)
-   * @param params Parâmetros opcionais de consulta
-   */
-  public async navigateTo(path: string, params: Record<string, any> = {}): Promise<NavigationResult> {
-    return this.circuitBreaker.execute(async () => {
-      try {
-        // Construir URL completa
-        let url = this.baseUrl;
-        
-        // Garantir que o path começa com /
-        if (path && !path.startsWith('/')) {
-          path = '/' + path;
+  async getCurrentPage(): Promise<NavigationResponse> {
+    try {
+      return {
+        success: true,
+        data: {
+          url: window.location.href,
+          title: document.title
         }
-        
-        // Adicionar o caminho à URL base
-        url += path;
-        
-        // Adicionar parâmetros de consulta, se houver
-        if (Object.keys(params).length > 0) {
-          const queryParams = new URLSearchParams();
-          for (const key in params) {
-            queryParams.append(key, params[key]);
-          }
-          url += '?' + queryParams.toString();
-        }
-        
-        logger.info('[NavigationService] Navegando para:', url);
-        
-        // Em produção, aqui seria implementada a lógica real de navegação com Puppeteer
-        // Por enquanto, apenas simulamos a navegação
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Atualizar histórico e última página
-        this.history.push(path);
-        this.lastPage = path;
-        
-        logger.info('[NavigationService] Navegação concluída com sucesso');
-        
-        return { success: true };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido durante navegação';
-        logger.error('[NavigationService] Erro ao navegar:', errorMessage);
-        return { success: false, error: errorMessage };
-      }
-    });
-  }
-  
-  /**
-   * Voltar para a página anterior
-   */
-  public async goBack(): Promise<NavigationResult> {
-    return this.circuitBreaker.execute(async () => {
-      try {
-        logger.info('[NavigationService] Voltando para a página anterior');
-        
-        // Em produção, aqui seria implementada a lógica real com Puppeteer
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Remover a página atual do histórico e definir a anterior como atual
-        if (this.history.length > 1) {
-          this.history.pop(); // Remove a página atual
-          this.lastPage = this.history[this.history.length - 1]; // Define a anterior como atual
-        } else if (this.history.length === 1) {
-          this.lastPage = null; // Se só tiver uma página no histórico, volta para null
-          this.history = [];
-        }
-        
-        return { success: true };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao voltar página';
-        logger.error('[NavigationService] Erro ao voltar página:', errorMessage);
-        return { success: false, error: errorMessage };
-      }
-    });
-  }
-  
-  /**
-   * Recarrega a página atual
-   */
-  public async refresh(): Promise<NavigationResult> {
-    return this.circuitBreaker.execute(async () => {
-      try {
-        logger.info('[NavigationService] Recarregando a página atual');
-        
-        // Em produção, aqui seria implementada a lógica real com Puppeteer
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        return { success: true };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao recarregar página';
-        logger.error('[NavigationService] Erro ao recarregar página:', errorMessage);
-        return { success: false, error: errorMessage };
-      }
-    });
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Erro ao obter página atual'
+      };
+    }
   }
 }
 
-export default NavigationService.getInstance();
+export default new NavigationService();

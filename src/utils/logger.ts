@@ -113,6 +113,29 @@ class Logger {
   }
 
   /**
+   * Inicia uma operação de log
+   */
+  public startOperation(operation: string, context?: any): string {
+    const operationId = Math.random().toString(36).substr(2, 9);
+    this.info(`Iniciando operação: ${operation}`, { operationId, ...context });
+    return operationId;
+  }
+
+  /**
+   * Adiciona contexto ao logger
+   */
+  public withContext(context: any): Logger {
+    // Retorna uma nova instância com contexto
+    const logger = Object.create(Logger.prototype);
+    logger.logHistory = this.logHistory;
+    logger.MAX_HISTORY = this.MAX_HISTORY;
+    logger.LOG_LEVELS = this.LOG_LEVELS;
+    logger.minLevel = this.minLevel;
+    logger.defaultContext = context;
+    return logger;
+  }
+
+  /**
    * Obtém o histórico de logs
    */
   public getHistory(level?: LogLevel): LogEntry[] {

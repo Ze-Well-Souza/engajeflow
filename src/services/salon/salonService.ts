@@ -1,27 +1,34 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Professional, SalonService, Appointment } from '@/types/salon';
+import { Professional } from '@/types/salon';
+
+interface CreateProfessionalData {
+  name: string;
+  email: string;
+  phone: string;
+  specialty: string;
+  active: boolean;
+}
 
 export class SalonService {
-  // Profissionais
   static async getProfessionals(): Promise<Professional[]> {
     try {
-      // Simular dados para demonstração
+      // Simular dados para desenvolvimento
       return [
         {
           id: '1',
           name: 'Ana Silva',
-          email: 'ana@salon.com',
-          phone: '(11) 99999-0001',
+          email: 'ana@exemplo.com',
+          phone: '(11) 99999-9999',
           specialty: 'Cabelo',
           active: true,
           created_at: new Date().toISOString()
         },
         {
           id: '2',
-          name: 'Marina Costa',
-          email: 'marina@salon.com',
-          phone: '(11) 99999-0002',
+          name: 'Maria Santos',
+          email: 'maria@exemplo.com',
+          phone: '(11) 88888-8888',
           specialty: 'Unhas',
           active: true,
           created_at: new Date().toISOString()
@@ -29,19 +36,23 @@ export class SalonService {
       ];
     } catch (error) {
       console.error('Erro ao buscar profissionais:', error);
-      throw error;
+      return [];
     }
   }
 
-  static async createProfessional(professional: Omit<Professional, 'id' | 'created_at'>): Promise<Professional> {
+  static async createProfessional(data: CreateProfessionalData): Promise<Professional> {
     try {
       // Simular criação
       const newProfessional: Professional = {
-        ...professional,
         id: Math.random().toString(36).substr(2, 9),
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        specialty: data.specialty,
+        active: data.active,
         created_at: new Date().toISOString()
       };
-      
+
       return newProfessional;
     } catch (error) {
       console.error('Erro ao criar profissional:', error);
@@ -49,55 +60,32 @@ export class SalonService {
     }
   }
 
-  // Serviços
-  static async getServices(): Promise<SalonService[]> {
+  static async updateProfessional(id: string, data: Partial<CreateProfessionalData>): Promise<Professional> {
     try {
-      // Simular dados para demonstração
-      return [
-        {
-          id: '1',
-          name: 'Corte de Cabelo',
-          description: 'Corte personalizado',
-          duration: 60,
-          price: 80,
-          active: true,
-          category: 'Cabelo'
-        },
-        {
-          id: '2',
-          name: 'Manicure',
-          description: 'Cuidados com as unhas das mãos',
-          duration: 45,
-          price: 45,
-          active: true,
-          category: 'Unhas'
-        }
-      ];
+      // Simular atualização
+      const updatedProfessional: Professional = {
+        id,
+        name: data.name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        specialty: data.specialty || '',
+        active: data.active || true,
+        created_at: new Date().toISOString()
+      };
+
+      return updatedProfessional;
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('Erro ao atualizar profissional:', error);
       throw error;
     }
   }
 
-  // Agendamentos
-  static async getAppointments(): Promise<Appointment[]> {
+  static async deleteProfessional(id: string): Promise<void> {
     try {
-      // Simular dados para demonstração
-      return [
-        {
-          id: '1',
-          client_name: 'Maria Santos',
-          client_phone: '(11) 98888-1111',
-          client_email: 'maria@email.com',
-          service_id: '1',
-          professional_id: '1',
-          scheduled_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          status: 'confirmed',
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Simular exclusão
+      console.log('Profissional excluído:', id);
     } catch (error) {
-      console.error('Erro ao buscar agendamentos:', error);
+      console.error('Erro ao excluir profissional:', error);
       throw error;
     }
   }

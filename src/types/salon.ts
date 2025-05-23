@@ -49,5 +49,4 @@ export interface SocialAccount {
   expiresAt?: string;
   isActive: boolean;
   profile_picture_url?: string;
-  profilePictureUrl?: string;
 }

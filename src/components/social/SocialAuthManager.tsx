@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,9 +9,13 @@ import { toast } from 'sonner';
 
 interface SocialAuthManagerProps {
   onAccountChange?: (accounts: SocialAccount[]) => void;
+  onAccountConnected?: (account: SocialAccount) => void;
 }
 
-const SocialAuthManager: React.FC<SocialAuthManagerProps> = ({ onAccountChange }) => {
+const SocialAuthManager: React.FC<SocialAuthManagerProps> = ({ 
+  onAccountChange, 
+  onAccountConnected 
+}) => {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
@@ -79,9 +82,11 @@ const SocialAuthManager: React.FC<SocialAuthManagerProps> = ({ onAccountChange }
         profile_picture_url: 'https://via.placeholder.com/40'
       };
       
-      setAccounts(prev => [...prev, newAccount]);
+      const updatedAccounts = [...accounts, newAccount];
+      setAccounts(updatedAccounts);
       toast.success(`Conta ${platform} conectada com sucesso!`);
-      onAccountChange?.([...accounts, newAccount]);
+      onAccountChange?.(updatedAccounts);
+      onAccountConnected?.(newAccount);
     } catch (error) {
       console.error(`Erro ao conectar ${platform}:`, error);
       toast.error(`Erro ao conectar conta ${platform}`);
