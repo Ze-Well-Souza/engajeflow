@@ -1,127 +1,149 @@
-// src/utils/metrics/index.ts
 
-import { register, Counter, Gauge, Histogram } from 'prom-client';
-import express from 'express';
-import { Logger } from '../logger';
+/**
+ * Sistema de métricas baseado em Prometheus
+ */
 
-const logger = new Logger('Metrics');
+import { Counter, Gauge, Histogram, register } from 'prom-client';
+import { Router } from 'express';
+import logger from '../logger';
 
-// Contadores
-export const tasksProcessedCounter = new Counter({
-  name: 'techcare_tasks_processed_total',
-  help: 'Total de tarefas processadas',
-  labelNames: ['status', 'type']
-});
+const metricsLogger = logger.withContext('Metrics');
 
-export const errorsCounter = new Counter({
-  name: 'techcare_errors_total',
-  help: 'Total de erros ocorridos',
-  labelNames: ['service', 'type']
-});
+// Configuração padrão
+const DEFAULT_PREFIX = 'techcare_';
+const DEFAULT_LABELS = ['service', 'endpoint'];
 
-export const apiRequestsCounter = new Counter({
-  name: 'techcare_api_requests_total',
-  help: 'Total de requisições à API',
-  labelNames: ['method', 'endpoint', 'status']
-});
+// Interface para inicialização do sistema de métricas
+export interface MetricsConfig {
+  prefix?: string;
+  defaultLabels?: string[];
+  collectDefaultMetrics?: boolean;
+}
 
-// Gauges
-export const queueSizeGauge = new Gauge({
-  name: 'techcare_queue_size',
-  help: 'Tamanho atual da fila de tarefas',
-  labelNames: ['priority']
-});
-
-export const activeWorkersGauge = new Gauge({
-  name: 'techcare_active_workers',
-  help: 'Número de workers ativos processando tarefas'
-});
-
-export const circuitBreakerStateGauge = new Gauge({
-  name: 'techcare_circuit_breaker_state',
-  help: 'Estado atual do circuit breaker (0=fechado, 1=meio-aberto, 2=aberto)',
-  labelNames: ['service']
-});
-
-// Histogramas
-export const taskDurationHistogram = new Histogram({
-  name: 'techcare_task_duration_seconds',
-  help: 'Duração do processamento de tarefas em segundos',
-  labelNames: ['type'],
-  buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60, 120, 300, 600]
-});
-
-export const apiResponseTimeHistogram = new Histogram({
-  name: 'techcare_api_response_time_seconds',
-  help: 'Tempo de resposta da API em segundos',
-  labelNames: ['method', 'endpoint'],
-  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10]
-});
-
-// Função para inicializar o servidor de métricas
-export const initMetricsServer = (port: number = 9090): void => {
-  const app = express();
+// Singleton para gerenciar métricas
+class MetricsService {
+  private static instance: MetricsService;
+  private prefix: string;
+  private defaultLabels: string[];
+  private counters: Map<string, Counter> = new Map();
+  private gauges: Map<string, Gauge> = new Map();
+  private histograms: Map<string, Histogram> = new Map();
   
-  // Endpoint para métricas do Prometheus
-  app.get('/metrics', async (req, res) => {
-    try {
-      res.set('Content-Type', register.contentType);
-      res.end(await register.metrics());
-    } catch (error) {
-      logger.error('Erro ao coletar métricas', { error });
-      res.status(500).end();
-    }
-  });
-  
-  // Endpoint de saúde
-  app.get('/health', (req, res) => {
-    res.status(200).send('OK');
-  });
-  
-  // Iniciar servidor
-  app.listen(port, () => {
-    logger.info(`Servidor de métricas iniciado na porta ${port}`);
-  });
-};
-
-// Função para registrar duração de tarefas
-export const measureTaskDuration = async <T>(
-  taskType: string,
-  task: () => Promise<T>
-): Promise<T> => {
-  const end = taskDurationHistogram.startTimer({ type: taskType });
-  try {
-    const result = await task();
-    tasksProcessedCounter.inc({ status: 'success', type: taskType });
-    return result;
-  } catch (error) {
-    tasksProcessedCounter.inc({ status: 'error', type: taskType });
-    errorsCounter.inc({ service: 'task_processor', type: taskType });
-    throw error;
-  } finally {
-    end();
+  private constructor() {
+    this.prefix = DEFAULT_PREFIX;
+    this.defaultLabels = DEFAULT_LABELS;
+    metricsLogger.info('Sistema de métricas inicializado');
   }
-};
-
-// Middleware para medir tempo de resposta da API
-export const apiMetricsMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const start = Date.now();
-  const { method, path } = req;
   
-  // Interceptar o método end para capturar o status de resposta
-  const originalEnd = res.end;
-  res.end = function(chunk?: any, encoding?: any, callback?: any) {
-    const responseTime = (Date.now() - start) / 1000;
-    const status = res.statusCode.toString();
-    
-    apiRequestsCounter.inc({ method, endpoint: path, status });
-    apiResponseTimeHistogram.observe({ method, endpoint: path }, responseTime);
-    
-    return originalEnd.call(this, chunk, encoding, callback);
-  };
+  public static getInstance(): MetricsService {
+    if (!MetricsService.instance) {
+      MetricsService.instance = new MetricsService();
+    }
+    return MetricsService.instance;
+  }
   
-  next();
-};
+  // Configurar o serviço de métricas
+  public configure(config: MetricsConfig = {}): void {
+    const { prefix, defaultLabels, collectDefaultMetrics } = config;
+    
+    if (prefix) {
+      this.prefix = prefix;
+    }
+    
+    if (defaultLabels) {
+      this.defaultLabels = defaultLabels;
+    }
+    
+    if (collectDefaultMetrics) {
+      register.setDefaultLabels({ service: 'techcare' });
+      require('prom-client').collectDefaultMetrics({ prefix: this.prefix });
+      metricsLogger.info('Métricas padrão ativadas');
+    }
+    
+    metricsLogger.info('Sistema de métricas configurado', { prefix: this.prefix });
+  }
+  
+  // Criar ou obter um contador
+  public counter(name: string, help: string, labelNames: string[] = []): Counter {
+    const metricName = `${this.prefix}${name}`;
+    
+    if (!this.counters.has(metricName)) {
+      const counter = new Counter({
+        name: metricName,
+        help,
+        labelNames: [...this.defaultLabels, ...labelNames]
+      });
+      this.counters.set(metricName, counter);
+    }
+    
+    return this.counters.get(metricName)!;
+  }
+  
+  // Criar ou obter um gauge
+  public gauge(name: string, help: string, labelNames: string[] = []): Gauge {
+    const metricName = `${this.prefix}${name}`;
+    
+    if (!this.gauges.has(metricName)) {
+      const gauge = new Gauge({
+        name: metricName,
+        help,
+        labelNames: [...this.defaultLabels, ...labelNames]
+      });
+      this.gauges.set(metricName, gauge);
+    }
+    
+    return this.gauges.get(metricName)!;
+  }
+  
+  // Criar ou obter um histograma
+  public histogram(name: string, help: string, labelNames: string[] = [], buckets?: number[]): Histogram {
+    const metricName = `${this.prefix}${name}`;
+    
+    if (!this.histograms.has(metricName)) {
+      const options: any = {
+        name: metricName,
+        help,
+        labelNames: [...this.defaultLabels, ...labelNames]
+      };
+      
+      if (buckets) {
+        options.buckets = buckets;
+      }
+      
+      const histogram = new Histogram(options);
+      this.histograms.set(metricName, histogram);
+    }
+    
+    return this.histograms.get(metricName)!;
+  }
+  
+  // Criar um middleware para Express que expõe um endpoint de métricas
+  public createMetricsMiddleware(): Router {
+    const router = Router();
+    
+    router.get('/metrics', (req, res) => {
+      res.set('Content-Type', register.contentType);
+      register.metrics().then(metrics => {
+        res.send(metrics);
+      }).catch(err => {
+        metricsLogger.error('Erro ao gerar métricas', err);
+        res.status(500).send('Erro ao gerar métricas');
+      });
+    });
+    
+    return router;
+  }
+  
+  // Resetar métricas (útil para testes)
+  public resetMetrics(): void {
+    register.clear();
+    this.counters.clear();
+    this.gauges.clear();
+    this.histograms.clear();
+    metricsLogger.info('Métricas resetadas');
+  }
+}
 
-// Exportar registro para uso em outros módulos
-export { register };
+// Exportar instância singleton
+const metrics = MetricsService.getInstance();
+export default metrics;

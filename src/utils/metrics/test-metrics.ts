@@ -1,115 +1,77 @@
-// src/utils/metrics/test-metrics.ts
-
-import { 
-  initMetricsServer, 
-  tasksProcessedCounter, 
-  errorsCounter, 
-  queueSizeGauge, 
-  activeWorkersGauge, 
-  circuitBreakerStateGauge,
-  taskDurationHistogram,
-  measureTaskDuration
-} from './index';
-import { Logger } from '../logger';
-
-const logger = new Logger('MetricsTest');
 
 /**
- * Script para testar a geração de métricas para o Prometheus
- * Este script simula atividade no sistema para gerar métricas de exemplo
+ * Métricas específicas para testes do sistema
  */
-async function runMetricsTest() {
-  logger.info('Iniciando teste de métricas');
-  
-  // Iniciar servidor de métricas
-  initMetricsServer(9090);
-  
-  // Simular tamanho da fila
-  setInterval(() => {
-    const normalSize = Math.floor(Math.random() * 20);
-    const highSize = Math.floor(Math.random() * 5);
-    
-    queueSizeGauge.set({ priority: 'normal' }, normalSize);
-    queueSizeGauge.set({ priority: 'high' }, highSize);
-    
-    logger.info('Atualizando tamanho da fila', { normal: normalSize, high: highSize });
-  }, 5000);
-  
-  // Simular workers ativos
-  setInterval(() => {
-    const workers = Math.floor(Math.random() * 5) + 1;
-    activeWorkersGauge.set(workers);
-    logger.info('Atualizando workers ativos', { workers });
-  }, 7000);
-  
-  // Simular estado do circuit breaker
-  setInterval(() => {
-    const services = ['techcare_api', 'database', 'external_service'];
-    const states = [0, 1, 2]; // 0=fechado, 1=meio-aberto, 2=aberto
-    const weights = [0.8, 0.15, 0.05]; // Probabilidades para cada estado
-    
-    services.forEach(service => {
-      // Selecionar estado com base nas probabilidades
-      let random = Math.random();
-      let state = 0;
-      
-      for (let i = 0; i < weights.length; i++) {
-        if (random < weights[i]) {
-          state = states[i];
-          break;
-        }
-        random -= weights[i];
-      }
-      
-      circuitBreakerStateGauge.set({ service }, state);
-      logger.info('Atualizando estado do circuit breaker', { service, state });
-    });
-  }, 10000);
-  
-  // Simular processamento de tarefas
-  setInterval(async () => {
-    const taskTypes = ['financial_report', 'client_data', 'sales_analysis', 'inventory_check'];
-    const randomType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
-    
-    try {
-      await measureTaskDuration(randomType, async () => {
-        // Simular duração variável da tarefa
-        const duration = Math.random() * 5 + 0.5; // Entre 0.5 e 5.5 segundos
-        await new Promise(resolve => setTimeout(resolve, duration * 1000));
-        
-        // Simular erro ocasional (10% de chance)
-        if (Math.random() < 0.1) {
-          throw new Error('Erro simulado no processamento');
-        }
-        
-        logger.info('Tarefa processada com sucesso', { type: randomType, duration });
-        return { success: true };
-      });
-    } catch (error) {
-      logger.error('Erro ao processar tarefa', { type: randomType, error });
-      errorsCounter.inc({ service: 'task_processor', type: randomType });
-    }
-  }, 3000);
-  
-  // Simular erros aleatórios
-  setInterval(() => {
-    const services = ['api', 'database', 'external_service', 'auth'];
-    const errorTypes = ['timeout', 'connection_refused', 'validation_error', 'internal_error'];
-    
-    if (Math.random() < 0.2) { // 20% de chance de gerar erro
-      const service = services[Math.floor(Math.random() * services.length)];
-      const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
-      
-      errorsCounter.inc({ service, type: errorType });
-      logger.warn('Erro simulado registrado', { service, type: errorType });
-    }
-  }, 15000);
-  
-  logger.info('Teste de métricas em execução. Pressione Ctrl+C para encerrar.');
-}
 
-// Executar o teste
-runMetricsTest().catch(error => {
-  logger.error('Erro ao executar teste de métricas', { error });
-  process.exit(1);
-});
+import metrics from './index';
+import { collectDefaultMetrics, register } from 'prom-client';
+
+// Configurar métricas padrão
+collectDefaultMetrics({ prefix: 'test_' });
+
+// Logger para métricas de teste
+import logger from '../logger';
+const testMetricsLogger = logger.withContext('TestMetrics');
+
+// Métricas de teste
+const testCounter = metrics.counter('test_counter', 'Contador de testes', ['test_type']);
+const testGauge = metrics.gauge('test_gauge', 'Gauge de testes', ['component']);
+const testHistogram = metrics.histogram('test_duration', 'Duração de testes', ['test_case'], [0.01, 0.1, 0.5, 1, 2, 5]);
+
+// Funções auxiliares para registrar métricas de teste
+export const incrementTestCount = (type: string, amount = 1): void => {
+  testCounter.inc({ service: 'test_service', endpoint: 'test', test_type: type }, amount);
+  testMetricsLogger.info(`Teste incrementado: ${type} (${amount})`);
+};
+
+export const setTestValue = (component: string, value: number): void => {
+  testGauge.set({ service: 'test_service', endpoint: 'test', component }, value);
+  testMetricsLogger.info(`Valor do teste definido: ${component} = ${value}`);
+};
+
+export const recordTestDuration = (testCase: string, durationSeconds: number): void => {
+  testHistogram.observe({ service: 'test_service', endpoint: 'test', test_case: testCase }, durationSeconds);
+  testMetricsLogger.info(`Duração do teste registrada: ${testCase} = ${durationSeconds}s`);
+};
+
+// Funções para gerar métricas simuladas para testes
+export const generateTestMetrics = async (count = 10): Promise<void> => {
+  testMetricsLogger.info(`Gerando ${count} métricas de teste`);
+  
+  const testTypes = ['unit', 'integration', 'e2e', 'performance'];
+  const components = ['api', 'database', 'frontend', 'cache'];
+  const testCases = ['login', 'checkout', 'search', 'profile_update'];
+  
+  for (let i = 0; i < count; i++) {
+    const testType = testTypes[Math.floor(Math.random() * testTypes.length)];
+    const component = components[Math.floor(Math.random() * components.length)];
+    const testCase = testCases[Math.floor(Math.random() * testCases.length)];
+    
+    incrementTestCount(testType);
+    setTestValue(component, Math.random() * 100);
+    recordTestDuration(testCase, Math.random() * 5);
+    
+    // Simular delay para distribuir métricas no tempo
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+};
+
+// Função para coletar métricas para testes
+export const getTestMetricsSnapshot = async (): Promise<string> => {
+  return await register.metrics();
+};
+
+// Função para limpar métricas de teste
+export const resetTestMetrics = (): void => {
+  register.clear();
+  testMetricsLogger.info('Métricas de teste resetadas');
+};
+
+export default {
+  incrementTestCount,
+  setTestValue,
+  recordTestDuration,
+  generateTestMetrics,
+  getTestMetricsSnapshot,
+  resetTestMetrics
+};

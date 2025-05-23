@@ -1,59 +1,67 @@
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import NavigationService from '../../services/techcare/NavigationService';
 
-interface MockNavigationState {
-  url: string;
-  isLoaded: boolean;
-  page: string | null;
-}
+// Mock do Puppeteer
+vi.mock('puppeteer', async () => {
+  return {
+    default: {
+      launch: vi.fn().mockImplementation(() => {
+        return {
+          newPage: vi.fn().mockImplementation(() => {
+            return {
+              goto: vi.fn().mockResolvedValue({}),
+              waitForSelector: vi.fn().mockResolvedValue({}),
+              click: vi.fn().mockResolvedValue({}),
+              url: vi.fn().mockReturnValue('https://techcare.com/dashboard'),
+              close: vi.fn().mockResolvedValue({})
+            };
+          }),
+          close: vi.fn().mockResolvedValue({})
+        };
+      })
+    }
+  };
+});
 
 describe('NavigationService', () => {
-  let mockNavigationState: MockNavigationState;
+  beforeAll(() => {
+    // Configurar o serviço de navegação para os testes
+    NavigationService.configureNavigation({
+      baseUrl: 'https://techcare.com',
+      timeout: 5000
+    });
+  });
 
   beforeEach(() => {
-    // Reset mock state
-    mockNavigationState = {
-      url: 'https://example.com',
-      isLoaded: true,
-      page: '/home'
-    };
-    
-    // Mock the methods that exist in the actual service
-    vi.spyOn(NavigationService, 'getCurrentPage').mockImplementation(() => {
-      return mockNavigationState.page;
-    });
-    
-    vi.spyOn(NavigationService, 'navigateTo').mockImplementation((path: string) => {
-      mockNavigationState.page = path;
-      mockNavigationState.isLoaded = true;
-      return Promise.resolve({ success: true });
-    });
+    vi.clearAllMocks();
   });
 
-  it('should navigate to a URL', async () => {
-    const result = await NavigationService.navigateTo('/dashboard');
+  it('deve abrir um navegador com sucesso', () => {
+    NavigationService.openBrowser();
+    expect(NavigationService.isNavigatorOpen()).toBe(true);
+  });
+
+  it('deve navegar para uma URL com sucesso', async () => {
+    NavigationService.openBrowser();
+    
+    const result = await NavigationService.navigateToUrl('/dashboard');
     
     expect(result.success).toBe(true);
-    expect(mockNavigationState.page).toBe('/dashboard');
-    expect(mockNavigationState.isLoaded).toBe(true);
   });
 
-  it('should get the current page', async () => {
-    mockNavigationState.page = '/settings';
+  it('deve fechar o navegador', () => {
+    NavigationService.openBrowser();
+    expect(NavigationService.isNavigatorOpen()).toBe(true);
     
-    const page = NavigationService.getCurrentPage();
+    NavigationService.closeBrowser();
+    expect(NavigationService.isNavigatorOpen()).toBe(false);
+  });
+
+  it('deve retornar a URL atual', () => {
+    NavigationService.openBrowser();
     
-    expect(page).toBe('/settings');
-  });
-
-  it('should get base URL', async () => {
-    const baseUrl = NavigationService.getBaseUrl();
-    expect(baseUrl).toBeDefined();
-  });
-
-  it('should get navigation history', async () => {
-    const history = NavigationService.getHistory();
-    expect(Array.isArray(history)).toBe(true);
+    const url = NavigationService.getCurrentUrl();
+    expect(url).toContain('techcare.com');
   });
 });

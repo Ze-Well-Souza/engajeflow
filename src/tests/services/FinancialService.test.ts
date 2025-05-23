@@ -37,7 +37,7 @@ describe('FinancialService', () => {
   });
 
   it('should get financial summary successfully when authenticated', async () => {
-    const period = { startDate: '2025-01-01', endDate: '2025-01-31' };
+    const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
     
     const result = await FinancialService.getFinancialSummary(period);
     
@@ -48,18 +48,17 @@ describe('FinancialService', () => {
   });
 
   it('should generate financial report', async () => {
-    const period = { startDate: '2025-01-01', endDate: '2025-01-31' };
-    const format = 'xlsx';
+    const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
     
-    const result = await FinancialService.generateFinancialReport(period, format);
+    const result = await FinancialService.generateFinancialReport(period);
     
     expect(result).toBeDefined();
-    expect(result.period).toBeDefined();
-    expect(result.format).toBe(format);
+    expect(result.summary).toBeDefined();
+    expect(result.data).toBeDefined();
   });
 
   it('should get transaction history', async () => {
-    const period = { startDate: '2025-01-01', endDate: '2025-01-31' };
+    const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
     
     const result = await FinancialService.getTransactions(period);
     
