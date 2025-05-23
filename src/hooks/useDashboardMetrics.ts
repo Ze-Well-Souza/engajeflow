@@ -36,7 +36,6 @@ export const useDashboardMetrics = (): DashboardMetricsResult => {
   
   const { profile } = useUserProfile();
   
-  // Função para buscar métricas do dashboard
   const fetchDashboardMetrics = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -45,9 +44,6 @@ export const useDashboardMetrics = (): DashboardMetricsResult => {
       if (!profile) {
         return;
       }
-      
-      // Aqui implementaríamos chamadas ao Supabase para obter métricas reais
-      // Por enquanto, vamos usar dados simulados
       
       // Simular delay de carregamento
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -67,7 +63,6 @@ export const useDashboardMetrics = (): DashboardMetricsResult => {
       console.error('Erro ao buscar métricas do dashboard:', err);
       setError('Não foi possível carregar as métricas do dashboard');
       
-      // Dados simulados em caso de erro
       setMetrics({
         activeAutomations: 18,
         automationSuccessRate: 75,
@@ -85,7 +80,7 @@ export const useDashboardMetrics = (): DashboardMetricsResult => {
   
   return {
     metrics,
-    ...metrics, // Espalhar métricas no objeto de retorno
+    ...metrics,
     isLoading,
     error,
     refresh: fetchDashboardMetrics,

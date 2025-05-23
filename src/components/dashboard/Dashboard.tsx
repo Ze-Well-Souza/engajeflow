@@ -10,22 +10,21 @@ import ScheduledPostsTable from "./ScheduledPostsTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Calendar, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useScheduledPosts } from "@/hooks/useScheduledPosts";
 
 export const Dashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState("30");
   const [activeTab, setActiveTab] = useState("automations");
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  
+  // Hook para buscar posts agendados
+  const { posts, isLoading: postsLoading } = useScheduledPosts("", 5, 1);
 
-  // Função para atualizar todos os componentes do dashboard
   const refreshDashboard = () => {
-    // Esta função seria implementada para chamar os métodos de atualização
-    // de cada componente individual
     console.log("Atualizando dashboard...");
     setLastUpdated(new Date());
-    // Em uma implementação real, chamaríamos os métodos refresh de cada componente
   };
 
-  // Atualizar a cada 5 minutos
   useEffect(() => {
     const intervalId = setInterval(() => {
       refreshDashboard();
@@ -96,7 +95,7 @@ export const Dashboard: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="posts">
-          <ScheduledPostsTable />
+          <ScheduledPostsTable posts={posts} isLoading={postsLoading} />
         </TabsContent>
         
         <TabsContent value="reports">

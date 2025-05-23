@@ -7,15 +7,29 @@ import AgendamentoChef from "./AgendamentoChef";
 import AgendamentoHousekeeper from "./AgendamentoHousekeeper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface AgendamentoDemoProps {
+export interface AgendamentoDemoProps {
   onScheduleComplete?: () => void;
+  segment?: string;
+  title?: string;
+  services?: Array<{ id: string; name: string; }>;
+  professionals?: Array<{ id: string; name: string; }>;
+  timeSlots?: string[];
 }
 
-const AgendamentoDemo: React.FC<AgendamentoDemoProps> = ({ onScheduleComplete }) => {
+const AgendamentoDemo: React.FC<AgendamentoDemoProps> = ({ 
+  onScheduleComplete,
+  segment,
+  title,
+  services,
+  professionals,
+  timeSlots
+}) => {
   return (
     <Card className="border-none shadow-none">
       <CardHeader>
-        <CardTitle className="text-2xl">Agendar Serviço</CardTitle>
+        <CardTitle className="text-2xl">
+          {title || "Agendar Serviço"}
+        </CardTitle>
         <CardDescription>
           Escolha o tipo de serviço que deseja agendar
         </CardDescription>
