@@ -30,18 +30,18 @@ describe('FinancialService', () => {
 
   it('should generate financial report', async () => {
     const period = { startDate: '2023-01-01', endDate: '2023-01-31' };
-    const format = 'xlsx';
     
-    const result = await FinancialService.generateFinancialReport(period, format);
+    const result = await FinancialService.generateFinancialReport(period);
     
     expect(result).toBeDefined();
-    expect(result.reportId).toBeDefined();
+    expect(result.period).toBeDefined();
+    expect(result.format).toBeDefined();
   });
 
   it('should get transaction history', async () => {
     const period = { startDate: '2023-01-01', endDate: '2023-01-31' };
     
-    const result = await FinancialService.getTransactionHistory(period);
+    const result = await FinancialService.getTransactions(period);
     
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);

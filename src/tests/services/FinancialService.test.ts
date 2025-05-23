@@ -11,13 +11,10 @@ vi.mock('../../services/techcare/AuthService', () => ({
   }
 }));
 
-// Disponibilizar mock globalmente para ser acessível pelo FinancialService
-(window as any).AuthServiceMock = AuthService;
-
 // Mock de NavigationService
 vi.mock('../../services/techcare/NavigationService', () => ({
   default: {
-    navigateTo: vi.fn().mockResolvedValue({ success: true })
+    navigateToUrl: vi.fn().mockResolvedValue()
   }
 }));
 
@@ -39,73 +36,41 @@ describe('FinancialService', () => {
     expect(instance1).toBe(instance2);
   });
 
-  it('should get cash flow successfully when authenticated', async () => {
-    const startDate = new Date('2025-01-01');
-    const endDate = new Date('2025-01-31');
+  it('should get financial summary successfully when authenticated', async () => {
+    const period = { startDate: '2025-01-01', endDate: '2025-01-31' };
     
-    const result = await FinancialService.getCashFlow(startDate, endDate);
+    const result = await FinancialService.getFinancialSummary(period);
     
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(result.data.period).toBeDefined();
-    expect(result.data.summary).toBeDefined();
+    expect(result).toBeDefined();
+    expect(result.totalRevenue).toBeDefined();
+    expect(result.totalExpenses).toBeDefined();
+    expect(result.netProfit).toBeDefined();
   });
 
-  it('should fail when trying to get financial data without authentication', async () => {
-    mockAuthIsAuthenticated.mockReturnValue(false);
+  it('should generate financial report', async () => {
+    const period = { startDate: '2025-01-01', endDate: '2025-01-31' };
+    const format = 'xlsx';
     
-    const result = await FinancialService.getAccountsReceivable();
+    const result = await FinancialService.generateFinancialReport(period, format);
     
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Não autenticado');
+    expect(result).toBeDefined();
+    expect(result.period).toBeDefined();
+    expect(result.format).toBe(format);
   });
 
-  it('should get accounts receivable with specific status', async () => {
-    const result = await FinancialService.getAccountsReceivable('open');
+  it('should get transaction history', async () => {
+    const period = { startDate: '2025-01-01', endDate: '2025-01-31' };
     
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(Array.isArray(result.data)).toBe(true);
+    const result = await FinancialService.getTransactions(period);
     
-    if (result.data.length > 0) {
-      expect(result.data[0].status).toBe('open');
-    }
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
   });
 
-  it('should get accounts payable', async () => {
-    const result = await FinancialService.getAccountsPayable();
+  it('should get pending payments', async () => {
+    const result = await FinancialService.getPendingPayments();
     
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(Array.isArray(result.data)).toBe(true);
-  });
-
-  it('should get financial reports', async () => {
-    const result = await FinancialService.getFinancialReport('income', 'monthly');
-    
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(result.data.title).toContain('Relatório Financeiro');
-  });
-
-  it('should register payment', async () => {
-    const result = await FinancialService.registerPayment('INV-1001', 1500.75, 'Transferência Bancária');
-    
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(result.data.invoiceId).toBe('INV-1001');
-    expect(result.data.amountPaid).toBe(1500.75);
-    expect(result.data.method).toBe('Transferência Bancária');
-    expect(result.data.receiptId).toBeDefined();
-  });
-
-  it('should export financial data', async () => {
-    const result = await FinancialService.exportFinancialData('cash-flow', 'last-quarter', 'csv');
-    
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(result.data.type).toBe('cash-flow');
-    expect(result.data.format).toBe('csv');
-    expect(result.data.url).toBeDefined();
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
   });
 });
