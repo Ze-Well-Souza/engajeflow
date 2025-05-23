@@ -104,17 +104,17 @@ describe('TechCare AI E2E Tests', () => {
     renderTechCareAIPage();
     
     // Verificar tabs disponíveis
-    expect(screen.getByRole('tab', { name: /análise de sentimentos/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /classificação de tickets/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /geração de respostas/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /sumário automático/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /insights do dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Análise de Sentimentos' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Classificação de Tickets' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Geração de Respostas' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sumário Automático' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Insights do Dashboard' })).toBeInTheDocument();
   });
 
   it('should allow editing sample text', () => {
     renderTechCareAIPage();
     
-    const textArea = screen.getByLabelText(/texto de exemplo para análise/i);
+    const textArea = screen.getByLabelText('Texto de exemplo para análise');
     
     fireEvent.change(textArea, { target: { value: 'Novo texto de teste' } });
     
@@ -125,12 +125,12 @@ describe('TechCare AI E2E Tests', () => {
     renderTechCareAIPage();
     
     // Navegar para a tab de análise de sentimento
-    const sentimentTab = screen.getByRole('tab', { name: /análise de sentimentos/i });
+    const sentimentTab = screen.getByRole('tab', { name: 'Análise de Sentimentos' });
     fireEvent.click(sentimentTab);
     
     // Verificar se o conteúdo da tab está visível
     await waitFor(() => {
-      expect(screen.getByText(/sobre a análise de sentimento/i)).toBeInTheDocument();
+      expect(screen.getByText('Sobre a Análise de Sentimento')).toBeInTheDocument();
     });
   });
 
@@ -138,11 +138,11 @@ describe('TechCare AI E2E Tests', () => {
     renderTechCareAIPage();
     
     // Navegar para a tab de classificação
-    const classificationTab = screen.getByRole('tab', { name: /classificação de tickets/i });
+    const classificationTab = screen.getByRole('tab', { name: 'Classificação de Tickets' });
     fireEvent.click(classificationTab);
     
     await waitFor(() => {
-      expect(screen.getByText(/sobre a classificação de tickets/i)).toBeInTheDocument();
+      expect(screen.getByText('Sobre a Classificação de Tickets')).toBeInTheDocument();
     });
   });
 
@@ -150,11 +150,11 @@ describe('TechCare AI E2E Tests', () => {
     renderTechCareAIPage();
     
     // Navegar para a tab de geração de respostas
-    const responseTab = screen.getByRole('tab', { name: /geração de respostas/i });
+    const responseTab = screen.getByRole('tab', { name: 'Geração de Respostas' });
     fireEvent.click(responseTab);
     
     await waitFor(() => {
-      expect(screen.getByText(/sobre o gerador de respostas/i)).toBeInTheDocument();
+      expect(screen.getByText('Sobre o Gerador de Respostas')).toBeInTheDocument();
     });
   });
 
@@ -169,15 +169,15 @@ describe('TechCare AI E2E Tests', () => {
     fireEvent.click(configureButton);
     
     // 2. Testar cada módulo
-    const tabs = [
-      /análise de sentimentos/i,
-      /classificação de tickets/i,
-      /geração de respostas/i,
-      /sumário automático/i,
-      /insights do dashboard/i
+    const tabNames = [
+      'Análise de Sentimentos',
+      'Classificação de Tickets',
+      'Geração de Respostas',
+      'Sumário Automático',
+      'Insights do Dashboard'
     ];
     
-    for (const tabName of tabs) {
+    for (const tabName of tabNames) {
       const tab = screen.getByRole('tab', { name: tabName });
       fireEvent.click(tab);
       
