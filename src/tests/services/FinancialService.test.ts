@@ -24,7 +24,7 @@ describe('FinancialService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     // Configurando o mock corretamente
-    vi.mocked(AuthService.isAuthenticated).mockReturnValue(true);
+    (AuthService.isAuthenticated as any).mockReturnValue(true);
   });
 
   afterEach(() => {
