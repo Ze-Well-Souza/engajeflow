@@ -24,7 +24,7 @@ describe('FinancialService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     // Configurando o mock corretamente
-    (AuthService.isAuthenticated as any).mockReturnValue(true);
+    vi.mocked(AuthService.isAuthenticated).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -100,5 +100,28 @@ describe('FinancialService', () => {
     expect(result).toBeDefined();
     expect(result.id).toBeDefined();
     expect(result.name).toBe('Test Budget');
+  });
+
+  it('should handle authentication failure gracefully', async () => {
+    // Configurar mock para usuário não autenticado
+    vi.mocked(AuthService.isAuthenticated).mockReturnValue(false);
+    
+    const result = await FinancialService.syncBankAccounts();
+    
+    expect(result).toBe(false);
+  });
+
+  it('should throw error when fetching transactions without authentication', async () => {
+    // Configurar mock para usuário não autenticado
+    vi.mocked(AuthService.isAuthenticated).mockReturnValue(false);
+    
+    const period = { 
+      start: new Date('2025-01-01'), 
+      end: new Date('2025-01-31') 
+    };
+    
+    await expect(FinancialService.fetchTransactions(period))
+      .rejects
+      .toThrow('Usuário não autenticado para buscar transações');
   });
 });
