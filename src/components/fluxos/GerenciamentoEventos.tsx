@@ -1,946 +1,496 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Check, Clock, PartyPopper, Users, Music, MapPin } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
 
-interface GerenciamentoEventosProps {
-  onActionComplete: (data: any) => void;
-}
-
-const GerenciamentoEventos: React.FC<GerenciamentoEventosProps> = ({ onActionComplete }) => {
-  const [activeTab, setActiveTab] = useState("eventos");
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
-  const [eventName, setEventName] = useState("");
-  const [eventType, setEventType] = useState("");
-  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
-  const [eventTime, setEventTime] = useState("");
-  const [eventLocation, setEventLocation] = useState("");
-  const [eventCapacity, setEventCapacity] = useState("");
-  const [eventDescription, setEventDescription] = useState("");
-  const [eventServices, setEventServices] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-
-  // Dados simulados para eventos
-  const events = [
+const GerenciamentoEventos: React.FC = () => {
+  const [activeTab, setActiveTab] = useState("calendario");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  
+  // Lista de eventos
+  const eventos = [
     {
       id: "1",
-      name: "Casamento Silva & Oliveira",
-      type: "Casamento",
-      date: "2025-06-15",
-      time: "19:00",
-      location: "Espaço Villa Garden",
-      capacity: "150 convidados",
-      status: "confirmed",
-      services: ["Decoração", "Buffet", "DJ", "Fotografia"],
-      description: "Cerimônia e recepção completa com decoração em tons de azul e branco.",
-      client: {
-        name: "Carlos Silva",
-        phone: "(11) 98765-4321",
-        email: "carlos.silva@email.com"
-      },
-      payments: [
-        { date: "2025-03-10", amount: "5.000,00", status: "paid" },
-        { date: "2025-05-10", amount: "5.000,00", status: "pending" },
-        { date: "2025-06-10", amount: "5.000,00", status: "pending" }
-      ],
-      totalValue: "15.000,00"
+      nome: "Casamento Silva",
+      data: "2025-05-28",
+      horario: "18:00",
+      local: "Espaço Jardim das Flores",
+      tipo: "Casamento",
+      status: "confirmado",
+      convidados: 150
     },
     {
       id: "2",
-      name: "Aniversário 15 Anos - Maria Santos",
-      type: "Aniversário",
-      date: "2025-07-22",
-      time: "20:00",
-      location: "Buffet Estrela",
-      capacity: "80 convidados",
-      status: "confirmed",
-      services: ["Decoração", "Buffet", "DJ", "Fotografia", "Cerimonial"],
-      description: "Festa de 15 anos com tema Paris, decoração em rosa e dourado.",
-      client: {
-        name: "Roberto Santos",
-        phone: "(11) 91234-5678",
-        email: "roberto.santos@email.com"
-      },
-      payments: [
-        { date: "2025-04-22", amount: "4.000,00", status: "paid" },
-        { date: "2025-06-22", amount: "4.000,00", status: "pending" }
-      ],
-      totalValue: "8.000,00"
+      nome: "Aniversário 15 Anos - Maria",
+      data: "2025-06-12",
+      horario: "20:00",
+      local: "Buffet Estrela",
+      tipo: "Aniversário",
+      status: "pendente",
+      convidados: 80
     },
     {
       id: "3",
-      name: "Confraternização Empresa ABC",
-      type: "Corporativo",
-      date: "2025-12-18",
-      time: "19:30",
-      location: "Hotel Continental",
-      capacity: "120 convidados",
-      status: "pending",
-      services: ["Buffet", "DJ", "Decoração"],
-      description: "Confraternização de final de ano com jantar e música ao vivo.",
-      client: {
-        name: "Juliana Mendes",
-        phone: "(11) 97777-8888",
-        email: "juliana.mendes@empresaabc.com"
-      },
-      payments: [
-        { date: "2025-10-18", amount: "6.000,00", status: "pending" },
-        { date: "2025-12-10", amount: "6.000,00", status: "pending" }
-      ],
-      totalValue: "12.000,00"
+      nome: "Formatura Turma 2025",
+      data: "2025-07-03",
+      horario: "19:30",
+      local: "Centro de Convenções",
+      tipo: "Formatura",
+      status: "confirmado",
+      convidados: 200
     }
   ];
-
-  // Dados simulados para fornecedores
-  const suppliers = [
+  
+  // Lista de fornecedores
+  const fornecedores = [
     {
       id: "1",
-      name: "Buffet Delícias Gourmet",
-      category: "Buffet",
-      contact: "(11) 3333-4444",
-      email: "contato@deliciasgourmet.com",
-      rating: 4.8,
-      events: 24
+      nome: "Buffet Delícias Gourmet",
+      tipo: "Alimentação",
+      contato: "(11) 98765-4321",
+      avaliacao: 4.8
     },
     {
       id: "2",
-      name: "DJ Master Sound",
-      category: "DJ",
-      contact: "(11) 5555-6666",
-      email: "contato@mastersound.com",
-      rating: 4.9,
-      events: 36
+      nome: "Flores & Decorações",
+      tipo: "Decoração",
+      contato: "(11) 91234-5678",
+      avaliacao: 4.9
     },
     {
       id: "3",
-      name: "Flores & Decorações",
-      category: "Decoração",
-      contact: "(11) 7777-8888",
-      email: "contato@floresedeco.com",
-      rating: 4.7,
-      events: 42
+      nome: "DJ Marcos Silva",
+      tipo: "Música",
+      contato: "(11) 99876-5432",
+      avaliacao: 4.7
     },
     {
       id: "4",
-      name: "Click Fotografia",
-      category: "Fotografia",
-      contact: "(11) 9999-0000",
-      email: "contato@clickfotografia.com",
-      rating: 4.6,
-      events: 31
+      nome: "Fotos Perfeitas",
+      tipo: "Fotografia",
+      contato: "(11) 92345-6789",
+      avaliacao: 4.5
     }
   ];
-
-  // Dados simulados para agenda
-  const calendar = [
+  
+  // Tarefas pendentes
+  const tarefas = [
     {
-      date: "2025-05-25",
-      events: [
-        { id: "4", name: "Reunião com Cliente", time: "10:00", type: "meeting" },
-        { id: "5", name: "Visita Técnica - Espaço Villa Garden", time: "14:00", type: "visit" }
-      ]
+      id: "1",
+      titulo: "Confirmar menu com buffet",
+      evento: "Casamento Silva",
+      prazo: "2025-05-10",
+      prioridade: "alta"
     },
     {
-      date: "2025-06-15",
-      events: [
-        { id: "1", name: "Casamento Silva & Oliveira", time: "19:00", type: "event" }
-      ]
+      id: "2",
+      titulo: "Enviar convites digitais",
+      evento: "Aniversário 15 Anos - Maria",
+      prazo: "2025-05-20",
+      prioridade: "média"
     },
     {
-      date: "2025-07-22",
-      events: [
-        { id: "2", name: "Aniversário 15 Anos - Maria Santos", time: "20:00", type: "event" }
-      ]
+      id: "3",
+      titulo: "Definir lista de músicas",
+      evento: "Casamento Silva",
+      prazo: "2025-05-15",
+      prioridade: "baixa"
     },
     {
-      date: "2025-12-18",
-      events: [
-        { id: "3", name: "Confraternização Empresa ABC", time: "19:30", type: "event" }
-      ]
+      id: "4",
+      titulo: "Prova final do vestido",
+      evento: "Aniversário 15 Anos - Maria",
+      prazo: "2025-05-25",
+      prioridade: "alta"
     }
   ];
-
-  const eventTypes = [
-    { value: "wedding", label: "Casamento" },
-    { value: "birthday", label: "Aniversário" },
-    { value: "corporate", label: "Evento Corporativo" },
-    { value: "graduation", label: "Formatura" },
-    { value: "other", label: "Outro" }
-  ];
-
-  const capacityOptions = [
-    { value: "up_to_50", label: "Até 50 convidados" },
-    { value: "51_to_100", label: "51-100 convidados" },
-    { value: "101_to_200", label: "101-200 convidados" },
-    { value: "above_200", label: "Acima de 200 convidados" }
-  ];
-
-  const timeSlots = [
-    "10:00", "11:00", "12:00", "13:00", 
-    "14:00", "15:00", "16:00", "17:00", "18:00",
-    "19:00", "20:00", "21:00", "22:00"
-  ];
-
-  const serviceOptions = [
-    { id: "decoration", label: "Decoração" },
-    { id: "buffet", label: "Buffet" },
-    { id: "dj", label: "DJ" },
-    { id: "photography", label: "Fotografia" },
-    { id: "ceremony", label: "Cerimonial" },
-    { id: "lighting", label: "Iluminação" },
-    { id: "transportation", label: "Transporte" }
-  ];
-
-  const handleEventClick = (event: any) => {
-    setSelectedEvent(event);
-    setIsDialogOpen(true);
+  
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "confirmado":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "pendente":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "cancelado":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+    }
   };
-
-  const toggleService = (serviceId: string) => {
-    setEventServices(prev => 
-      prev.includes(serviceId) 
-        ? prev.filter(id => id !== serviceId) 
-        : [...prev, serviceId]
-    );
+  
+  const getPrioridadeColor = (prioridade: string) => {
+    switch (prioridade) {
+      case "alta":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case "média":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "baixa":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+    }
   };
-
-  const handleSubmit = () => {
-    setIsSubmitting(true);
-    
-    // Simulação de envio para API
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsComplete(true);
-      
-      // Dados para enviar ao componente pai
-      const eventData = {
-        name: eventName,
-        type: eventTypes.find(t => t.value === eventType)?.label || eventType,
-        date: eventDate ? format(eventDate, 'dd/MM/yyyy') : '',
-        time: eventTime,
-        location: eventLocation,
-        capacity: capacityOptions.find(c => c.value === eventCapacity)?.label || eventCapacity,
-        services: eventServices.map(id => 
-          serviceOptions.find(option => option.id === id)?.label
-        ),
-        description: eventDescription,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-      
-      onActionComplete(eventData);
-    }, 1500);
-  };
-
-  const isFormValid = () => {
-    return (
-      eventName !== "" && 
-      eventType !== "" && 
-      eventDate !== undefined && 
-      eventTime !== "" && 
-      eventLocation !== "" && 
-      eventCapacity !== ""
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
+  
+  // Eventos para a data selecionada
+  const eventosDoDia = selectedDate 
+    ? eventos.filter(evento => evento.data === format(selectedDate, 'yyyy-MM-dd'))
+    : [];
 
   return (
-    <div className="w-full">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="eventos">Eventos</TabsTrigger>
-          <TabsTrigger value="fornecedores">Fornecedores</TabsTrigger>
-          <TabsTrigger value="agenda">Agenda</TabsTrigger>
-        </TabsList>
-        
-        {/* Eventos */}
-        <TabsContent value="eventos">
-          {!isCreatingEvent ? (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Gerenciamento de Eventos</CardTitle>
-                    <CardDescription>
-                      Organize e acompanhe todos os seus eventos
-                    </CardDescription>
-                  </div>
-                  <Button 
-                    onClick={() => setIsCreatingEvent(true)}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    <PartyPopper className="h-4 w-4 mr-2" />
-                    Novo Evento
-                  </Button>
+    <Card className="w-full">
+      <CardHeader className="bg-purple-50 dark:bg-purple-900/20 border-b">
+        <CardTitle className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 text-purple-500"
+          >
+            <path d="M3 2v7c0 1.1.9 2 2 2h16a2 2 0 0 0 2-2V2"></path>
+            <path d="M7 2v7"></path>
+            <path d="M17 2v7"></path>
+            <path d="M12 12v3"></path>
+            <path d="M17 17a5 5 0 0 0-10 0"></path>
+            <path d="M19 21a7 7 0 1 0-14 0"></path>
+          </svg>
+          Gerenciamento de Eventos
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="calendario">Calendário</TabsTrigger>
+            <TabsTrigger value="fornecedores">Fornecedores</TabsTrigger>
+            <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="calendario">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="mb-4">
+                  <h3 className="text-lg font-medium">Agenda de Eventos</h3>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Eventos Confirmados</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {events.filter(event => event.status === "confirmed").map((event) => (
-                      <Card 
-                        key={event.id} 
-                        className="cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
-                        onClick={() => handleEventClick(event)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium">{event.name}</h4>
-                              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                <CalendarIcon className="h-3.5 w-3.5" />
-                                <span>{formatDate(event.date)} às {event.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                <MapPin className="h-3.5 w-3.5" />
-                                <span>{event.location}</span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <Badge className="bg-green-600">Confirmado</Badge>
-                              <p className="text-sm mt-1">{event.capacity}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-3 flex flex-wrap gap-1">
-                            <Badge variant="outline" className="text-xs">
-                              {event.type}
-                            </Badge>
-                            {event.services.slice(0, 3).map((service, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {service}
-                              </Badge>
-                            ))}
-                            {event.services.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{event.services.length - 3}
-                              </Badge>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-6">
-                    <h3 className="text-lg font-medium">Eventos Pendentes</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {events.filter(event => event.status === "pending").map((event) => (
-                      <Card 
-                        key={event.id} 
-                        className="cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
-                        onClick={() => handleEventClick(event)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium">{event.name}</h4>
-                              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                <CalendarIcon className="h-3.5 w-3.5" />
-                                <span>{formatDate(event.date)} às {event.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                <MapPin className="h-3.5 w-3.5" />
-                                <span>{event.location}</span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <Badge className="bg-yellow-600">Pendente</Badge>
-                              <p className="text-sm mt-1">{event.capacity}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-3 flex flex-wrap gap-1">
-                            <Badge variant="outline" className="text-xs">
-                              {event.type}
-                            </Badge>
-                            {event.services.slice(0, 3).map((service, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {service}
-                              </Badge>
-                            ))}
-                            {event.services.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{event.services.length - 3}
-                              </Badge>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : !isComplete ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Novo Evento</CardTitle>
-                <CardDescription>
-                  Preencha os detalhes para cadastrar um novo evento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventName">Nome do Evento</Label>
-                    <Input
-                      id="eventName"
-                      placeholder="Ex: Casamento Silva & Oliveira"
-                      value={eventName}
-                      onChange={(e) => setEventName(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="eventType">Tipo de Evento</Label>
-                    <Select value={eventType} onValueChange={setEventType}>
-                      <SelectTrigger id="eventType">
-                        <SelectValue placeholder="Selecione o tipo de evento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {eventTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Data do Evento</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {eventDate ? format(eventDate, "PPP", { locale: ptBR }) : "Selecione uma data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={eventDate}
-                          onSelect={setEventDate}
-                          initialFocus
-                          locale={ptBR}
-                          disabled={(date) => {
-                            // Desabilita datas passadas
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            return date < today;
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="eventTime">Horário do Evento</Label>
-                    <Select value={eventTime} onValueChange={setEventTime}>
-                      <SelectTrigger id="eventTime">
-                        <SelectValue placeholder="Selecione um horário" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {timeSlots.map((slot) => (
-                          <SelectItem key={slot} value={slot}>
-                            {slot}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventLocation">Local do Evento</Label>
-                    <Input
-                      id="eventLocation"
-                      placeholder="Ex: Espaço Villa Garden"
-                      value={eventLocation}
-                      onChange={(e) => setEventLocation(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="eventCapacity">Capacidade</Label>
-                    <Select value={eventCapacity} onValueChange={setEventCapacity}>
-                      <SelectTrigger id="eventCapacity">
-                        <SelectValue placeholder="Selecione a capacidade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {capacityOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="eventDescription">Descrição do Evento</Label>
-                  <Textarea
-                    id="eventDescription"
-                    placeholder="Descreva os detalhes do evento"
-                    value={eventDescription}
-                    onChange={(e) => setEventDescription(e.target.value)}
+                <div className="border rounded-md p-4">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    locale={ptBR}
+                    className="mx-auto"
                   />
                 </div>
+                <Button className="w-full mt-4 bg-purple-600 hover:bg-purple-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                  Novo Evento
+                </Button>
+              </div>
+              
+              <div>
+                <div className="mb-4 flex justify-between items-center">
+                  <h3 className="text-lg font-medium">
+                    {selectedDate ? format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
+                  </h3>
+                </div>
                 
-                <div className="space-y-2">
-                  <Label>Serviços Necessários</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">
-                    {serviceOptions.map((service) => (
-                      <div key={service.id} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={service.id} 
-                          checked={eventServices.includes(service.id)}
-                          onCheckedChange={() => toggleService(service.id)}
-                        />
-                        <Label htmlFor={service.id} className="cursor-pointer">
-                          {service.label}
-                        </Label>
-                      </div>
+                {eventosDoDia.length > 0 ? (
+                  <div className="space-y-4">
+                    {eventosDoDia.map((evento) => (
+                      <Card key={evento.id} className="border">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">{evento.nome}</h4>
+                            <Badge className={getStatusColor(evento.status)}>
+                              {evento.status.charAt(0).toUpperCase() + evento.status.slice(1)}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"></path><path d="M12 6v6l4 2"></path></svg>
+                              <span>{evento.horario}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+                              <span>{evento.tipo}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><path d="m21 10-8-6-8 6v8h16v-8Z"></path><path d="M10 21v-5a2 2 0 1 1 4 0v5"></path></svg>
+                              <span>{evento.local}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                              <span>{evento.convidados} convidados</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2 mt-4">
+                            <Button size="sm" variant="outline" className="flex-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                              Editar
+                            </Button>
+                            <Button size="sm" variant="outline" className="flex-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"></path><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"></path></svg>
+                              Mensagem
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsCreatingEvent(false)}
-                >
-                  Cancelar
+                ) : (
+                  <div className="border rounded-md p-8 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-4 h-12 w-12 text-gray-400"><path d="M12 8a2.83 2.83 0 0 0-4 4 2.83 2.83 0 0 0 4 4 2.83 2.83 0 0 0 4-4 2.83 2.83 0 0 0-4-4M12 8V3m0 13v3m9-9h-3m-13 0H2"></path></svg>
+                    <h4 className="text-lg font-medium mb-2">Nenhum evento para esta data</h4>
+                    <p className="text-gray-500 mb-4">Selecione outra data ou crie um novo evento</p>
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                      Criar Evento
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="fornecedores">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Lista de Fornecedores</h3>
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                  Novo Fornecedor
                 </Button>
-                <Button 
-                  onClick={handleSubmit} 
-                  disabled={!isFormValid() || isSubmitting}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  {isSubmitting ? "Salvando..." : "Salvar Evento"}
-                </Button>
-              </CardFooter>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-purple-600">Evento Cadastrado!</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Check className="h-8 w-8 text-purple-600" />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fornecedores.map((fornecedor) => (
+                  <Card key={fornecedor.id}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium">{fornecedor.nome}</h4>
+                        <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+                          {fornecedor.tipo}
+                        </Badge>
+                      </div>
+                      
+                      <div className="mt-2 flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <svg 
+                            key={i}
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="16" 
+                            height="16" 
+                            viewBox="0 0 24 24" 
+                            fill={i < Math.floor(fornecedor.avaliacao) ? "currentColor" : "none"}
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            className={i < Math.floor(fornecedor.avaliacao) ? "text-yellow-500" : "text-gray-300"}
+                          >
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                          </svg>
+                        ))}
+                        <span className="ml-2 text-sm text-gray-600">{fornecedor.avaliacao.toFixed(1)}</span>
+                      </div>
+                      
+                      <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>{fornecedor.contato}</span>
+                      </div>
+                      
+                      <div className="flex gap-2 mt-4">
+                        <Button size="sm" variant="outline" className="flex-1">
+                          Ver Detalhes
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                          Contato
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              <div className="space-y-4 mt-8 border-t pt-6">
+                <h3 className="text-lg font-medium">Adicionar Fornecedor</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fornecedor-nome">Nome da Empresa</Label>
+                    <Input id="fornecedor-nome" placeholder="Digite o nome do fornecedor" />
                   </div>
                   
-                  <p className="text-lg">
-                    <span className="font-medium">{eventName}</span> foi cadastrado com sucesso!
-                  </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="fornecedor-tipo">Categoria</Label>
+                    <Select>
+                      <SelectTrigger id="fornecedor-tipo">
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="alimentacao">Alimentação</SelectItem>
+                        <SelectItem value="decoracao">Decoração</SelectItem>
+                        <SelectItem value="musica">Música</SelectItem>
+                        <SelectItem value="fotografia">Fotografia</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fornecedor-contato">Telefone de Contato</Label>
+                    <Input id="fornecedor-contato" placeholder="(00) 00000-0000" />
+                  </div>
                   
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-left">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <PartyPopper className="h-5 w-5 text-purple-500" />
-                        <p className="font-medium">{eventName}</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="fornecedor-email">E-mail</Label>
+                    <Input id="fornecedor-email" type="email" placeholder="email@exemplo.com" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="fornecedor-notas">Observações</Label>
+                  <Textarea id="fornecedor-notas" placeholder="Detalhes adicionais sobre o fornecedor..." />
+                </div>
+                
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Salvar Fornecedor
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="tarefas">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Tarefas Pendentes</h3>
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                  Nova Tarefa
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {tarefas.map((tarefa) => (
+                  <div key={tarefa.id} className="flex items-start gap-3 border rounded-md p-3">
+                    <input type="checkbox" className="mt-1 rounded" />
+                    
+                    <div className="flex-grow">
+                      <div className="flex justify-between">
+                        <h4 className="font-medium">{tarefa.titulo}</h4>
+                        <Badge className={getPrioridadeColor(tarefa.prioridade)}>
+                          {tarefa.prioridade.charAt(0).toUpperCase() + tarefa.prioridade.slice(1)}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-5 w-5 text-purple-500" />
-                        <p>{eventDate ? format(eventDate, "PPP", { locale: ptBR }) : ""} às {eventTime}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-purple-500" />
-                        <p>{eventLocation}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-purple-500" />
-                        <p>{capacityOptions.find(c => c.value === eventCapacity)?.label || eventCapacity}</p>
+                      
+                      <div className="text-sm text-gray-500 mt-1">
+                        <span>Evento: {tarefa.evento}</span>
+                        <span className="inline-block mx-2">•</span>
+                        <span>Prazo: {format(new Date(tarefa.prazo), "dd/MM/yyyy")}</span>
                       </div>
                     </div>
                     
-                    {eventServices.length > 0 && (
-                      <div className="mt-3">
-                        <p className="font-medium mb-1">Serviços:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {eventServices.map(serviceId => {
-                            const service = serviceOptions.find(option => option.id === serviceId);
-                            return service ? (
-                              <Badge key={serviceId} variant="secondary">
-                                {service.label}
-                              </Badge>
-                            ) : null;
-                          })}
-                        </div>
-                      </div>
-                    )}
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                    </Button>
                   </div>
-                  
-                  <p className="text-gray-500 dark:text-gray-400">
-                    O evento foi cadastrado com status "Pendente". Você pode gerenciar os detalhes e confirmar o evento a qualquer momento.
-                  </p>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button onClick={() => {
-                  setIsCreatingEvent(false);
-                  setIsComplete(false);
-                  setEventName("");
-                  setEventType("");
-                  setEventDate(undefined);
-                  setEventTime("");
-                  setEventLocation("");
-                  setEventCapacity("");
-                  setEventDescription("");
-                  setEventServices([]);
-                }} className="bg-purple-600 hover:bg-purple-700">
-                  Voltar para Eventos
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </TabsContent>
-        
-        {/* Fornecedores */}
-        <TabsContent value="fornecedores">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Fornecedores</CardTitle>
-                  <CardDescription>
-                    Gerencie sua rede de fornecedores para eventos
-                  </CardDescription>
-                </div>
-                <Button className="bg-purple-600 hover:bg-purple-700">
-                  Adicionar Fornecedor
-                </Button>
+                ))}
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Input placeholder="Buscar fornecedores..." className="max-w-sm" />
-                  <Select defaultValue="all">
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas Categorias</SelectItem>
-                      <SelectItem value="buffet">Buffet</SelectItem>
-                      <SelectItem value="dj">DJ</SelectItem>
-                      <SelectItem value="decoration">Decoração</SelectItem>
-                      <SelectItem value="photography">Fotografia</SelectItem>
-                    </SelectContent>
-                  </Select>
+              
+              <div className="space-y-4 mt-8 border-t pt-6">
+                <h3 className="text-lg font-medium">Adicionar Tarefa</h3>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="tarefa-titulo">Título da Tarefa</Label>
+                  <Input id="tarefa-titulo" placeholder="Digite o título da tarefa" />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {suppliers.map((supplier) => (
-                    <Card key={supplier.id}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{supplier.name}</h4>
-                            <Badge variant="outline" className="mt-1">
-                              {supplier.category}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <svg
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < Math.floor(supplier.rating) 
-                                    ? 'text-yellow-400' 
-                                    : i < supplier.rating 
-                                      ? 'text-yellow-400' 
-                                      : 'text-gray-300'
-                                }`}
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                            <span className="ml-1 text-sm font-medium">{supplier.rating}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-3 space-y-1 text-sm">
-                          <p className="flex items-center gap-2">
-                            <span className="text-gray-500">Contato:</span>
-                            <span>{supplier.contact}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span className="text-gray-500">E-mail:</span>
-                            <span>{supplier.email}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span className="text-gray-500">Eventos realizados:</span>
-                            <span>{supplier.events}</span>
-                          </p>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Ver Portfólio</Button>
-                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700">Contratar</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Agenda */}
-        <TabsContent value="agenda">
-          <Card>
-            <CardHeader>
-              <CardTitle>Agenda de Eventos</CardTitle>
-              <CardDescription>
-                Visualize e gerencie sua agenda de eventos e compromissos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Maio 2025</h3>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <CalendarIcon className="h-4 w-4 mr-2" />
-                      Mês
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Clock className="h-4 w-4 mr-2" />
-                      Semana
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Users className="h-4 w-4 mr-2" />
-                      Dia
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  {calendar.map((day) => (
-                    <Card key={day.date}>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">
-                          {formatDate(day.date)}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="space-y-2">
-                          {day.events.map((event) => (
-                            <div 
-                              key={event.id} 
-                              className={`p-3 rounded-md ${
-                                event.type === 'event' 
-                                  ? 'bg-purple-50 dark:bg-purple-900/30 border-l-4 border-purple-600' 
-                                  : event.type === 'meeting' 
-                                    ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600' 
-                                    : 'bg-green-50 dark:bg-green-900/30 border-l-4 border-green-600'
-                              }`}
-                            >
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-medium">{event.name}</p>
-                                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    <Clock className="h-3.5 w-3.5" />
-                                    <span>{event.time}</span>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className={`${
-                                  event.type === 'event' 
-                                    ? 'border-purple-600 text-purple-600' 
-                                    : event.type === 'meeting' 
-                                      ? 'border-blue-600 text-blue-600' 
-                                      : 'border-green-600 text-green-600'
-                                }`}>
-                                  {event.type === 'event' 
-                                    ? 'Evento' 
-                                    : event.type === 'meeting' 
-                                      ? 'Reunião' 
-                                      : 'Visita'}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Dialog para visualização de evento */}
-      {selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-3xl">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>{selectedEvent.name}</CardTitle>
-                  <CardDescription>
-                    {selectedEvent.type} • {formatDate(selectedEvent.date)} às {selectedEvent.time}
-                  </CardDescription>
-                </div>
-                <Badge className={selectedEvent.status === "confirmed" ? "bg-green-600" : "bg-yellow-600"}>
-                  {selectedEvent.status === "confirmed" ? "Confirmado" : "Pendente"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-4">
                   <div className="space-y-2">
-                    <h3 className="font-medium">Detalhes do Evento</h3>
-                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md space-y-2">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <p>{selectedEvent.location}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-gray-500" />
-                        <p>{selectedEvent.capacity}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Music className="h-4 w-4 text-gray-500" />
-                        <div className="flex flex-wrap gap-1">
-                          {selectedEvent.services.map((service: string, i: number) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {service}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {selectedEvent.description}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Cliente</h3>
-                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md space-y-1">
-                      <p><span className="font-medium">Nome:</span> {selectedEvent.client.name}</p>
-                      <p><span className="font-medium">Telefone:</span> {selectedEvent.client.phone}</p>
-                      <p><span className="font-medium">E-mail:</span> {selectedEvent.client.email}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Pagamentos</h3>
-                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md space-y-2">
-                      <div className="space-y-2">
-                        {selectedEvent.payments.map((payment: any, i: number) => (
-                          <div key={i} className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm">{formatDate(payment.date)}</p>
-                              <p className="text-xs text-gray-500">
-                                {payment.status === "paid" ? "Pago" : "Pendente"}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">R$ {payment.amount}</p>
-                              <Badge variant="outline" className={
-                                payment.status === "paid" 
-                                  ? "border-green-600 text-green-600" 
-                                  : "border-yellow-600 text-yellow-600"
-                              }>
-                                {payment.status === "paid" ? "Pago" : "Pendente"}
-                              </Badge>
-                            </div>
-                          </div>
+                    <Label htmlFor="tarefa-evento">Evento Relacionado</Label>
+                    <Select>
+                      <SelectTrigger id="tarefa-evento">
+                        <SelectValue placeholder="Selecione um evento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {eventos.map((evento) => (
+                          <SelectItem key={evento.id} value={evento.id}>{evento.nome}</SelectItem>
                         ))}
-                      </div>
-                      <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <p className="font-medium">Total:</p>
-                        <p className="font-medium">R$ {selectedEvent.totalValue}</p>
-                      </div>
-                    </div>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
-                    <h3 className="font-medium">Ações</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" className="w-full">
-                        Editar Evento
-                      </Button>
-                      {selectedEvent.status === "pending" ? (
-                        <Button className="w-full bg-green-600 hover:bg-green-700">
-                          Confirmar Evento
-                        </Button>
-                      ) : (
-                        <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                          Gerar Relatório
-                        </Button>
-                      )}
-                      <Button variant="outline" className="w-full">
-                        Enviar E-mail
-                      </Button>
-                      <Button variant="outline" className="w-full text-red-500 hover:text-red-600">
-                        Cancelar Evento
-                      </Button>
-                    </div>
+                    <Label htmlFor="tarefa-prioridade">Prioridade</Label>
+                    <Select defaultValue="media">
+                      <SelectTrigger id="tarefa-prioridade">
+                        <SelectValue placeholder="Selecione a prioridade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="baixa">Baixa</SelectItem>
+                        <SelectItem value="media">Média</SelectItem>
+                        <SelectItem value="alta">Alta</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tarefa-prazo">Data Limite</Label>
+                    <Input id="tarefa-prazo" type="date" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="tarefa-responsavel">Responsável</Label>
+                    <Select defaultValue="eu">
+                      <SelectTrigger id="tarefa-responsavel">
+                        <SelectValue placeholder="Selecione o responsável" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="eu">Eu mesmo</SelectItem>
+                        <SelectItem value="assistente">Assistente</SelectItem>
+                        <SelectItem value="equipe">Equipe</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="tarefa-descricao">Descrição</Label>
+                  <Textarea id="tarefa-descricao" placeholder="Detalhes adicionais sobre a tarefa..." />
+                </div>
+                
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Salvar Tarefa
+                </Button>
               </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSelectedEvent(null);
-                  setIsDialogOpen(false);
-                }}
-              >
-                Fechar
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      )}
-    </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

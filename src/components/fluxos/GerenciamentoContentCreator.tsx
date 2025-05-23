@@ -1,660 +1,562 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, Image, Upload, Calendar, Clock, AlertCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Instagram, Facebook, Youtube, TwitterIcon } from "lucide-react";
 
-interface GerenciamentoContentCreatorProps {
-  onActionComplete: (data: any) => void;
-}
-
-const GerenciamentoContentCreator: React.FC<GerenciamentoContentCreatorProps> = ({ onActionComplete }) => {
+const GerenciamentoContentCreator: React.FC = () => {
   const [activeTab, setActiveTab] = useState("calendario");
-  const [selectedContent, setSelectedContent] = useState<any>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // Dados simulados para o calendário de conteúdo
-  const calendarContent = [
+  
+  // Lista de projetos
+  const projetos = [
     {
       id: "1",
-      title: "Vídeo Tutorial de Maquiagem",
-      date: "2025-05-24",
-      time: "10:00",
-      type: "Vídeo",
-      platforms: ["Instagram", "TikTok", "YouTube"],
-      status: "scheduled",
-      thumbnail: "https://placehold.co/300x200/e9d5ff/4c1d95?text=Maquiagem+Tutorial"
+      titulo: "Campanha Primavera 2025",
+      cliente: "ModaStyle",
+      prazo: "2025-05-30",
+      status: "em_andamento",
+      progresso: 60,
+      plataformas: ["instagram", "facebook"]
     },
     {
       id: "2",
-      title: "Carrossel: 10 Dicas de Fotografia",
-      date: "2025-05-26",
-      time: "14:00",
-      type: "Carrossel",
-      platforms: ["Instagram", "Facebook"],
-      status: "scheduled",
-      thumbnail: "https://placehold.co/300x200/dbeafe/1e40af?text=Dicas+Fotografia"
+      titulo: "Lançamento Produto X",
+      cliente: "TechNova",
+      prazo: "2025-06-15",
+      status: "planejamento",
+      progresso: 25,
+      plataformas: ["youtube", "instagram"]
     },
     {
       id: "3",
-      title: "Review do Novo iPhone",
-      date: "2025-05-28",
-      time: "16:00",
-      type: "Vídeo Longo",
-      platforms: ["YouTube"],
-      status: "scheduled",
-      thumbnail: "https://placehold.co/300x200/fef3c7/92400e?text=Review+iPhone"
-    },
-    {
-      id: "4",
-      title: "Desafio de Dança",
-      date: "2025-05-22",
-      time: "09:00",
-      type: "Vídeo Curto",
-      platforms: ["TikTok", "Instagram"],
-      status: "draft",
-      thumbnail: "https://placehold.co/300x200/fee2e2/991b1b?text=Desafio+Dança"
+      titulo: "Cobertura Evento Anual",
+      cliente: "Corporação ABC",
+      prazo: "2025-07-05",
+      status: "aprovado",
+      progresso: 40,
+      plataformas: ["instagram", "facebook", "youtube", "twitter"]
     }
   ];
-
-  // Dados simulados para a biblioteca de mídia
-  const mediaLibrary = [
+  
+  // Lista de conteúdos
+  const conteudos = [
     {
       id: "1",
-      name: "Sessão de Fotos - Maio",
-      type: "folder",
-      items: 12,
-      updatedAt: "2025-05-15"
+      titulo: "Lookbook Coleção Verão",
+      tipo: "Fotografia",
+      cliente: "ModaStyle",
+      entrega: "2025-05-25",
+      status: "editando"
     },
     {
       id: "2",
-      name: "Vídeos Tutoriais",
-      type: "folder",
-      items: 8,
-      updatedAt: "2025-05-10"
+      titulo: "Unboxing Produto X",
+      tipo: "Vídeo",
+      cliente: "TechNova",
+      entrega: "2025-06-10",
+      status: "aguardando"
     },
     {
       id: "3",
-      name: "Produto_1.jpg",
-      type: "image",
-      size: "2.4 MB",
-      dimensions: "1920x1080",
-      updatedAt: "2025-05-18",
-      url: "https://placehold.co/300x200/dbeafe/1e40af?text=Produto+1"
+      titulo: "Entrevista com CEO",
+      tipo: "Vídeo",
+      cliente: "Corporação ABC",
+      entrega: "2025-06-20",
+      status: "finalizado"
     },
     {
       id: "4",
-      name: "Tutorial_Maquiagem.mp4",
-      type: "video",
-      size: "45.8 MB",
-      duration: "5:24",
-      updatedAt: "2025-05-17",
-      url: "https://placehold.co/300x200/e9d5ff/4c1d95?text=Tutorial+Vídeo"
+      titulo: "Fotos Produtos Primavera",
+      tipo: "Fotografia",
+      cliente: "ModaStyle",
+      entrega: "2025-05-20",
+      status: "revisao"
+    }
+  ];
+  
+  // Lista de equipamentos
+  const equipamentos = [
+    {
+      id: "1",
+      nome: "Canon EOS R5",
+      tipo: "Camera",
+      status: "disponivel"
+    },
+    {
+      id: "2",
+      nome: "Ring Light 18\"",
+      tipo: "Iluminação",
+      status: "em_uso"
+    },
+    {
+      id: "3",
+      nome: "DJI Ronin-S",
+      tipo: "Estabilizador",
+      status: "disponivel"
+    },
+    {
+      id: "4",
+      nome: "MacBook Pro M2",
+      tipo: "Computador",
+      status: "em_uso"
     },
     {
       id: "5",
-      name: "Banner_Instagram.png",
-      type: "image",
-      size: "1.2 MB",
-      dimensions: "1080x1080",
-      updatedAt: "2025-05-16",
-      url: "https://placehold.co/300x200/fef3c7/92400e?text=Banner+Instagram"
+      nome: "Sony A7III",
+      tipo: "Camera",
+      status: "manutenção"
     }
   ];
 
-  // Dados simulados para análise de desempenho
-  const analyticsData = {
-    platforms: [
-      {
-        name: "Instagram",
-        followers: "45.2K",
-        engagement: "3.8%",
-        growth: "+2.3%",
-        posts: 124
-      },
-      {
-        name: "TikTok",
-        followers: "78.5K",
-        engagement: "5.2%",
-        growth: "+4.7%",
-        posts: 87
-      },
-      {
-        name: "YouTube",
-        followers: "12.8K",
-        engagement: "8.1%",
-        growth: "+1.2%",
-        posts: 32
-      },
-      {
-        name: "Facebook",
-        followers: "32.1K",
-        engagement: "1.9%",
-        growth: "+0.5%",
-        posts: 56
-      }
-    ],
-    topContent: [
-      {
-        id: "1",
-        title: "Desafio de Dança Viral",
-        platform: "TikTok",
-        views: "1.2M",
-        likes: "245K",
-        comments: "12.3K",
-        shares: "56.7K"
-      },
-      {
-        id: "2",
-        title: "10 Dicas de Fotografia com Celular",
-        platform: "Instagram",
-        views: "87.5K",
-        likes: "15.2K",
-        comments: "1.8K",
-        shares: "4.3K"
-      },
-      {
-        id: "3",
-        title: "Review Completo: Novo iPhone",
-        platform: "YouTube",
-        views: "156K",
-        likes: "12.4K",
-        comments: "2.1K",
-        shares: "3.5K"
-      }
-    ],
-    recentActivity: [
-      {
-        id: "1",
-        type: "comment",
-        platform: "Instagram",
-        user: "maria.silva",
-        content: "Amei esse conteúdo! Você poderia fazer um tutorial sobre como editar fotos?",
-        time: "2h atrás"
-      },
-      {
-        id: "2",
-        type: "message",
-        platform: "Instagram",
-        user: "marca_oficial",
-        content: "Olá! Gostaríamos de fazer uma parceria para divulgar nossos produtos. Podemos conversar?",
-        time: "5h atrás"
-      },
-      {
-        id: "3",
-        type: "comment",
-        platform: "YouTube",
-        user: "tech_lover",
-        content: "Ótimo vídeo! Qual câmera você usa para gravar? A qualidade está incrível!",
-        time: "1d atrás"
-      }
-    ]
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "em_andamento":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "planejamento":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+      case "aprovado":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "finalizado":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "editando":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "revisao":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+      case "aguardando":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+    }
   };
-
-  const handleContentClick = (content: any) => {
-    setSelectedContent(content);
-    setIsDialogOpen(true);
+  
+  const getEquipamentoStatusColor = (status: string) => {
+    switch (status) {
+      case "disponivel":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "em_uso":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "manutenção":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+    }
   };
-
-  const handleUpload = () => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    // Simulação de upload com progresso
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          
-          // Notificar componente pai sobre a ação concluída
-          onActionComplete({
-            action: "upload",
-            status: "success",
-            message: "Arquivo enviado com sucesso",
-            timestamp: new Date().toISOString()
-          });
-          
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  
+  const socialIcon = (platform: string) => {
+    switch (platform) {
+      case "instagram":
+        return <Instagram className="h-4 w-4 text-pink-500" />;
+      case "facebook":
+        return <Facebook className="h-4 w-4 text-blue-500" />;
+      case "youtube":
+        return <Youtube className="h-4 w-4 text-red-500" />;
+      case "twitter":
+        return <TwitterIcon className="h-4 w-4 text-sky-500" />;
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="w-full">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="calendario">Calendário</TabsTrigger>
-          <TabsTrigger value="midia">Biblioteca de Mídia</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-        
-        {/* Calendário de Conteúdo */}
-        <TabsContent value="calendario">
-          <Card>
-            <CardHeader>
-              <CardTitle>Calendário de Conteúdo</CardTitle>
-              <CardDescription>
-                Gerencie seu cronograma de publicações em todas as plataformas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+    <Card className="w-full">
+      <CardHeader className="bg-purple-50 dark:bg-purple-900/20 border-b">
+        <CardTitle className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 text-purple-500"
+          >
+            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+          </svg>
+          Gerenciamento de Conteúdo
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="calendario">Projetos</TabsTrigger>
+            <TabsTrigger value="conteudos">Conteúdos</TabsTrigger>
+            <TabsTrigger value="equipamentos">Equipamentos</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="calendario">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Projetos Ativos</h3>
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                  Novo Projeto
+                </Button>
+              </div>
+              
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Maio 2025</h3>
-                  <Button variant="outline" size="sm">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Nova Publicação
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {calendarContent.map((content) => (
-                    <Card 
-                      key={content.id} 
-                      className="cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
-                      onClick={() => handleContentClick(content)}
-                    >
-                      <div className="relative">
-                        <img 
-                          src={content.thumbnail} 
-                          alt={content.title}
-                          className="w-full h-32 object-cover rounded-t-lg"
-                        />
-                        {content.status === "draft" && (
-                          <Badge variant="secondary" className="absolute top-2 right-2">
-                            Rascunho
-                          </Badge>
-                        )}
+                {projetos.map((projeto) => (
+                  <Card key={projeto.id} className="border">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium">{projeto.titulo}</h4>
+                        <Badge className={getStatusColor(projeto.status)}>
+                          {projeto.status === "em_andamento" 
+                            ? "Em andamento" 
+                            : projeto.status.charAt(0).toUpperCase() + projeto.status.slice(1).replace("_", " ")}
+                        </Badge>
                       </div>
-                      <CardContent className="pt-4">
-                        <h4 className="font-medium line-clamp-1">{content.title}</h4>
-                        <div className="flex justify-between items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>{formatDate(content.date)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>{content.time}</span>
-                          </div>
+                      
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500">Cliente: {projeto.cliente}</p>
+                        <p className="text-sm text-gray-500">Prazo: {projeto.prazo.split('-').reverse().join('/')}</p>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <div className="flex justify-between items-center mb-1 text-sm">
+                          <span>Progresso</span>
+                          <span>{projeto.progresso}%</span>
                         </div>
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          <Badge variant="outline" className="text-xs">
-                            {content.type}
-                          </Badge>
-                          {content.platforms.map((platform, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">
-                              {platform}
-                            </Badge>
+                        <Progress value={projeto.progresso} className="h-2" />
+                      </div>
+                      
+                      <div className="mt-4 flex justify-between items-center">
+                        <div className="flex items-center gap-1">
+                          {projeto.plataformas.map((plataforma) => (
+                            <div key={plataforma} className="rounded-full bg-gray-100 dark:bg-gray-800 p-1">
+                              {socialIcon(plataforma)}
+                            </div>
                           ))}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Biblioteca de Mídia */}
-        <TabsContent value="midia">
-          <Card>
-            <CardHeader>
-              <CardTitle>Biblioteca de Mídia</CardTitle>
-              <CardDescription>
-                Organize e acesse suas fotos e vídeos em um repositório centralizado
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      placeholder="Buscar arquivos..." 
-                      className="w-64"
-                    />
-                    <Select>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Filtrar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="images">Imagens</SelectItem>
-                        <SelectItem value="videos">Vídeos</SelectItem>
-                        <SelectItem value="folders">Pastas</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Enviar Arquivo
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Enviar Novo Arquivo</DialogTitle>
-                        <DialogDescription>
-                          Selecione um arquivo do seu computador para enviar à biblioteca
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <div className="space-y-4 py-4">
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-colors">
-                          <div className="flex flex-col items-center gap-2">
-                            <Upload className="h-8 w-8 text-gray-400" />
-                            <p className="font-medium">Clique para selecionar ou arraste arquivos aqui</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Suporta JPG, PNG, GIF, MP4 e MOV até 100MB
-                            </p>
-                          </div>
-                        </div>
                         
-                        {isUploading && (
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Enviando arquivo...</span>
-                              <span>{uploadProgress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div 
-                                className="bg-blue-600 h-2 rounded-full" 
-                                style={{ width: `${uploadProgress}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => {}}>Cancelar</Button>
-                        <Button onClick={handleUpload} disabled={isUploading}>
-                          {isUploading ? "Enviando..." : "Enviar"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {mediaLibrary.map((item) => (
-                    <Card key={item.id} className="cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
-                      {item.type === "folder" ? (
-                        <CardContent className="p-4 flex items-center gap-3">
-                          <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded">
-                            <Image className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{item.name}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {item.items} itens • Atualizado em {formatDate(item.updatedAt)}
-                            </p>
-                          </div>
-                        </CardContent>
-                      ) : (
-                        <>
-                          {item.type === "image" && (
-                            <div className="relative">
-                              <img 
-                                src={item.url} 
-                                alt={item.name}
-                                className="w-full h-32 object-cover rounded-t-lg"
-                              />
-                            </div>
-                          )}
-                          {item.type === "video" && (
-                            <div className="relative">
-                              <img 
-                                src={item.url} 
-                                alt={item.name}
-                                className="w-full h-32 object-cover rounded-t-lg"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-black bg-opacity-50 rounded-full p-2">
-                                  <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z" />
-                                  </svg>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          <CardContent className="pt-4">
-                            <p className="font-medium line-clamp-1">{item.name}</p>
-                            <div className="flex justify-between items-center mt-1 text-xs text-gray-500 dark:text-gray-400">
-                              <span>{item.type === "image" ? item.dimensions : item.duration}</span>
-                              <span>{item.size}</span>
-                            </div>
-                          </CardContent>
-                        </>
-                      )}
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Analytics */}
-        <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics de Desempenho</CardTitle>
-              <CardDescription>
-                Acompanhe métricas de engajamento, crescimento e conversão em todas as plataformas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* Resumo das Plataformas */}
-                <div>
-                  <h3 className="text-lg font-medium mb-3">Resumo das Plataformas</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {analyticsData.platforms.map((platform, index) => (
-                      <Card key={index}>
-                        <CardContent className="p-4">
-                          <h4 className="font-medium">{platform.name}</h4>
-                          <div className="mt-2 space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400">Seguidores:</span>
-                              <span className="font-medium">{platform.followers}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400">Engajamento:</span>
-                              <span className="font-medium">{platform.engagement}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400">Crescimento:</span>
-                              <span className={`font-medium ${platform.growth.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                {platform.growth}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400">Publicações:</span>
-                              <span className="font-medium">{platform.posts}</span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Conteúdo de Melhor Desempenho */}
-                <div>
-                  <h3 className="text-lg font-medium mb-3">Conteúdo de Melhor Desempenho</h3>
-                  <div className="space-y-4">
-                    {analyticsData.topContent.map((content, index) => (
-                      <Card key={index}>
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium">{content.title}</h4>
-                              <Badge variant="outline" className="mt-1">
-                                {content.platform}
-                              </Badge>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-medium">{content.views} visualizações</p>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                            <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Curtidas</p>
-                              <p className="font-medium">{content.likes}</p>
-                            </div>
-                            <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Comentários</p>
-                              <p className="font-medium">{content.comments}</p>
-                            </div>
-                            <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Compartilhamentos</p>
-                              <p className="font-medium">{content.shares}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Atividade Recente */}
-                <div>
-                  <h3 className="text-lg font-medium mb-3">Atividade Recente</h3>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-4">
-                        {analyticsData.recentActivity.map((activity, index) => (
-                          <div key={index} className="flex gap-3 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
-                            </Avatar>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">@{activity.user}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {activity.platform}
-                                </Badge>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {activity.time}
-                                </span>
-                              </div>
-                              <p className="text-sm">{activity.content}</p>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="h-8">
+                            Detalhes
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
-                </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Dialog para visualização de conteúdo */}
-      {selectedContent && (
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>{selectedContent.title}</DialogTitle>
-              <DialogDescription>
-                Detalhes do conteúdo agendado
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <img 
-                src={selectedContent.thumbnail} 
-                alt={selectedContent.title}
-                className="w-full h-48 object-cover rounded-lg"
-              />
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Data e Hora</Label>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span>{formatDate(selectedContent.date)} às {selectedContent.time}</span>
-                  </div>
-                </div>
+              <div className="space-y-4 mt-8 border-t pt-6">
+                <h3 className="text-lg font-medium">Adicionar Projeto</h3>
                 
                 <div className="space-y-2">
-                  <Label>Tipo de Conteúdo</Label>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Badge variant="outline">{selectedContent.type}</Badge>
+                  <Label htmlFor="projeto-titulo">Título do Projeto</Label>
+                  <Input id="projeto-titulo" placeholder="Digite o título do projeto" />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="projeto-cliente">Cliente</Label>
+                    <Input id="projeto-cliente" placeholder="Nome do cliente" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="projeto-prazo">Data de Entrega</Label>
+                    <Input id="projeto-prazo" type="date" />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label>Plataformas</Label>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedContent.platforms.map((platform: string, i: number) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {platform}
-                      </Badge>
-                    ))}
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="instagram" className="rounded" />
+                      <Label htmlFor="instagram" className="flex items-center gap-1.5">
+                        <Instagram className="h-4 w-4 text-pink-500" /> Instagram
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="facebook" className="rounded" />
+                      <Label htmlFor="facebook" className="flex items-center gap-1.5">
+                        <Facebook className="h-4 w-4 text-blue-500" /> Facebook
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="youtube" className="rounded" />
+                      <Label htmlFor="youtube" className="flex items-center gap-1.5">
+                        <Youtube className="h-4 w-4 text-red-500" /> YouTube
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="twitter" className="rounded" />
+                      <Label htmlFor="twitter" className="flex items-center gap-1.5">
+                        <TwitterIcon className="h-4 w-4 text-sky-500" /> Twitter
+                      </Label>
+                    </div>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Status</Label>
-                  <div className="flex items-center gap-2 text-sm">
-                    {selectedContent.status === "scheduled" ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300">
-                        Agendado
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">
-                        Rascunho
-                      </Badge>
-                    )}
-                  </div>
+                  <Label htmlFor="projeto-descricao">Descrição</Label>
+                  <Textarea id="projeto-descricao" placeholder="Descreva os detalhes do projeto..." />
+                </div>
+                
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Salvar Projeto
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="conteudos">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Lista de Conteúdos</h3>
+                <div className="flex gap-2">
+                  <Select defaultValue="todos">
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue placeholder="Filtrar por tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os tipos</SelectItem>
+                      <SelectItem value="fotografia">Fotografia</SelectItem>
+                      <SelectItem value="video">Vídeo</SelectItem>
+                      <SelectItem value="texto">Texto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                    Novo Conteúdo
+                  </Button>
                 </div>
               </div>
               
-              {selectedContent.status === "draft" && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-md flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    Este conteúdo está em rascunho e precisa ser finalizado antes da publicação.
-                  </p>
+              <div className="space-y-3">
+                {conteudos.map((conteudo) => (
+                  <div key={conteudo.id} className="flex items-center gap-3 border rounded-md p-4">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                      {conteudo.tipo === "Fotografia" ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect width="15" height="14" x="1" y="5" rx="2" ry="2"></rect></svg>
+                      )}
+                    </div>
+                    
+                    <div className="flex-grow">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <h4 className="font-medium">{conteudo.titulo}</h4>
+                        <Badge className={getStatusColor(conteudo.status)}>
+                          {conteudo.status.charAt(0).toUpperCase() + conteudo.status.slice(1)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500 mt-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                        <span>Cliente: {conteudo.cliente}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span>Entrega: {conteudo.entrega.split('-').reverse().join('/')}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="h-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="space-y-4 mt-8 border-t pt-6">
+                <h3 className="text-lg font-medium">Adicionar Conteúdo</h3>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="conteudo-titulo">Título do Conteúdo</Label>
+                  <Input id="conteudo-titulo" placeholder="Digite o título do conteúdo" />
                 </div>
-              )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="conteudo-tipo">Tipo</Label>
+                    <Select>
+                      <SelectTrigger id="conteudo-tipo">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fotografia">Fotografia</SelectItem>
+                        <SelectItem value="video">Vídeo</SelectItem>
+                        <SelectItem value="texto">Texto</SelectItem>
+                        <SelectItem value="audio">Áudio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="conteudo-projeto">Projeto</Label>
+                    <Select>
+                      <SelectTrigger id="conteudo-projeto">
+                        <SelectValue placeholder="Selecione o projeto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projetos.map((projeto) => (
+                          <SelectItem key={projeto.id} value={projeto.id}>{projeto.titulo}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="conteudo-cliente">Cliente</Label>
+                    <Select>
+                      <SelectTrigger id="conteudo-cliente">
+                        <SelectValue placeholder="Selecione o cliente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="modastyle">ModaStyle</SelectItem>
+                        <SelectItem value="technova">TechNova</SelectItem>
+                        <SelectItem value="corporacao-abc">Corporação ABC</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="conteudo-entrega">Data de Entrega</Label>
+                    <Input id="conteudo-entrega" type="date" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="conteudo-descricao">Descrição</Label>
+                  <Textarea id="conteudo-descricao" placeholder="Detalhes sobre o conteúdo a ser produzido..." />
+                </div>
+                
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Adicionar Conteúdo
+                </Button>
+              </div>
             </div>
-            
-            <DialogFooter className="gap-2">
-              <Button variant="outline">Editar</Button>
-              <Button variant="default">
-                {selectedContent.status === "scheduled" ? "Publicar Agora" : "Finalizar e Agendar"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+          </TabsContent>
+          
+          <TabsContent value="equipamentos">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Equipamentos</h3>
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                  Novo Equipamento
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {equipamentos.map((equipamento) => (
+                  <Card key={equipamento.id} className="border">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium">{equipamento.nome}</h4>
+                        <Badge className={getEquipamentoStatusColor(equipamento.status)}>
+                          {equipamento.status === "em_uso" 
+                            ? "Em uso" 
+                            : equipamento.status.charAt(0).toUpperCase() + equipamento.status.slice(1)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500 mt-1">
+                        <span>Tipo: {equipamento.tipo}</span>
+                      </div>
+                      
+                      <div className="flex justify-between mt-4">
+                        {equipamento.status === "disponivel" && (
+                          <Button size="sm" variant="outline">Reservar</Button>
+                        )}
+                        {equipamento.status === "em_uso" && (
+                          <Button size="sm" variant="outline">Devolver</Button>
+                        )}
+                        {equipamento.status === "manutenção" && (
+                          <Button size="sm" variant="outline" disabled>Indisponível</Button>
+                        )}
+                        
+                        <Button variant="ghost" size="sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              <div className="space-y-4 mt-8 border-t pt-6">
+                <h3 className="text-lg font-medium">Reservar Equipamento</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="equipamento">Equipamento</Label>
+                    <Select>
+                      <SelectTrigger id="equipamento">
+                        <SelectValue placeholder="Selecione o equipamento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {equipamentos
+                          .filter(eq => eq.status === "disponivel")
+                          .map((eq) => (
+                            <SelectItem key={eq.id} value={eq.id}>{eq.nome}</SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="projeto-reserva">Projeto</Label>
+                    <Select>
+                      <SelectTrigger id="projeto-reserva">
+                        <SelectValue placeholder="Selecione o projeto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projetos.map((projeto) => (
+                          <SelectItem key={projeto.id} value={projeto.id}>{projeto.titulo}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="data-inicio">Data de Início</Label>
+                    <Input id="data-inicio" type="date" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="data-fim">Data de Devolução</Label>
+                    <Input id="data-fim" type="date" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="observacoes">Observações</Label>
+                  <Textarea id="observacoes" placeholder="Informações adicionais sobre a reserva..." />
+                </div>
+                
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Confirmar Reserva
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

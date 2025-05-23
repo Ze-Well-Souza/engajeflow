@@ -1,535 +1,310 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Check, MessageSquare, Share2, Instagram, Facebook, Send } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
-interface PostagemWhatsAppSellerProps {
-  onPostComplete: (data: any) => void;
-}
-
-const PostagemWhatsAppSeller: React.FC<PostagemWhatsAppSellerProps> = ({ onPostComplete }) => {
-  const [activeTab, setActiveTab] = useState("nova-postagem");
-  const [postTitle, setPostTitle] = useState("");
-  const [postContent, setPostContent] = useState("");
-  const [postType, setPostType] = useState("");
+const PostagemWhatsAppSeller: React.FC = () => {
+  const [activeTab, setActiveTab] = useState("create");
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["whatsapp"]);
-  const [schedulePost, setSchedulePost] = useState(false);
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [scheduleTime, setScheduleTime] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState("");
-  const [isGeneratingSuggestion, setIsGeneratingSuggestion] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const postTypes = [
-    { value: "product", label: "Produto" },
-    { value: "promotion", label: "Promoção" },
-    { value: "announcement", label: "Comunicado" },
-    { value: "testimonial", label: "Depoimento" }
-  ];
-
-  const whatsappGroups = [
-    { id: "1", name: "Ofertas Diárias", members: 245, lastActivity: "Hoje" },
-    { id: "2", name: "Compra e Venda SP", members: 387, lastActivity: "Hoje" },
-    { id: "3", name: "Produtos Importados", members: 156, lastActivity: "Ontem" },
-    { id: "4", name: "Moda Feminina", members: 298, lastActivity: "Hoje" },
-    { id: "5", name: "Eletrônicos Brasil", members: 412, lastActivity: "Ontem" }
-  ];
-
-  const platforms = [
-    { id: "whatsapp", name: "WhatsApp", icon: <MessageSquare className="h-4 w-4" /> },
-    { id: "telegram", name: "Telegram", icon: <Send className="h-4 w-4" /> },
-    { id: "instagram", name: "Instagram", icon: <Instagram className="h-4 w-4" /> },
-    { id: "facebook", name: "Facebook", icon: <Facebook className="h-4 w-4" /> }
-  ];
-
-  const scheduledPosts = [
-    { 
-      id: "1", 
-      title: "Novos Produtos da Semana", 
-      type: "Produto", 
-      date: "24/05/2025", 
-      time: "10:00",
-      platforms: ["WhatsApp", "Telegram", "Instagram"],
-      groups: ["Ofertas Diárias", "Moda Feminina"]
-    },
-    { 
-      id: "2", 
-      title: "Promoção de Fim de Semana: 30% OFF", 
-      type: "Promoção", 
-      date: "26/05/2025", 
-      time: "09:00",
-      platforms: ["WhatsApp", "Telegram", "Facebook"],
-      groups: ["Ofertas Diárias", "Compra e Venda SP", "Produtos Importados"]
-    },
-    { 
-      id: "3", 
-      title: "Depoimento da Cliente Márcia", 
-      type: "Depoimento", 
-      date: "28/05/2025", 
-      time: "14:00",
-      platforms: ["WhatsApp", "Instagram"],
-      groups: ["Moda Feminina"]
-    }
-  ];
-
-  const publishedPosts = [
-    { 
-      id: "4", 
-      title: "Lançamento Coleção Verão", 
-      type: "Produto", 
-      date: "15/05/2025", 
-      time: "10:00",
-      platforms: ["WhatsApp", "Telegram", "Instagram"],
-      stats: { views: 1245, responses: 87, conversions: 23 }
-    },
-    { 
-      id: "5", 
-      title: "Promoção Relâmpago 24h", 
-      type: "Promoção", 
-      date: "10/05/2025", 
-      time: "09:00",
-      platforms: ["WhatsApp", "Telegram"],
-      stats: { views: 980, responses: 112, conversions: 45 }
-    },
-    { 
-      id: "6", 
-      title: "Novidades da Próxima Semana", 
-      type: "Comunicado", 
-      date: "05/05/2025", 
-      time: "14:00",
-      platforms: ["WhatsApp", "Telegram", "Facebook"],
-      stats: { views: 876, responses: 34, conversions: 12 }
-    }
-  ];
-
-  const toggleGroup = (groupId: string) => {
-    setSelectedGroups(prev => 
-      prev.includes(groupId) 
-        ? prev.filter(id => id !== groupId) 
+  const handleSelectGroup = (groupId: string) => {
+    setSelectedGroups((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId)
         : [...prev, groupId]
     );
   };
 
-  const togglePlatform = (platformId: string) => {
-    setSelectedPlatforms(prev => 
-      prev.includes(platformId) 
-        ? prev.filter(id => id !== platformId) 
-        : [...prev, platformId]
-    );
-  };
+  const handleCreatePost = () => {
+    setIsCreating(true);
 
-  const generateAiSuggestion = () => {
-    setIsGeneratingSuggestion(true);
-    
-    // Simulação de chamada à API de IA
+    // Simulação de envio para grupos
     setTimeout(() => {
-      const suggestions = [
-        "🔥 SUPER OFERTA! 🔥\nAproveitando para compartilhar essa promoção incrível que está acabando hoje! Produtos com até 50% de desconto. Não perca essa chance! Clique no link para ver todos os itens: [link]",
-        "✨ NOVIDADE EXCLUSIVA! ✨\nAcabou de chegar e já está fazendo sucesso! Nosso novo produto está disponível por tempo limitado. Garanta o seu antes que acabe! Detalhes completos: [link]",
-        "👑 CLIENTE SATISFEITO! 👑\n\"Comprei na semana passada e já estou apaixonada! Qualidade incrível e entrega super rápida. Recomendo demais!\" - Maria S.\nQuer ter a mesma experiência? Acesse agora: [link]"
-      ];
-      
-      const selectedSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-      setAiSuggestion(selectedSuggestion);
-      setIsGeneratingSuggestion(false);
+      setIsCreating(false);
+      setIsSuccess(true);
+
+      // Reset após 3 segundos
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
     }, 1500);
   };
 
-  const handleSubmit = () => {
-    setIsSubmitting(true);
-    
-    // Simulação de envio para API
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsComplete(true);
-      
-      // Dados para enviar ao componente pai
-      const postData = {
-        title: postTitle,
-        content: postContent || aiSuggestion,
-        type: postType,
-        groups: selectedGroups.map(id => whatsappGroups.find(g => g.id === id)?.name),
-        platforms: selectedPlatforms.map(id => platforms.find(p => p.id === id)?.name),
-        scheduled: schedulePost,
-        scheduleDate: schedulePost ? scheduleDate : new Date().toLocaleDateString(),
-        scheduleTime: schedulePost ? scheduleTime : new Date().toLocaleTimeString(),
-        status: schedulePost ? 'scheduled' : 'published',
-        createdAt: new Date().toISOString()
-      };
-      
-      onPostComplete(postData);
-    }, 1500);
-  };
+  // Lista de grupos WhatsApp simulados
+  const whatsappGroups = [
+    { id: "1", name: "Ofertas Diárias", members: 245 },
+    { id: "2", name: "Liquidação Total", members: 187 },
+    { id: "3", name: "Clientes Premium", members: 64 },
+    { id: "4", name: "Novidades da Semana", members: 156 },
+    { id: "5", name: "Descontos Exclusivos", members: 98 },
+    { id: "6", name: "Lista VIP", members: 42 }
+  ];
 
-  const isFormValid = () => {
-    return (
-      postTitle !== "" && 
-      (postContent !== "" || aiSuggestion !== "") && 
-      postType !== "" && 
-      selectedGroups.length > 0 && 
-      selectedPlatforms.length > 0 && 
-      (!schedulePost || (scheduleDate !== "" && scheduleTime !== ""))
-    );
-  };
-
-  const useAiSuggestion = () => {
-    setPostContent(aiSuggestion);
-  };
+  // Lista de campanhas recentes
+  const recentCampaigns = [
+    {
+      id: "1",
+      title: "Promoção de Fim de Semana",
+      date: "21/05/2025",
+      groups: 4,
+      messages: 572,
+      clicks: 128
+    },
+    {
+      id: "2",
+      title: "Lançamento Nova Coleção",
+      date: "15/05/2025",
+      groups: 6,
+      messages: 843,
+      clicks: 215
+    },
+    {
+      id: "3",
+      title: "Desconto para Clientes VIP",
+      date: "10/05/2025",
+      groups: 2,
+      messages: 132,
+      clicks: 87
+    }
+  ];
 
   return (
-    <div className="w-full">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="nova-postagem">Nova Divulgação</TabsTrigger>
-          <TabsTrigger value="agendadas">Agendadas</TabsTrigger>
-          <TabsTrigger value="publicadas">Publicadas</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="nova-postagem">
-          {!isComplete ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Criar Nova Divulgação</CardTitle>
-                <CardDescription>
-                  Crie uma mensagem para enviar aos seus grupos de WhatsApp e outras plataformas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="postTitle">Título da Divulgação</Label>
-                    <Input
-                      id="postTitle"
-                      placeholder="Ex: Promoção de Fim de Semana"
-                      value={postTitle}
-                      onChange={(e) => setPostTitle(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="postContent">Conteúdo da Mensagem</Label>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={generateAiSuggestion}
-                        disabled={isGeneratingSuggestion}
-                      >
-                        {isGeneratingSuggestion ? "Gerando..." : "Sugerir com IA"}
-                      </Button>
-                    </div>
-                    
-                    {aiSuggestion && (
-                      <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md mb-2 border border-blue-200 dark:border-blue-800">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-blue-700 dark:text-blue-400">Sugestão da IA</span>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={useAiSuggestion}
-                          >
-                            Usar
-                          </Button>
-                        </div>
-                        <p className="text-sm whitespace-pre-line">{aiSuggestion}</p>
-                      </div>
-                    )}
-                    
-                    <Textarea
-                      id="postContent"
-                      placeholder="Digite o conteúdo da sua mensagem..."
-                      rows={5}
-                      value={postContent}
-                      onChange={(e) => setPostContent(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="postType">Tipo de Conteúdo</Label>
-                    <Select value={postType} onValueChange={setPostType}>
-                      <SelectTrigger id="postType">
-                        <SelectValue placeholder="Selecione o tipo de conteúdo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {postTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <Label>Grupos do WhatsApp</Label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {whatsappGroups.map((group) => (
-                        <div 
-                          key={group.id}
-                          className={`flex items-center justify-between p-3 rounded-md border cursor-pointer ${
-                            selectedGroups.includes(group.id) 
-                              ? 'bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800' 
-                              : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
-                          }`}
-                          onClick={() => toggleGroup(group.id)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback>{group.name.substring(0, 2)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{group.name}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {group.members} membros • Ativo: {group.lastActivity}
-                              </p>
-                            </div>
-                          </div>
-                          {selectedGroups.includes(group.id) && (
-                            <Check className="h-5 w-5 text-blue-600" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <Label>Plataformas</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {platforms.map((platform) => (
-                        <Badge
-                          key={platform.id}
-                          variant={selectedPlatforms.includes(platform.id) ? "default" : "outline"}
-                          className={`cursor-pointer ${
-                            selectedPlatforms.includes(platform.id) 
-                              ? 'bg-blue-600 hover:bg-blue-700' 
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                          }`}
-                          onClick={() => togglePlatform(platform.id)}
-                        >
-                          <div className="flex items-center gap-1">
-                            {platform.icon}
-                            <span>{platform.name}</span>
-                          </div>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="pt-2">
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        id="schedule" 
-                        checked={schedulePost}
-                        onCheckedChange={setSchedulePost}
-                      />
-                      <Label htmlFor="schedule">Agendar envio</Label>
-                    </div>
-                    
-                    {schedulePost && (
-                      <div className="grid grid-cols-2 gap-4 mt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="scheduleDate">Data</Label>
-                          <Input
-                            id="scheduleDate"
-                            type="date"
-                            value={scheduleDate}
-                            onChange={(e) => setScheduleDate(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="scheduleTime">Horário</Label>
-                          <Input
-                            id="scheduleTime"
-                            type="time"
-                            value={scheduleTime}
-                            onChange={(e) => setScheduleTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
+    <Card className="w-full">
+      <CardHeader className="bg-green-50 dark:bg-green-900/20 border-b">
+        <CardTitle className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 text-green-500"
+          >
+            <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
+          </svg>
+          Divulgação em Grupos WhatsApp
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="create">Criar Mensagem</TabsTrigger>
+            <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="create">
+            {isSuccess ? (
+              <div className="text-center p-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
+                <h3 className="text-xl font-medium mb-2">Mensagem Enviada!</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Sua mensagem foi enviada com sucesso para {selectedGroups.length} grupos ({whatsappGroups.filter(g => selectedGroups.includes(g.id)).reduce((acc, g) => acc + g.members, 0)} membros).
+                </p>
                 <Button 
-                  onClick={handleSubmit} 
-                  disabled={!isFormValid() || isSubmitting}
+                  onClick={() => {
+                    setSelectedGroups([]);
+                    setIsSuccess(false);
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
                 >
-                  {isSubmitting ? "Enviando..." : schedulePost ? "Agendar Divulgação" : "Publicar Agora"}
+                  Criar Nova Mensagem
                 </Button>
-              </CardFooter>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-green-600">
-                  {schedulePost ? "Divulgação Agendada!" : "Divulgação Publicada!"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="h-8 w-8 text-green-600" />
-                  </div>
-                  
-                  <p className="text-lg">
-                    {schedulePost 
-                      ? `Sua divulgação foi agendada para ${scheduleDate} às ${scheduleTime}.`
-                      : "Sua divulgação foi publicada com sucesso!"
-                    }
-                  </p>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-left">
-                    <h3 className="font-medium">{postTitle}</h3>
-                    <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line mt-2">
-                      {postContent || aiSuggestion}
-                    </p>
-                    
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {selectedPlatforms.map(id => {
-                        const platform = platforms.find(p => p.id === id);
-                        return platform ? (
-                          <Badge key={platform.id} variant="secondary">
-                            <div className="flex items-center gap-1">
-                              {platform.icon}
-                              <span>{platform.name}</span>
-                            </div>
-                          </Badge>
-                        ) : null;
-                      })}
-                    </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Título da Campanha</Label>
+                  <Input id="title" placeholder="Ex: Promoção Flash de Outono" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="message">Mensagem</Label>
+                  <Textarea 
+                    id="message" 
+                    placeholder="Digite sua mensagem aqui..."
+                    className="min-h-[150px]"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="media">Mídia</Label>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" className="flex-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                        <circle cx="9" cy="9" r="2"></circle>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                      </svg>
+                      Adicionar Imagem
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                        <path d="m14 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 9"></path>
+                        <path d="M16 6h6v6"></path>
+                        <path d="M22 2 12 12"></path>
+                      </svg>
+                      Adicionar Link
+                    </Button>
                   </div>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button onClick={() => window.location.reload()}>
-                  Criar Nova Divulgação
+                
+                <div className="space-y-2">
+                  <Label>Selecionar Grupos</Label>
+                  <div className="border rounded-md p-4 max-h-[200px] overflow-y-auto">
+                    {whatsappGroups.map((group) => (
+                      <div key={group.id} className="flex items-center space-x-2 py-2 border-b last:border-0">
+                        <Checkbox 
+                          id={`group-${group.id}`} 
+                          checked={selectedGroups.includes(group.id)} 
+                          onCheckedChange={() => handleSelectGroup(group.id)}
+                        />
+                        <label htmlFor={`group-${group.id}`} className="flex-grow cursor-pointer flex justify-between">
+                          <span>{group.name}</span>
+                          <span className="text-sm text-gray-500">{group.members} membros</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="schedule">Programação</Label>
+                  <Select defaultValue="now">
+                    <SelectTrigger id="schedule">
+                      <SelectValue placeholder="Quando enviar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="now">Enviar Agora</SelectItem>
+                      <SelectItem value="later">Agendar para Mais Tarde</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleCreatePost}
+                    disabled={selectedGroups.length === 0 || isCreating}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {isCreating ? "Enviando..." : `Enviar para ${selectedGroups.length} grupos`}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="campaigns">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium">Campanhas Recentes</h3>
+                <Button variant="outline" size="sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+                  Exportar
                 </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="agendadas">
-          <Card>
-            <CardHeader>
-              <CardTitle>Divulgações Agendadas</CardTitle>
-              <CardDescription>
-                Gerencie suas divulgações programadas para envio futuro
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {scheduledPosts.map((post) => (
-                  <Card key={post.id}>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-base">{post.title}</CardTitle>
-                        <Badge>{post.type}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500 dark:text-gray-400">Data:</span>
-                          <span>{post.date} às {post.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500 dark:text-gray-400">Grupos:</span>
-                          <span>{post.groups.length}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {post.platforms.map((platform, i) => (
-                          <Badge key={i} variant="outline" className="text-xs">
-                            {platform}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="pt-0 flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">Editar</Button>
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600">Cancelar</Button>
-                    </CardFooter>
-                  </Card>
-                ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="publicadas">
-          <Card>
-            <CardHeader>
-              <CardTitle>Divulgações Publicadas</CardTitle>
-              <CardDescription>
-                Veja o desempenho das suas divulgações anteriores
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {publishedPosts.map((post) => (
-                  <Card key={post.id}>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-base">{post.title}</CardTitle>
-                        <Badge>{post.type}</Badge>
+              
+              {recentCampaigns.map((campaign) => (
+                <Card key={campaign.id}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{campaign.title}</h4>
+                        <p className="text-sm text-gray-500">{campaign.date}</p>
                       </div>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500 dark:text-gray-400">Publicado:</span>
-                          <span>{post.date}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500 dark:text-gray-400">Plataformas:</span>
-                          <span>{post.platforms.length}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Visualizações</p>
-                          <p className="font-medium">{post.stats.views}</p>
-                        </div>
-                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Respostas</p>
-                          <p className="font-medium">{post.stats.responses}</p>
-                        </div>
-                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Conversões</p>
-                          <p className="font-medium">{post.stats.conversions}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="pt-0 flex justify-end gap-2">
                       <Button variant="ghost" size="sm">
-                        <Share2 className="h-4 w-4 mr-1" />
-                        Republicar
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"></path></svg>
                       </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-4 text-center text-sm">
+                      <div className="border rounded-md p-2">
+                        <div className="font-medium">{campaign.groups}</div>
+                        <div className="text-xs text-gray-500">Grupos</div>
+                      </div>
+                      <div className="border rounded-md p-2">
+                        <div className="font-medium">{campaign.messages}</div>
+                        <div className="text-xs text-gray-500">Mensagens</div>
+                      </div>
+                      <div className="border rounded-md p-2">
+                        <div className="font-medium">{campaign.clicks}</div>
+                        <div className="text-xs text-gray-500">Cliques</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="templates">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-2">Anúncio de Produto</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Template para divulgação de novos produtos ou promoções.
+                  </p>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Usar Template</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-2">Oferta Limitada</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Template para criar senso de urgência em ofertas por tempo limitado.
+                  </p>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Usar Template</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-2">Catálogo de Produtos</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Template para apresentar múltiplos produtos com descrições breves.
+                  </p>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Usar Template</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-2">Anúncio de Evento</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Template para divulgar eventos, lives ou lançamentos.
+                  </p>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Usar Template</Button>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <Button variant="outline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                Criar Novo Template
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AgendamentoDemo from "@/components/demo/AgendamentoDemo";
 import PostagemDemo from "@/components/demo/PostagemDemo";
@@ -8,7 +8,15 @@ import GerenciamentoDemo from "@/components/demo/GerenciamentoDemo";
 
 const DemoFluxos: React.FC = () => {
   const { fluxo, segment } = useParams<{ fluxo: string; segment: string }>();
+  const navigate = useNavigate();
   const defaultTab = fluxo || "agendamento";
+  
+  // Redirecionar para a página específica de demonstração para imobiliária
+  React.useEffect(() => {
+    if (segment === "realestate" && !fluxo) {
+      navigate("/demo/realestate");
+    }
+  }, [segment, fluxo, navigate]);
 
   return (
     <div className="container mx-auto px-4 py-8">

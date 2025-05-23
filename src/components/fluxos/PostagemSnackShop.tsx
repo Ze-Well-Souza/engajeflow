@@ -1,942 +1,384 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, Image, Upload, Calendar, Clock, Cake, ShoppingBag } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
-interface PostagemSnackShopProps {
-  onPostComplete: (data: any) => void;
-}
+const PostagemSnackShop: React.FC = () => {
+  const [activeTab, setActiveTab] = useState("catalogo");
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-const PostagemSnackShop: React.FC<PostagemSnackShopProps> = ({ onPostComplete }) => {
-  const [activeTab, setActiveTab] = useState("cardapio");
-  const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [productPrice, setProductPrice] = useState("");
-  const [productCategory, setProductCategory] = useState("");
-  const [isPromotion, setIsPromotion] = useState(false);
-  const [promotionPrice, setPromotionPrice] = useState("");
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["whatsapp"]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const productCategories = [
-    { value: "salgados", label: "Salgados" },
-    { value: "doces", label: "Doces" },
-    { value: "bolos", label: "Bolos" },
-    { value: "bebidas", label: "Bebidas" },
-    { value: "kits", label: "Kits Festa" }
-  ];
-
-  const platforms = [
-    { id: "whatsapp", name: "WhatsApp", icon: "📱" },
-    { id: "instagram", name: "Instagram", icon: "📸" },
-    { id: "facebook", name: "Facebook", icon: "👍" },
-    { id: "ifood", name: "iFood", icon: "🍔" }
-  ];
-
-  // Dados simulados para o cardápio
-  const menuItems = [
-    {
-      id: "1",
-      name: "Coxinha de Frango",
-      description: "Coxinha tradicional recheada com frango desfiado e catupiry",
-      price: "5,00",
-      category: "Salgados",
-      image: "https://placehold.co/300x200/fef3c7/92400e?text=Coxinha",
-      isPromotion: false,
-      promotionPrice: "",
-      isAvailable: true
+  // Lista de produtos
+  const produtos = [
+    { 
+      id: "1", 
+      nome: "Coxinha de Frango", 
+      descricao: "Coxinha tradicional recheada com frango desfiado",
+      preco: "R$ 6,50",
+      disponivel: true,
+      destaque: true,
+      imagem: "https://placehold.co/100x100/orange/white?text=Coxinha"
     },
-    {
-      id: "2",
-      name: "Brigadeiro Gourmet",
-      description: "Brigadeiro tradicional com chocolate belga e granulado",
-      price: "3,50",
-      category: "Doces",
-      image: "https://placehold.co/300x200/fee2e2/991b1b?text=Brigadeiro",
-      isPromotion: true,
-      promotionPrice: "3,00",
-      isAvailable: true
+    { 
+      id: "2", 
+      nome: "Empadinha de Palmito", 
+      descricao: "Massa artesanal com recheio de palmito",
+      preco: "R$ 7,00",
+      disponivel: true,
+      destaque: false,
+      imagem: "https://placehold.co/100x100/beige/black?text=Empadinha"
     },
-    {
-      id: "3",
-      name: "Bolo de Chocolate",
-      description: "Bolo de chocolate com cobertura de brigadeiro e morangos",
-      price: "45,00",
-      category: "Bolos",
-      image: "https://placehold.co/300x200/e9d5ff/4c1d95?text=Bolo+Chocolate",
-      isPromotion: false,
-      promotionPrice: "",
-      isAvailable: true
+    { 
+      id: "3", 
+      nome: "Quiche de Queijo", 
+      descricao: "Quiche com recheio de queijo e ervas finas",
+      preco: "R$ 8,50",
+      disponivel: true,
+      destaque: true,
+      imagem: "https://placehold.co/100x100/yellow/black?text=Quiche"
     },
-    {
-      id: "4",
-      name: "Kit Festa 50 Salgados",
-      description: "Mix com 50 salgados variados: coxinha, bolinha de queijo, risole e empada",
-      price: "75,00",
-      category: "Kits",
-      image: "https://placehold.co/300x200/dbeafe/1e40af?text=Kit+Festa",
-      isPromotion: true,
-      promotionPrice: "65,00",
-      isAvailable: true
+    { 
+      id: "4", 
+      nome: "Pão de Queijo", 
+      descricao: "Pão de queijo mineiro tradicional",
+      preco: "R$ 4,00",
+      disponivel: true,
+      destaque: false,
+      imagem: "https://placehold.co/100x100/gold/black?text=PãoQueijo"
+    },
+    { 
+      id: "5", 
+      nome: "Bolo de Cenoura", 
+      descricao: "Fatia de bolo de cenoura com cobertura de chocolate",
+      preco: "R$ 7,50",
+      disponivel: true,
+      destaque: true,
+      imagem: "https://placehold.co/100x100/orange/white?text=Bolo"
     }
   ];
 
-  // Dados simulados para promoções
-  const promotions = [
-    {
-      id: "1",
-      title: "Quinta do Doce",
-      description: "Toda quinta-feira, todos os doces com 20% de desconto",
-      startDate: "2025-05-01",
-      endDate: "2025-05-31",
-      image: "https://placehold.co/300x200/fee2e2/991b1b?text=Promo+Doces",
-      platforms: ["WhatsApp", "Instagram", "Facebook"],
-      status: "active"
-    },
-    {
-      id: "2",
-      title: "Kit Festa com Frete Grátis",
-      description: "Na compra de qualquer Kit Festa, o frete é por nossa conta",
-      startDate: "2025-05-15",
-      endDate: "2025-06-15",
-      image: "https://placehold.co/300x200/dbeafe/1e40af?text=Frete+Grátis",
-      platforms: ["WhatsApp", "Instagram"],
-      status: "scheduled"
-    },
-    {
-      id: "3",
-      title: "Compre 10, Leve 12",
-      description: "Na compra de 10 salgados do mesmo tipo, leve 12",
-      startDate: "2025-04-01",
-      endDate: "2025-04-30",
-      image: "https://placehold.co/300x200/fef3c7/92400e?text=Compre+10+Leve+12",
-      platforms: ["WhatsApp", "Facebook", "iFood"],
-      status: "ended"
-    }
-  ];
+  const handlePublish = () => {
+    setIsPublishing(true);
 
-  // Dados simulados para pedidos
-  const orders = [
-    {
-      id: "1",
-      customer: "Maria Silva",
-      items: [
-        { name: "Coxinha de Frango", quantity: 20, price: "5,00" },
-        { name: "Brigadeiro Gourmet", quantity: 15, price: "3,00" }
-      ],
-      total: "145,00",
-      date: "2025-05-20",
-      time: "15:30",
-      status: "confirmed",
-      deliveryMethod: "Retirada na Loja"
-    },
-    {
-      id: "2",
-      customer: "João Santos",
-      items: [
-        { name: "Bolo de Chocolate", quantity: 1, price: "45,00" }
-      ],
-      total: "45,00",
-      date: "2025-05-22",
-      time: "10:00",
-      status: "pending",
-      deliveryMethod: "Entrega"
-    },
-    {
-      id: "3",
-      customer: "Ana Oliveira",
-      items: [
-        { name: "Kit Festa 50 Salgados", quantity: 1, price: "65,00" },
-        { name: "Brigadeiro Gourmet", quantity: 20, price: "3,00" }
-      ],
-      total: "125,00",
-      date: "2025-05-25",
-      time: "14:00",
-      status: "scheduled",
-      deliveryMethod: "Retirada na Loja"
-    }
-  ];
-
-  const togglePlatform = (platformId: string) => {
-    setSelectedPlatforms(prev => 
-      prev.includes(platformId) 
-        ? prev.filter(id => id !== platformId) 
-        : [...prev, platformId]
-    );
-  };
-
-  const handleProductClick = (product: any) => {
-    setSelectedProduct(product);
-    setIsDialogOpen(true);
-  };
-
-  const handleUpload = () => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    // Simulação de upload com progresso
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
-  };
-
-  const handleSubmit = () => {
-    setIsSubmitting(true);
-    
-    // Simulação de envio para API
+    // Simulação de publicação
     setTimeout(() => {
-      setIsSubmitting(false);
-      setIsComplete(true);
-      
-      // Dados para enviar ao componente pai
-      const productData = {
-        name: productName,
-        description: productDescription,
-        price: productPrice,
-        category: productCategory,
-        isPromotion,
-        promotionPrice: isPromotion ? promotionPrice : "",
-        isAvailable,
-        platforms: selectedPlatforms.map(id => platforms.find(p => p.id === id)?.name),
-        image: "https://placehold.co/300x200/fef3c7/92400e?text=" + encodeURIComponent(productName),
-        status: 'published',
-        createdAt: new Date().toISOString()
-      };
-      
-      onPostComplete(productData);
+      setIsPublishing(false);
+      setIsSuccess(true);
+
+      // Reset após 3 segundos
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
     }, 1500);
   };
 
-  const isFormValid = () => {
-    return (
-      productName !== "" && 
-      productDescription !== "" && 
-      productPrice !== "" && 
-      productCategory !== "" && 
-      (!isPromotion || (isPromotion && promotionPrice !== "")) &&
-      selectedPlatforms.length > 0
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
-
   return (
-    <div className="w-full">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="cardapio">Cardápio</TabsTrigger>
-          <TabsTrigger value="promocoes">Promoções</TabsTrigger>
-          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
-        </TabsList>
-        
-        {/* Cardápio */}
-        <TabsContent value="cardapio">
-          {!isComplete ? (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Adicionar Novo Item ao Cardápio</CardTitle>
-                  <CardDescription>
-                    Cadastre um novo produto para exibir em seu cardápio digital
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="productName">Nome do Produto</Label>
-                      <Input
-                        id="productName"
-                        placeholder="Ex: Coxinha de Frango"
-                        value={productName}
-                        onChange={(e) => setProductName(e.target.value)}
-                      />
+    <Card className="w-full">
+      <CardHeader className="bg-amber-50 dark:bg-amber-900/20 border-b">
+        <CardTitle className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 text-amber-500"
+          >
+            <circle cx="12" cy="5" r="3"></circle>
+            <path d="M12 22V8M5 12H2a10 10 0 0 0 20 0h-3"></path>
+          </svg>
+          Cardápio Digital - Lojinha de Salgados
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="catalogo">Cardápio</TabsTrigger>
+            <TabsTrigger value="novidades">Novidades</TabsTrigger>
+            <TabsTrigger value="promocao">Promoção</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="catalogo">
+            {isSuccess ? (
+              <div className="text-center p-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-medium mb-2">Cardápio Publicado!</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Seu cardápio foi atualizado e compartilhado em suas redes sociais.
+                </p>
+                <Button onClick={() => setIsSuccess(false)} className="bg-amber-600 hover:bg-amber-700">
+                  Voltar ao Cardápio
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Produtos em Destaque</h3>
+                  <Button variant="outline" size="sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                    Adicionar Produto
+                  </Button>
+                </div>
+                
+                <div className="space-y-4">
+                  {produtos.map((produto) => (
+                    <div key={produto.id} className="border rounded-md p-4 flex gap-4">
+                      <div className="w-[80px] h-[80px] bg-gray-100 rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        <img src={produto.imagem} alt={produto.nome} className="w-full h-full object-cover" />
+                      </div>
+                      
+                      <div className="flex-grow">
+                        <div className="flex justify-between">
+                          <h4 className="font-medium">{produto.nome}</h4>
+                          <span className="text-amber-600 font-medium">{produto.preco}</span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">{produto.descricao}</p>
+                        
+                        <div className="flex items-center gap-6 mt-2">
+                          <div className="flex items-center space-x-2">
+                            <Label htmlFor={`disponivel-${produto.id}`}>Disponível</Label>
+                            <Switch id={`disponivel-${produto.id}`} checked={produto.disponivel} />
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Label htmlFor={`destaque-${produto.id}`}>Destaque</Label>
+                            <Switch id={`destaque-${produto.id}`} checked={produto.destaque} />
+                          </div>
+                          
+                          <Button variant="ghost" size="sm" className="ml-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="border-t pt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="canais" className="mb-2 block">Compartilhar em</Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="whatsapp" className="rounded" defaultChecked />
+                          <Label htmlFor="whatsapp">Status do WhatsApp</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="instagram" className="rounded" defaultChecked />
+                          <Label htmlFor="instagram">Story do Instagram</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="facebook" className="rounded" defaultChecked />
+                          <Label htmlFor="facebook">Facebook</Label>
+                        </div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="productCategory">Categoria</Label>
-                      <Select value={productCategory} onValueChange={setProductCategory}>
-                        <SelectTrigger id="productCategory">
-                          <SelectValue placeholder="Selecione uma categoria" />
+                    <div>
+                      <Label htmlFor="horario" className="mb-2 block">Horário de Funcionamento</Label>
+                      <Select defaultValue="padrao">
+                        <SelectTrigger id="horario">
+                          <SelectValue placeholder="Selecione o horário" />
                         </SelectTrigger>
                         <SelectContent>
-                          {productCategories.map((category) => (
-                            <SelectItem key={category.value} value={category.value}>
-                              {category.label}
-                            </SelectItem>
-                          ))}
+                          <SelectItem value="padrao">Padrão (09:00-18:00)</SelectItem>
+                          <SelectItem value="estendido">Estendido (09:00-22:00)</SelectItem>
+                          <SelectItem value="feriado">Feriado (10:00-16:00)</SelectItem>
+                          <SelectItem value="personalizado">Personalizado</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="productDescription">Descrição</Label>
-                    <Textarea
-                      id="productDescription"
-                      placeholder="Descreva os ingredientes e características do produto"
-                      value={productDescription}
-                      onChange={(e) => setProductDescription(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="productPrice">Preço (R$)</Label>
-                      <Input
-                        id="productPrice"
-                        placeholder="Ex: 5,00"
-                        value={productPrice}
-                        onChange={(e) => setProductPrice(e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="isPromotion">Produto em Promoção</Label>
-                        <Switch 
-                          id="isPromotion" 
-                          checked={isPromotion}
-                          onCheckedChange={setIsPromotion}
-                        />
-                      </div>
-                      
-                      {isPromotion && (
-                        <Input
-                          id="promotionPrice"
-                          placeholder="Preço promocional (R$)"
-                          value={promotionPrice}
-                          onChange={(e) => setPromotionPrice(e.target.value)}
-                          className="mt-2"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Foto do Produto</Label>
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center cursor-pointer hover:border-pink-400 dark:hover:border-pink-600 transition-colors">
-                      <div className="flex flex-col items-center gap-2">
-                        <Upload className="h-8 w-8 text-gray-400" />
-                        <p className="font-medium">Clique para selecionar ou arraste uma imagem aqui</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Suporta JPG, PNG ou GIF até 5MB
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {isUploading && (
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Enviando imagem...</span>
-                          <span>{uploadProgress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div 
-                            className="bg-pink-600 h-2 rounded-full" 
-                            style={{ width: `${uploadProgress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Disponibilidade</Label>
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        id="isAvailable" 
-                        checked={isAvailable}
-                        onCheckedChange={setIsAvailable}
-                      />
-                      <Label htmlFor="isAvailable">
-                        {isAvailable ? "Produto disponível" : "Produto indisponível"}
-                      </Label>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Plataformas de Divulgação</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {platforms.map((platform) => (
-                        <Badge
-                          key={platform.id}
-                          variant={selectedPlatforms.includes(platform.id) ? "default" : "outline"}
-                          className={`cursor-pointer ${
-                            selectedPlatforms.includes(platform.id) 
-                              ? 'bg-pink-600 hover:bg-pink-700' 
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                          }`}
-                          onClick={() => togglePlatform(platform.id)}
-                        >
-                          <div className="flex items-center gap-1">
-                            <span>{platform.icon}</span>
-                            <span>{platform.name}</span>
-                          </div>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button 
-                    onClick={handleSubmit} 
-                    disabled={!isFormValid() || isSubmitting}
-                    className="bg-pink-600 hover:bg-pink-700"
-                  >
-                    {isSubmitting ? "Salvando..." : "Adicionar ao Cardápio"}
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Itens do Cardápio</CardTitle>
-                  <CardDescription>
-                    Gerencie os produtos disponíveis em seu cardápio digital
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {menuItems.map((item) => (
-                      <Card 
-                        key={item.id} 
-                        className="cursor-pointer hover:border-pink-300 dark:hover:border-pink-700 transition-colors"
-                        onClick={() => handleProductClick(item)}
-                      >
-                        <div className="relative">
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            className="w-full h-32 object-cover rounded-t-lg"
-                          />
-                          {item.isPromotion && (
-                            <Badge className="absolute top-2 right-2 bg-pink-600">
-                              Promoção
-                            </Badge>
-                          )}
-                          {!item.isAvailable && (
-                            <div className="absolute inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center rounded-t-lg">
-                              <Badge variant="outline" className="bg-gray-800 text-white border-gray-600">
-                                Indisponível
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                        <CardContent className="pt-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium line-clamp-1">{item.name}</h4>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
-                                {item.description}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              {item.isPromotion ? (
-                                <div>
-                                  <p className="text-xs line-through text-gray-500">R$ {item.price}</p>
-                                  <p className="font-medium text-pink-600">R$ {item.promotionPrice}</p>
-                                </div>
-                              ) : (
-                                <p className="font-medium">R$ {item.price}</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              {item.category}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-pink-600">Produto Adicionado!</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center">
-                    <Check className="h-8 w-8 text-pink-600" />
-                  </div>
-                  
-                  <p className="text-lg">
-                    <span className="font-medium">{productName}</span> foi adicionado ao seu cardápio com sucesso!
-                  </p>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-left">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{productName}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mt-1">
-                          {productDescription}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        {isPromotion ? (
-                          <div>
-                            <p className="text-xs line-through text-gray-500">R$ {productPrice}</p>
-                            <p className="font-medium text-pink-600">R$ {promotionPrice}</p>
-                          </div>
-                        ) : (
-                          <p className="font-medium">R$ {productPrice}</p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge variant="outline">
-                        {productCategories.find(c => c.value === productCategory)?.label || productCategory}
-                      </Badge>
-                      
-                      {selectedPlatforms.map(id => {
-                        const platform = platforms.find(p => p.id === id);
-                        return platform ? (
-                          <Badge key={platform.id} variant="secondary">
-                            <div className="flex items-center gap-1">
-                              <span>{platform.icon}</span>
-                              <span>{platform.name}</span>
-                            </div>
-                          </Badge>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-500 dark:text-gray-400">
-                    O produto já está disponível para visualização em seu cardápio digital e será exibido nas plataformas selecionadas.
-                  </p>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button onClick={() => window.location.reload()} className="bg-pink-600 hover:bg-pink-700">
-                  Adicionar Outro Produto
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </TabsContent>
-        
-        {/* Promoções */}
-        <TabsContent value="promocoes">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Promoções</CardTitle>
-                  <CardDescription>
-                    Gerencie suas promoções e ofertas especiais
-                  </CardDescription>
-                </div>
-                <Button className="bg-pink-600 hover:bg-pink-700">
-                  <Cake className="h-4 w-4 mr-2" />
-                  Nova Promoção
+                
+                <Button 
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className="w-full bg-amber-600 hover:bg-amber-700"
+                >
+                  {isPublishing ? "Publicando..." : "Publicar Cardápio"}
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Promoções Ativas</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {promotions.filter(promo => promo.status === "active").map((promotion) => (
-                    <Card key={promotion.id}>
-                      <div className="relative">
-                        <img 
-                          src={promotion.image} 
-                          alt={promotion.title}
-                          className="w-full h-32 object-cover rounded-t-lg"
-                        />
-                        <Badge className="absolute top-2 right-2 bg-green-600">
-                          Ativa
-                        </Badge>
-                      </div>
-                      <CardContent className="pt-4">
-                        <h4 className="font-medium">{promotion.title}</h4>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {promotion.description}
-                        </p>
-                        <div className="flex justify-between items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          <span>Início: {formatDate(promotion.startDate)}</span>
-                          <span>Término: {formatDate(promotion.endDate)}</span>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {promotion.platforms.map((platform, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {platform}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Editar</Button>
-                        <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600">Encerrar</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between mt-6">
-                  <h3 className="text-lg font-medium">Promoções Agendadas</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {promotions.filter(promo => promo.status === "scheduled").map((promotion) => (
-                    <Card key={promotion.id}>
-                      <div className="relative">
-                        <img 
-                          src={promotion.image} 
-                          alt={promotion.title}
-                          className="w-full h-32 object-cover rounded-t-lg"
-                        />
-                        <Badge className="absolute top-2 right-2 bg-blue-600">
-                          Agendada
-                        </Badge>
-                      </div>
-                      <CardContent className="pt-4">
-                        <h4 className="font-medium">{promotion.title}</h4>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {promotion.description}
-                        </p>
-                        <div className="flex justify-between items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          <span>Início: {formatDate(promotion.startDate)}</span>
-                          <span>Término: {formatDate(promotion.endDate)}</span>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {promotion.platforms.map((platform, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {platform}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Editar</Button>
-                        <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600">Cancelar</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between mt-6">
-                  <h3 className="text-lg font-medium">Promoções Encerradas</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {promotions.filter(promo => promo.status === "ended").map((promotion) => (
-                    <Card key={promotion.id} className="opacity-75">
-                      <div className="relative">
-                        <img 
-                          src={promotion.image} 
-                          alt={promotion.title}
-                          className="w-full h-32 object-cover rounded-t-lg grayscale"
-                        />
-                        <Badge className="absolute top-2 right-2 bg-gray-600">
-                          Encerrada
-                        </Badge>
-                      </div>
-                      <CardContent className="pt-4">
-                        <h4 className="font-medium">{promotion.title}</h4>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {promotion.description}
-                        </p>
-                        <div className="flex justify-between items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          <span>Início: {formatDate(promotion.startDate)}</span>
-                          <span>Término: {formatDate(promotion.endDate)}</span>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Reativar</Button>
-                        <Button variant="ghost" size="sm">Relatório</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="novidades">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="nome-produto">Nome do Produto</Label>
+                <Input id="nome-produto" placeholder="Ex: Croissant de Chocolate" />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Pedidos */}
-        <TabsContent value="pedidos">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciamento de Pedidos</CardTitle>
-              <CardDescription>
-                Acompanhe e gerencie os pedidos recebidos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Pedidos Pendentes</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  {orders.filter(order => order.status === "pending").map((order) => (
-                    <Card key={order.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-base">Pedido #{order.id}</CardTitle>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Cliente: {order.customer}
-                            </p>
-                          </div>
-                          <Badge className="bg-yellow-600">Pendente</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="space-y-2">
-                          <div className="text-sm">
-                            <p className="font-medium mb-1">Itens:</p>
-                            <ul className="space-y-1">
-                              {order.items.map((item, index) => (
-                                <li key={index} className="flex justify-between">
-                                  <span>{item.quantity}x {item.name}</span>
-                                  <span>R$ {item.price} un.</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800">
-                            <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.date} às {order.time}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.deliveryMethod}
-                              </p>
-                            </div>
-                            <p className="font-medium">Total: R$ {order.total}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600">Recusar</Button>
-                        <Button size="sm" className="bg-pink-600 hover:bg-pink-700">Confirmar</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between mt-6">
-                  <h3 className="text-lg font-medium">Pedidos Confirmados</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  {orders.filter(order => order.status === "confirmed").map((order) => (
-                    <Card key={order.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-base">Pedido #{order.id}</CardTitle>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Cliente: {order.customer}
-                            </p>
-                          </div>
-                          <Badge className="bg-green-600">Confirmado</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="space-y-2">
-                          <div className="text-sm">
-                            <p className="font-medium mb-1">Itens:</p>
-                            <ul className="space-y-1">
-                              {order.items.map((item, index) => (
-                                <li key={index} className="flex justify-between">
-                                  <span>{item.quantity}x {item.name}</span>
-                                  <span>R$ {item.price} un.</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800">
-                            <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.date} às {order.time}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.deliveryMethod}
-                              </p>
-                            </div>
-                            <p className="font-medium">Total: R$ {order.total}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Detalhes</Button>
-                        <Button size="sm" className="bg-pink-600 hover:bg-pink-700">Concluir</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between mt-6">
-                  <h3 className="text-lg font-medium">Pedidos Agendados</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  {orders.filter(order => order.status === "scheduled").map((order) => (
-                    <Card key={order.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-base">Pedido #{order.id}</CardTitle>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Cliente: {order.customer}
-                            </p>
-                          </div>
-                          <Badge className="bg-blue-600">Agendado</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="space-y-2">
-                          <div className="text-sm">
-                            <p className="font-medium mb-1">Itens:</p>
-                            <ul className="space-y-1">
-                              {order.items.map((item, index) => (
-                                <li key={index} className="flex justify-between">
-                                  <span>{item.quantity}x {item.name}</span>
-                                  <span>R$ {item.price} un.</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800">
-                            <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.date} às {order.time}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.deliveryMethod}
-                              </p>
-                            </div>
-                            <p className="font-medium">Total: R$ {order.total}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Detalhes</Button>
-                        <Button variant="outline" size="sm">Enviar Lembrete</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Dialog para visualização de produto */}
-      {selectedProduct && (
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>{selectedProduct.name}</DialogTitle>
-              <DialogDescription>
-                Detalhes do produto
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <img 
-                src={selectedProduct.image} 
-                alt={selectedProduct.name}
-                className="w-full h-48 object-cover rounded-lg"
-              />
               
               <div className="space-y-2">
-                <Label>Descrição</Label>
-                <p className="text-gray-700 dark:text-gray-300">
-                  {selectedProduct.description}
-                </p>
+                <Label htmlFor="descricao-produto">Descrição</Label>
+                <Textarea 
+                  id="descricao-produto" 
+                  placeholder="Descreva os detalhes do produto, ingredientes, etc."
+                  className="min-h-[100px]"
+                />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Categoria</Label>
-                  <div>
-                    <Badge variant="outline">{selectedProduct.category}</Badge>
-                  </div>
+                  <Label htmlFor="preco-produto">Preço</Label>
+                  <Input id="preco-produto" placeholder="R$ 0,00" />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Preço</Label>
-                  <div>
-                    {selectedProduct.isPromotion ? (
-                      <div className="flex items-center gap-2">
-                        <span className="line-through text-gray-500">R$ {selectedProduct.price}</span>
-                        <span className="font-medium text-pink-600">R$ {selectedProduct.promotionPrice}</span>
-                      </div>
-                    ) : (
-                      <span className="font-medium">R$ {selectedProduct.price}</span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <div>
-                    {selectedProduct.isAvailable ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300">
-                        Disponível
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                        Indisponível
-                      </Badge>
-                    )}
-                  </div>
+                  <Label htmlFor="categoria-produto">Categoria</Label>
+                  <Select>
+                    <SelectTrigger id="categoria-produto">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="salgados">Salgados</SelectItem>
+                      <SelectItem value="doces">Doces</SelectItem>
+                      <SelectItem value="bebidas">Bebidas</SelectItem>
+                      <SelectItem value="combos">Combos</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </div>
-            
-            <DialogFooter className="gap-2">
-              <Button variant="outline">Editar</Button>
-              <Button variant="default" className="bg-pink-600 hover:bg-pink-700">
-                {selectedProduct.isAvailable ? "Marcar como Indisponível" : "Marcar como Disponível"}
+              
+              <div className="space-y-2">
+                <Label htmlFor="imagem-produto">Foto do Produto</Label>
+                <div className="flex items-center gap-4">
+                  <div className="w-[100px] h-[100px] bg-gray-100 border border-dashed border-gray-300 rounded-md flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+                  </div>
+                  <Button variant="outline">Escolher Imagem</Button>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch id="destaque-novidade" />
+                <Label htmlFor="destaque-novidade">Destacar como novidade</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch id="anunciar-novidade" />
+                <Label htmlFor="anunciar-novidade">Anunciar em todas as redes sociais</Label>
+              </div>
+              
+              <Button className="w-full bg-amber-600 hover:bg-amber-700">
+                Adicionar ao Cardápio
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="promocao">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="promo-titulo">Título da Promoção</Label>
+                <Input id="promo-titulo" placeholder="Ex: Oferta Relâmpago de Quarta" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="promo-descricao">Descrição da Promoção</Label>
+                <Textarea 
+                  id="promo-descricao" 
+                  placeholder="Detalhe sua promoção, prazos, condições, etc."
+                  className="min-h-[100px]"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Produtos em Promoção</Label>
+                <div className="border rounded-md p-4 max-h-[200px] overflow-y-auto">
+                  {produtos.map((produto) => (
+                    <div key={produto.id} className="flex items-center space-x-2 py-2 border-b last:border-0">
+                      <input 
+                        type="checkbox" 
+                        id={`promo-${produto.id}`} 
+                        className="rounded"
+                      />
+                      <label htmlFor={`promo-${produto.id}`} className="flex-grow cursor-pointer flex justify-between">
+                        <span>{produto.nome}</span>
+                        <span className="text-sm text-gray-500">{produto.preco}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="promo-tipo">Tipo de Promoção</Label>
+                  <Select defaultValue="desconto">
+                    <SelectTrigger id="promo-tipo">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="desconto">Desconto em %</SelectItem>
+                      <SelectItem value="valor">Valor Fixo</SelectItem>
+                      <SelectItem value="combo">Combo</SelectItem>
+                      <SelectItem value="brinde">Brinde</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="promo-valor">Valor do Desconto</Label>
+                  <Input id="promo-valor" placeholder="Ex: 15%" />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="promo-inicio">Data de Início</Label>
+                  <Input id="promo-inicio" type="date" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="promo-fim">Data de Término</Label>
+                  <Input id="promo-fim" type="date" />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Canais de Divulgação</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" className="justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4 text-green-500"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path></svg>
+                    Status do WhatsApp
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4 text-pink-500"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                    Story do Instagram
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4 text-blue-500"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    Facebook
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4 text-red-500"><path d="M12 19c-2.3 0-6.4-.2-8.1-.6-.7-.2-1.2-.7-1.4-1.4-.3-1.1-.5-3.4-.5-5s.2-3.9.5-5c.2-.7.7-1.2 1.4-1.4C5.6 5.2 9.7 5 12 5s6.4.2 8.1.6c.7.2 1.2.7 1.4 1.4.3 1.1.5 3.4.5 5s-.2 3.9-.5 5c-.2.7-.7 1.2-1.4 1.4-1.7.4-5.8.6-8.1.6 0 0 0 0 0 0z"></path><polygon points="10 15 15 12 10 9"></polygon></svg>
+                    YouTube
+                  </Button>
+                </div>
+              </div>
+              
+              <Button className="w-full bg-amber-600 hover:bg-amber-700">
+                Criar e Agendar Promoção
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

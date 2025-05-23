@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Route } from "react-router-dom";
 
@@ -12,10 +13,12 @@ import ContentCreatorLandingPage from "@/pages/landing/ContentCreatorLandingPage
 import EducationLandingPage from "@/pages/landing/EducationLandingPage";
 import HRLandingPage from "@/pages/landing/HRLandingPage";
 import AccountingLandingPage from "@/pages/landing/AccountingLandingPage";
+import RealEstateLandingPage from "@/pages/landing/RealEstateLandingPage";
 import PricingPage from "@/pages/plans/PricingPage";
 
 // Demo Page
 import DemoPage from "@/pages/demo/DemoPage";
+import RealEstateDemoPage from "@/pages/demo/RealEstateDemoPage";
 
 const LandingRoutes: React.FC = () => {
   return (
@@ -30,11 +33,13 @@ const LandingRoutes: React.FC = () => {
       <Route path="/landing/education" element={<EducationLandingPage />} />
       <Route path="/landing/hr" element={<HRLandingPage />} />
       <Route path="/landing/accounting" element={<AccountingLandingPage />} />
+      <Route path="/landing/realestate" element={<RealEstateLandingPage />} />
       <Route path="/landing/pricing" element={<PricingPage />} />
       
       {/* Demo Routes */}
       <Route path="/demo" element={<DemoPage />} />
       <Route path="/demo/:segment" element={<DemoPage />} />
+      <Route path="/demo/realestate" element={<RealEstateDemoPage />} />
     </>
   );
 };

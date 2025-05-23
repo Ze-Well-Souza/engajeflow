@@ -1,480 +1,413 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { 
-  Loader2, 
-  Sparkles, 
-  MessageSquare, 
-  BarChart, 
-  Send, 
-  Image,
-  Type,
-  Hash,
-  CalendarCheck,
-  Copy
-} from "lucide-react";
-import { useAiContentGenerator } from "@/hooks/useAiContentGenerator";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-
-interface GeneratedContentResult {
-  title: string;
-  content: string;
-  hashtags: string[];
-}
-
-interface SentimentAnalysisResult {
-  text: string;
-  sentiment: "positivo" | "neutro" | "negativo";
-  confidence: number;
-  keywords: string[];
-  summary: string;
-}
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Wand2, Lightbulb, Calendar, Instagram, Facebook, Youtube } from "lucide-react";
 
 const ContentAssistantPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>("gerador");
-  const [contentType, setContentType] = useState<string>("post");
-  const [topic, setTopic] = useState<string>("");
-  const [tone, setTone] = useState<string>("profissional");
-  const [keywords, setKeywords] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generatedContent, setGeneratedContent] = useState<GeneratedContentResult | null>(null);
+  const [activeTab, setActiveTab] = useState("gerador");
+  const [platform, setPlatform] = useState("");
+  const [contentType, setContentType] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
+  const [suggestedTimes, setSuggestedTimes] = useState<string[]>([]);
 
-  const [messageText, setMessageText] = useState<string>("");
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [analysisResult, setAnalysisResult] = useState<SentimentAnalysisResult | null>(null);
-
-  const { generateContent, isGenerating: isAiGenerating, progress } = useAiContentGenerator();
-
-  const handleGenerateContent = async () => {
-    if (!topic) {
-      toast.warning("Por favor, informe um tópico para gerar conteúdo");
-      return;
+  const platforms = [
+    { value: "instagram", label: "Instagram", icon: <Instagram className="h-4 w-4" /> },
+    { value: "facebook", label: "Facebook", icon: <Facebook className="h-4 w-4" /> },
+    { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" /> },
+    { value: "whatsapp", label: "WhatsApp", icon: 
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
+      </svg>
+    },
+    { value: "tiktok", label: "TikTok", icon: 
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <path d="M12 2c0 2-1 5.5-1 8.5v5.5c0 .5-1.5 1-2 1s-1.5-.5-2-1c-.5-.5-1-1.5-1-2s.5-1.5 1-2 1.5-1 2-1V9.5C9 8 8.5 6 8 5S6 2 6 2s7 0 7.5 2C14 4.5 14 7 14 9c0 2.5-.5 4-.5 6 0 .5 1.5 1 2 1s1.5-.5 2-1 1-1.5 1-2-1-1.5-1-1-1.5-.5-2-.5V8c0-1 1-5.5 1-6 0-.5-2-1.5-4.5-1.5S8 2 8 2"></path>
+      </svg>
     }
+  ];
 
+  const contentTypes = [
+    { value: "post", label: "Postagem" },
+    { value: "story", label: "Story" },
+    { value: "reel", label: "Reel/Vídeo curto" },
+    { value: "video", label: "Vídeo longo" },
+    { value: "promo", label: "Promoção" }
+  ];
+
+  const handleGenerate = () => {
     setIsGenerating(true);
-    setGeneratedContent(null);
-
-    try {
-      // Usando o hook useAiContentGenerator para gerar conteúdo
-      const content = await generateContent(
-        topic,
-        keywords,
-        undefined,
-        ["caption", "hashtags", "description"]
+    
+    // Simulação de geração de conteúdo com IA
+    setTimeout(() => {
+      const platformName = platforms.find(p => p.value === platform)?.label || platform;
+      const typeName = contentTypes.find(t => t.value === contentType)?.label || contentType;
+      
+      setGeneratedContent(
+        `✨ ${typeName} para ${platformName} ✨\n\n` +
+        `📱 ${getRandomTitle()}\n\n` +
+        `${getRandomContent(platformName, typeName)}\n\n` +
+        `${getRandomHashtags()}`
       );
       
-      if (content) {
-        // Converta o formato retornado pelo hook para o formato usado neste componente
-        const formattedContent: GeneratedContentResult = {
-          title: `${topic.charAt(0).toUpperCase() + topic.slice(1)}: O que você precisa saber`,
-          content: content.caption || content.description || "",
-          hashtags: content.hashtags || []
-        };
-        
-        setGeneratedContent(formattedContent);
-        toast.success("Conteúdo gerado com sucesso!");
-      }
-    } catch (error) {
-      console.error("Erro ao gerar conteúdo:", error);
-      toast.error("Falha ao gerar conteúdo. Tente novamente.");
-    } finally {
+      // Gerar horários sugeridos
+      setSuggestedTimes([
+        "Quarta-feira às 18:30 - Engajamento alto esperado",
+        "Quinta-feira às 12:15 - Horário de almoço com bom alcance",
+        "Domingo às 10:00 - Melhor momento do fim de semana"
+      ]);
+      
       setIsGenerating(false);
-    }
+    }, 1500);
   };
 
-  const handleAnalyzeSentiment = async () => {
-    if (!messageText) {
-      toast.warning("Por favor, insira um texto para analisar");
-      return;
-    }
-
-    setIsAnalyzing(true);
-    setAnalysisResult(null);
-
-    try {
-      // Simulando chamada à API de análise de sentimento
-      // Em um ambiente real, isso seria uma chamada a uma edge function do Supabase
-      setTimeout(() => {
-        // Análise de exemplo simulando resposta da IA
-        const sentiment = Math.random() > 0.6 ? "positivo" : Math.random() > 0.3 ? "neutro" : "negativo";
-        
-        const mockAnalysisResult: SentimentAnalysisResult = {
-          text: messageText,
-          sentiment: sentiment as "positivo" | "neutro" | "negativo",
-          confidence: parseFloat((Math.random() * 0.3 + 0.7).toFixed(2)), // 0.7 a 1.0
-          keywords: messageText
-            .split(" ")
-            .filter(word => word.length > 4)
-            .slice(0, 5),
-          summary: `A mensagem demonstra um tom predominantemente ${sentiment}, com foco em aspectos ${sentiment === "positivo" ? "favoráveis" : sentiment === "neutro" ? "informativos" : "críticos"} sobre o tema tratado.`
-        };
-
-        setAnalysisResult(mockAnalysisResult);
-        setIsAnalyzing(false);
-        toast.success("Análise de sentimento concluída!");
-      }, 1500);
-    } catch (error) {
-      console.error("Erro na análise de sentimento:", error);
-      toast.error("Falha ao analisar o sentimento. Tente novamente.");
-      setIsAnalyzing(false);
-    }
+  // Funções auxiliares para gerar conteúdo simulado
+  const getRandomTitle = () => {
+    const titles = [
+      "Descubra o que ninguém te conta sobre...",
+      "O segredo para transformar seu negócio",
+      "7 dicas que vão revolucionar sua rotina",
+      "Novo lançamento que está conquistando todos",
+      "Como aumentar seus resultados em 30 dias"
+    ];
+    return titles[Math.floor(Math.random() * titles.length)];
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Conteúdo copiado para a área de transferência");
+  const getRandomContent = (platform: string, type: string) => {
+    const contents = [
+      `Você sabia que 78% das pessoas decidem comprar baseado em conteúdos autênticos? É por isso que estamos sempre buscando trazer o melhor para você! 🔍\n\nHoje queremos compartilhar nossa jornada e mostrar como nossos produtos podem transformar sua experiência. Descubra agora mesmo! ⬇️`,
+      `🚀 NOVIDADE IMPERDÍVEL! 🚀\n\nEstamos super empolgados para anunciar nossa nova coleção que chega para revolucionar o mercado. Produtos exclusivos, desenvolvidos pensando em você e nas suas necessidades.\n\nFicha técnica:\n✅ Qualidade premium\n✅ Garantia estendida\n✅ Entrega expressa`,
+      `Quer saber como aumentar sua produtividade em 3x?\n\nNosso método exclusivo tem ajudado centenas de profissionais a alcançarem resultados extraordinários sem precisar trabalhar mais horas.\n\nComentários de clientes:\n"Mudou minha vida profissional!" - Maria S.\n"Resultados desde a primeira semana!" - João P.`,
+      `📢 ATENÇÃO! Promoção relâmpago! 📢\n\nApenas hoje, todos os produtos da linha premium com 40% OFF!\n\nCorra porque é por tempo MUITO limitado e o estoque está acabando rapidamente! Clique no link na bio para aproveitar.`
+    ];
+    return contents[Math.floor(Math.random() * contents.length)];
+  };
+
+  const getRandomHashtags = () => {
+    const tags = [
+      "#Marketing #Crescimento #Sucesso #Empreendedorismo",
+      "#Inovação #Tendência #Qualidade #Exclusividade",
+      "#Dicas #Transformação #Resultados #MudançaDeVida",
+      "#Promoção #Oferta #Imperdível #Economia"
+    ];
+    return tags[Math.floor(Math.random() * tags.length)];
   };
 
   return (
-    <div className="container mx-auto max-w-6xl py-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Assistente de IA</h1>
-        <p className="text-muted-foreground mt-1">
-          Use inteligência artificial para gerar conteúdo e analisar sentimento de mensagens
-        </p>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row items-start gap-8">
+        <div className="w-full md:w-2/3">
+          <div className="flex items-center gap-2 mb-4">
+            <Wand2 className="h-6 w-6 text-purple-500" />
+            <h1 className="text-3xl font-bold">Assistente de Conteúdo</h1>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 mb-8">
+            Utilize nossa inteligência artificial para criar conteúdos impactantes para suas redes sociais
+          </p>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="gerador" className="flex items-center gap-2">
-            <Sparkles size={16} />
-            Gerador de Conteúdo
-          </TabsTrigger>
-          <TabsTrigger value="sentimento" className="flex items-center gap-2">
-            <MessageSquare size={16} />
-            Análise de Sentimento
-          </TabsTrigger>
-        </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="gerador">Gerador de Conteúdo</TabsTrigger>
+              <TabsTrigger value="agenda">Agenda Inteligente</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="gerador" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-1 space-y-4">
+            <TabsContent value="gerador" className="mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Configurações</CardTitle>
+                  <CardTitle>Gerar Novo Conteúdo</CardTitle>
                   <CardDescription>
-                    Configure as opções para geração de conteúdo
+                    Escolha a plataforma, tipo de conteúdo e forneça detalhes para o nosso assistente criar postagens otimizadas
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Tipo de Conteúdo</label>
-                    <Select value={contentType} onValueChange={setContentType}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="post">Post para Redes Sociais</SelectItem>
-                        <SelectItem value="email">Email Marketing</SelectItem>
-                        <SelectItem value="blog">Artigo de Blog</SelectItem>
-                        <SelectItem value="anuncio">Texto para Anúncio</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="platform">Plataforma</Label>
+                      <Select value={platform} onValueChange={setPlatform}>
+                        <SelectTrigger id="platform">
+                          <SelectValue placeholder="Selecione a plataforma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {platforms.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              <div className="flex items-center gap-2">
+                                {item.icon}
+                                <span>{item.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="type">Tipo de Conteúdo</Label>
+                      <Select value={contentType} onValueChange={setContentType}>
+                        <SelectTrigger id="type">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {contentTypes.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Tom de Voz</label>
-                    <Select value={tone} onValueChange={setTone}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="profissional">Profissional</SelectItem>
-                        <SelectItem value="casual">Casual</SelectItem>
-                        <SelectItem value="entusiasmado">Entusiasmado</SelectItem>
-                        <SelectItem value="informativo">Informativo</SelectItem>
-                        <SelectItem value="humoristico">Humorístico</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Tópico Principal</label>
-                    <Input 
-                      value={topic} 
-                      onChange={(e) => setTopic(e.target.value)} 
-                      placeholder="Ex: marketing digital, vendas online"
+                    <Label htmlFor="prompt">Detalhes do Conteúdo</Label>
+                    <Textarea
+                      id="prompt"
+                      placeholder="Ex: Quero um post sobre os benefícios do nosso novo produto, destacando a qualidade e durabilidade"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      className="min-h-[100px]"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Palavras-chave (opcionais)</label>
-                    <Input 
-                      value={keywords} 
-                      onChange={(e) => setKeywords(e.target.value)} 
-                      placeholder="Separe palavras-chave com vírgulas"
-                    />
+                  <div className="pt-2">
+                    <Button
+                      onClick={handleGenerate}
+                      disabled={!platform || !contentType || !prompt || isGenerating}
+                      className="bg-purple-600 hover:bg-purple-700 w-full"
+                    >
+                      {isGenerating ? "Gerando..." : "Gerar Conteúdo"}
+                    </Button>
                   </div>
 
-                  <Button 
-                    onClick={handleGenerateContent} 
-                    className="w-full" 
-                    disabled={isGenerating || !topic || isAiGenerating}
-                  >
-                    {isGenerating || isAiGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Gerando conteúdo... {progress > 0 ? `${progress}%` : ''}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Gerar Conteúdo
-                      </>
-                    )}
-                  </Button>
+                  {generatedContent && (
+                    <div className="mt-6 space-y-4">
+                      <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-md border border-purple-200 dark:border-purple-800">
+                        <h3 className="font-medium mb-2 text-purple-700 dark:text-purple-300">Conteúdo Gerado:</h3>
+                        <div className="whitespace-pre-wrap">{generatedContent}</div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                          Copiar
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M12 5v14"></path><path d="m5 12 7 7 7-7"></path></svg>
+                          Baixar
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+                          Compartilhar
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Calendar className="mr-1 h-4 w-4" />
+                          Agendar
+                        </Button>
+                      </div>
+                      
+                      {suggestedTimes.length > 0 && (
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                          <h3 className="font-medium mb-2 flex items-center text-blue-700 dark:text-blue-300">
+                            <Lightbulb className="h-4 w-4 mr-2" />
+                            Melhores horários para publicação:
+                          </h3>
+                          <ul className="space-y-2">
+                            {suggestedTimes.map((time, index) => (
+                              <li key={index} className="flex items-center">
+                                <button className="bg-blue-100 dark:bg-blue-800/50 hover:bg-blue-200 dark:hover:bg-blue-700/50 text-left rounded p-2 flex-grow flex items-center">
+                                  <Calendar className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
+                                  {time}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+            </TabsContent>
 
+            <TabsContent value="agenda" className="mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Dicas</CardTitle>
+                  <CardTitle>Agenda Inteligente</CardTitle>
+                  <CardDescription>
+                    Configure sua estratégia de publicação e deixe nosso sistema sugerir os melhores horários
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4 text-sm">
-                    <div className="flex gap-2">
-                      <div className="bg-primary/10 text-primary p-2 rounded-md">
-                        <Type size={16} />
-                      </div>
-                      <div>
-                        <p className="font-medium">Seja específico</p>
-                        <p className="text-muted-foreground">Quanto mais detalhes você fornecer, melhor será o conteúdo gerado.</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-3">Configurações de Publicação</h3>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="frequency">Frequência de Postagem</Label>
+                          <Select defaultValue="medium">
+                            <SelectTrigger id="frequency">
+                              <SelectValue placeholder="Selecione a frequência" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Baixa (1-2 vezes por semana)</SelectItem>
+                              <SelectItem value="medium">Média (3-4 vezes por semana)</SelectItem>
+                              <SelectItem value="high">Alta (5-7 vezes por semana)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="audience">Perfil da Audiência</Label>
+                          <Select defaultValue="general">
+                            <SelectTrigger id="audience">
+                              <SelectValue placeholder="Selecione o tipo de audiência" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="general">Geral</SelectItem>
+                              <SelectItem value="professional">Profissional</SelectItem>
+                              <SelectItem value="youth">Jovens (18-25)</SelectItem>
+                              <SelectItem value="adult">Adultos (26-45)</SelectItem>
+                              <SelectItem value="senior">Seniores (46+)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="content-mix">Mix de Conteúdo</Label>
+                          <Select defaultValue="balanced">
+                            <SelectTrigger id="content-mix">
+                              <SelectValue placeholder="Selecione o mix de conteúdo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="educational">Educativo</SelectItem>
+                              <SelectItem value="promotional">Promocional</SelectItem>
+                              <SelectItem value="engagement">Engajamento</SelectItem>
+                              <SelectItem value="balanced">Balanceado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <Button className="mt-2 bg-purple-600 hover:bg-purple-700">
+                          Gerar Calendário Sugerido
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <div className="bg-primary/10 text-primary p-2 rounded-md">
-                        <Hash size={16} />
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium mb-3">Métricas de Performance</h3>
+                      
+                      <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Para receber sugestões personalizadas baseadas no seu histórico de performance,
+                          conecte suas contas de redes sociais no painel de integrações.
+                        </div>
+                        
+                        <Button variant="outline" className="mt-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-4 w-4"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
+                          Conectar Redes Sociais
+                        </Button>
                       </div>
-                      <div>
-                        <p className="font-medium">Use palavras-chave</p>
-                        <p className="text-muted-foreground">Adicione palavras-chave para guiar a geração de conteúdo.</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="bg-primary/10 text-primary p-2 rounded-md">
-                        <CalendarCheck size={16} />
-                      </div>
-                      <div>
-                        <p className="font-medium">Planeje seu conteúdo</p>
-                        <p className="text-muted-foreground">Use o conteúdo gerado como base e faça adaptações conforme necessário.</p>
+                      
+                      <div className="p-4 rounded-md bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                        <h4 className="font-medium mb-2 text-purple-700 dark:text-purple-300">Dicas de Otimização</h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600 mt-0.5"><path d="m12 15 2 2 4-4"></path><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                            <span>Utilize hashtags relevantes para aumentar o alcance</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600 mt-0.5"><path d="m12 15 2 2 4-4"></path><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                            <span>Posts com imagens têm 150% mais engajamento</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600 mt-0.5"><path d="m12 15 2 2 4-4"></path><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                            <span>Vídeos curtos aumentam a taxa de conversão em até 80%</span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-            <div className="md:col-span-2">
-              {generatedContent ? (
-                <Card className="border-primary/20">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle>{generatedContent.title}</CardTitle>
-                      <Button variant="ghost" size="icon" onClick={() => copyToClipboard(`${generatedContent.title}\n\n${generatedContent.content}\n\n${generatedContent.hashtags.join(' ')}`)}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <CardDescription>
-                      Conteúdo gerado para {contentType === "post" ? "post em redes sociais" : 
-                        contentType === "email" ? "email marketing" : 
-                        contentType === "blog" ? "artigo de blog" : 
-                        "texto de anúncio"} com tom {tone}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                          <Type className="h-4 w-4" /> Conteúdo
-                        </h3>
-                        <div className="bg-muted p-3 rounded-md">
-                          <p className="whitespace-pre-wrap">{generatedContent.content}</p>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                          <Hash className="h-4 w-4" /> Hashtags
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {generatedContent.hashtags.map((tag, index) => (
-                            <Badge key={index} variant="secondary">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+        {/* Sidebar */}
+        <div className="w-full md:w-1/3 space-y-6 mt-8 md:mt-0">
+          {/* Templates */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Templates Populares</CardTitle>
+              <CardDescription>
+                Modelos prontos para usar em suas campanhas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button variant="outline" className="w-full justify-start">
+                <Instagram className="h-4 w-4 mr-2" />
+                Carrossel de Produtos
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Facebook className="h-4 w-4 mr-2" />
+                Promoção Exclusiva
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-2">
+                  <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
+                </svg>
+                Lista de Benefícios
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Youtube className="h-4 w-4 mr-2" />
+                Tutorial em Vídeo
+              </Button>
+            </CardContent>
+          </Card>
 
-                      <Separator />
-                      
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setGeneratedContent(null)}>
-                          Novo Conteúdo
-                        </Button>
-                        <Button>
-                          Agendar Publicação
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center border rounded-lg border-dashed min-h-[500px] py-10">
-                  <div className="text-center space-y-4">
-                    <div className="bg-primary/10 p-4 rounded-full inline-flex">
-                      <Sparkles className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-medium">Gerador de Conteúdo com IA</h3>
-                    <p className="text-muted-foreground max-w-sm">
-                      Configure as opções e clique em "Gerar Conteúdo" para criar textos, legendas e hashtags para suas redes sociais.
-                    </p>
-                  </div>
+          {/* Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Suas Estatísticas</CardTitle>
+              <CardDescription>
+                Desempenho dos últimos 30 dias
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Conteúdos Gerados</span>
+                  <span className="font-medium">28</span>
                 </div>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="sentimento" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Análise de Sentimento</CardTitle>
-                <CardDescription>
-                  Entenda o sentimento e a intenção das mensagens dos seus clientes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Mensagem do Cliente</label>
-                  <Textarea 
-                    value={messageText} 
-                    onChange={(e) => setMessageText(e.target.value)} 
-                    placeholder="Cole aqui a mensagem do cliente para análise"
-                    rows={8}
-                    className="resize-none"
-                  />
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Posts Publicados</span>
+                  <span className="font-medium">15</span>
                 </div>
-
-                <div className="flex items-center">
-                  <Button 
-                    onClick={handleAnalyzeSentiment} 
-                    className="ml-auto" 
-                    disabled={isAnalyzing || !messageText}
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analisando...
-                      </>
-                    ) : (
-                      <>
-                        <BarChart className="mr-2 h-4 w-4" />
-                        Analisar Sentimento
-                      </>
-                    )}
-                  </Button>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Engajamento Médio</span>
+                  <span className="font-medium text-green-500">+12.5%</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <div>
-              {analysisResult ? (
-                <Card className={`border-opacity-20 ${
-                  analysisResult.sentiment === 'positivo' ? 'border-green-600 bg-green-50/5' : 
-                  analysisResult.sentiment === 'neutro' ? 'border-blue-600 bg-blue-50/5' : 
-                  'border-red-600 bg-red-50/5'
-                }`}>
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle className={`${
-                        analysisResult.sentiment === 'positivo' ? 'text-green-600' : 
-                        analysisResult.sentiment === 'neutro' ? 'text-blue-600' : 
-                        'text-red-600'
-                      }`}>
-                        Sentimento {analysisResult.sentiment.charAt(0).toUpperCase() + analysisResult.sentiment.slice(1)}
-                      </CardTitle>
-                      <div className="text-sm font-medium">
-                        Confiança: {(analysisResult.confidence * 100).toFixed(0)}%
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-1">Resumo da Análise:</h4>
-                      <p>{analysisResult.summary}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">Palavras-chave Detectadas:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {analysisResult.keywords.map((keyword, index) => (
-                          <Badge key={index} variant="secondary">
-                            {keyword}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium mb-1">Sugestão de Resposta:</h4>
-                      <div className="bg-background border rounded-md p-3">
-                        {analysisResult.sentiment === 'positivo' ? (
-                          <p>Obrigado pelo seu feedback positivo! Ficamos felizes em saber que sua experiência foi satisfatória. Estamos sempre trabalhando para melhorar ainda mais nossos serviços.</p>
-                        ) : analysisResult.sentiment === 'neutro' ? (
-                          <p>Agradecemos seu contato. Entendemos sua solicitação e estamos à disposição para mais esclarecimentos ou informações adicionais que possam ser necessárias.</p>
-                        ) : (
-                          <p>Lamentamos por sua experiência. Gostaríamos de entender melhor a situação para resolver seu problema da melhor forma possível. Poderia nos fornecer mais detalhes para que possamos ajudá-lo(a) adequadamente?</p>
-                        )}
-                      </div>
-                      
-                      <div className="flex justify-end mt-2">
-                        <Button variant="outline" size="sm" onClick={() => {
-                          const responseText = analysisResult.sentiment === 'positivo' ? 
-                            "Obrigado pelo seu feedback positivo! Ficamos felizes em saber que sua experiência foi satisfatória. Estamos sempre trabalhando para melhorar ainda mais nossos serviços." :
-                            analysisResult.sentiment === 'neutro' ?
-                            "Agradecemos seu contato. Entendemos sua solicitação e estamos à disposição para mais esclarecimentos ou informações adicionais que possam ser necessárias." :
-                            "Lamentamos por sua experiência. Gostaríamos de entender melhor a situação para resolver seu problema da melhor forma possível. Poderia nos fornecer mais detalhes para que possamos ajudá-lo(a) adequadamente?";
-                          
-                          copyToClipboard(responseText);
-                        }}>
-                          <Send className="h-3.5 w-3.5 mr-1" />
-                          Usar Resposta
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center border rounded-lg border-dashed min-h-[400px] py-10">
-                  <div className="text-center space-y-4">
-                    <div className="bg-primary/10 p-4 rounded-full inline-flex">
-                      <MessageSquare className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-medium">Análise de Sentimento</h3>
-                    <p className="text-muted-foreground max-w-sm">
-                      Cole uma mensagem do cliente e clique em "Analisar Sentimento" para entender o tom da comunicação e obter sugestões de resposta.
-                    </p>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Sugestões Utilizadas</span>
+                  <span className="font-medium">86%</span>
                 </div>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+              </div>
+              <div className="mt-4">
+                <Button variant="link" className="p-0 h-auto text-sm">
+                  Ver relatório completo →
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
