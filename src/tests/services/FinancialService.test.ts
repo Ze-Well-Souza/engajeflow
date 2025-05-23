@@ -23,7 +23,7 @@ vi.mock('../../services/techcare/NavigationService', () => ({
 describe('FinancialService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // Configurando o mock corretamente sem o segundo parâmetro
+    // Configurando o mock corretamente
     vi.mocked(AuthService.isAuthenticated).mockReturnValue(true);
   });
 
