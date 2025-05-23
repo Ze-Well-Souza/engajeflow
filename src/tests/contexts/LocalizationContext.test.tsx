@@ -17,7 +17,7 @@ const TestComponent = () => {
       <select 
         data-testid="locale-selector"
         value={locale}
-        onChange={(e) => setLocale(e.target.value as any)}
+        onChange={(e) => setLocale(e.target.value as 'pt' | 'en')}
       >
         {availableLocales.map(loc => (
           <option key={loc} value={loc}>{loc}</option>
@@ -29,7 +29,6 @@ const TestComponent = () => {
 
 describe('LocalizationContext', () => {
   beforeEach(() => {
-    // Limpar o localStorage antes de cada teste
     localStorage.clear();
   });
   
@@ -40,7 +39,6 @@ describe('LocalizationContext', () => {
       </LocalizationProvider>
     );
     
-    // Verificar se o idioma padrão é "pt"
     expect(screen.getByTestId('current-locale')).toHaveTextContent('pt');
   });
   
@@ -65,11 +63,8 @@ describe('LocalizationContext', () => {
     
     const localeSelector = screen.getByTestId('locale-selector');
     
-    // Mudar para inglês
     fireEvent.change(localeSelector, { target: { value: 'en' } });
     expect(screen.getByTestId('current-locale')).toHaveTextContent('en');
-    
-    // Verificar se o localStorage foi atualizado
     expect(localStorage.getItem('locale')).toBe('en');
   });
   
@@ -81,12 +76,9 @@ describe('LocalizationContext', () => {
     );
     
     const formattedCurrency = screen.getByTestId('formatted-currency').textContent;
-    
-    // No idioma padrão (pt-BR), a moeda deve ser formatada como R$ x.xxx,xx
     expect(formattedCurrency).toContain('R$');
     expect(formattedCurrency).toContain('1.234,56');
     
-    // Mudar para inglês e verificar o formato USD
     const localeSelector = screen.getByTestId('locale-selector');
     fireEvent.change(localeSelector, { target: { value: 'en' } });
     

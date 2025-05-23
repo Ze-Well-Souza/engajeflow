@@ -1,20 +1,11 @@
 
-/**
- * Integração do logger estruturado com o ConsultantAIService
- * Substitui todos os console.log por logs estruturados com níveis e contexto
- */
-
 import AIService from './AIService';
 import NavigationService from './NavigationService';
 import ScrapingService from './ScrapingService';
 import logger from '../../utils/logger';
 
-// Usar o logger padrão
 const consultantLogger = logger;
 
-/**
- * Serviço para geração de sugestões e análises para consultores usando IA
- */
 class ConsultantAIServiceImpl {
   private static instance: ConsultantAIServiceImpl;
   private apiKey: string = '';
@@ -25,15 +16,11 @@ class ConsultantAIServiceImpl {
   
   private constructor() {
     consultantLogger.info('ConsultantAIService inicializado');
-    // Inicializar serviços dependentes
     this.navigationService = NavigationService;
     this.scrapingService = ScrapingService;
     this.aiService = AIService;
   }
   
-  /**
-   * Obtém a instância singleton do serviço
-   */
   public static getInstance(): ConsultantAIServiceImpl {
     if (!ConsultantAIServiceImpl.instance) {
       ConsultantAIServiceImpl.instance = new ConsultantAIServiceImpl();
@@ -41,34 +28,22 @@ class ConsultantAIServiceImpl {
     return ConsultantAIServiceImpl.instance;
   }
   
-  /**
-   * Define a chave de API para o serviço de IA
-   * @param apiKey Chave de API
-   */
   public setApiKey(apiKey: string): void {
     this.apiKey = apiKey;
     consultantLogger.info('API Key configurada');
   }
   
-  /**
-   * Define o modelo de IA a ser utilizado
-   * @param model Nome do modelo
-   */
   public setModel(model: string): void {
     this.model = model;
     consultantLogger.info('Modelo configurado:', { model });
   }
   
-  /**
-   * Gera consultoria financeira baseada em dados de negócio
-   */
   public async generateFinancialConsulting(
     businessData: any,
     goal: string,
     options: any = {}
   ) {
     try {
-      // Verificar se API Key está configurada
       if (!this.apiKey) {
         return {
           success: false,
@@ -78,7 +53,6 @@ class ConsultantAIServiceImpl {
       
       consultantLogger.info('Gerando consultoria financeira', { goal });
       
-      // Simulação de chamada à API de IA
       await new Promise(resolve => setTimeout(resolve, 500));
       
       return {
@@ -106,16 +80,12 @@ class ConsultantAIServiceImpl {
     }
   }
   
-  /**
-   * Gera sugestões para consultores com base nos dados do cliente
-   */
   public async generateConsultantSuggestions(clientId: string): Promise<any> {
     const operation = logger.startOperation('generateConsultantSuggestions');
     
     try {
       consultantLogger.info('Gerando sugestões para consultor', { clientId });
       
-      // Simular extração de dados
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const suggestions = {
@@ -137,16 +107,12 @@ class ConsultantAIServiceImpl {
     }
   }
 
-  /**
-   * Gera relatório personalizado para o cliente
-   */
   public async generateClientReport(clientId: string): Promise<any> {
     const operation = logger.startOperation('generateClientReport');
     
     try {
       consultantLogger.info('Gerando relatório para cliente', { clientId });
       
-      // Simular geração de relatório
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const reportContent = {
@@ -168,16 +134,12 @@ class ConsultantAIServiceImpl {
     }
   }
 
-  /**
-   * Analisa tendências de múltiplos clientes
-   */
   public async analyzeClientTrends(): Promise<any> {
     const operation = logger.startOperation('analyzeClientTrends');
     
     try {
       consultantLogger.info('Analisando tendências de clientes');
       
-      // Simular análise
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const trendsAnalysis = {
@@ -196,9 +158,6 @@ class ConsultantAIServiceImpl {
     }
   }
 
-  /**
-   * Gera sugestões de resposta para mensagens de clientes
-   */
   public async generateResponseSuggestions(clientId: string, message: string): Promise<string[]> {
     const operation = logger.startOperation('generateResponseSuggestions');
     
@@ -208,7 +167,6 @@ class ConsultantAIServiceImpl {
         messageLength: message.length
       });
       
-      // Simular geração de sugestões
       await new Promise(resolve => setTimeout(resolve, 800));
       
       const suggestions = [
@@ -232,5 +190,4 @@ class ConsultantAIServiceImpl {
   }
 }
 
-// Exportar instância singleton
 export default ConsultantAIServiceImpl.getInstance();
