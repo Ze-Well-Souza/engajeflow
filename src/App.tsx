@@ -24,7 +24,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/landing" replace />} />
         
-        {/* Renderizamos os componentes de rota passando um children vazio como argumento */}
+        {/* Renderizamos os componentes de rota */}
         {MainRoutes({})}
         {AdminRoutes({})}
         {SystemRoutes({})}

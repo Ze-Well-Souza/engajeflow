@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from './useUserProfile';
 
@@ -12,7 +13,13 @@ export interface ScheduledPost {
   client_id: string;
   client_name?: string;
   media_url?: string;
+  media_title?: string;
   error_message?: string | null;
+}
+
+export interface PostFilters {
+  platform: string;
+  status: string;
 }
 
 export interface ScheduledPostsResult {
@@ -22,7 +29,7 @@ export interface ScheduledPostsResult {
   totalCount: number;
 }
 
-export const useScheduledPosts = (limit = 5, page = 1) => {
+export const useScheduledPosts = (clientId: string, limit: number = 5, page: number = 1) => {
   const [result, setResult] = useState<ScheduledPostsResult>({
     posts: [],
     isLoading: true,
@@ -32,7 +39,8 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
   
   const { profile } = useUserProfile();
   
-  const fetchScheduledPosts = async () => {
+  // Função para carregar contas
+  const fetchScheduledPosts = useCallback(async () => {
     if (!profile) return;
     
     try {
@@ -91,7 +99,8 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
             const client = clients.find(c => c.id === post.client_id);
             return {
               ...post,
-              client_name: client?.name || 'Cliente desconhecido'
+              client_name: client?.name || 'Cliente desconhecido',
+              media_title: `Mídia ${post.id.substring(0, 5)}` // Adicionando um título de mídia padrão
             };
           });
           
@@ -103,7 +112,10 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
           });
         } else {
           setResult({
-            posts: posts,
+            posts: posts.map(post => ({
+              ...post,
+              media_title: `Mídia ${post.id.substring(0, 5)}`
+            })),
             isLoading: false,
             error: null,
             totalCount: count || 0
@@ -126,19 +138,37 @@ export const useScheduledPosts = (limit = 5, page = 1) => {
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       }));
     }
-  };
+  }, [profile, limit, page]);
   
   useEffect(() => {
     fetchScheduledPosts();
-  }, [profile, limit, page]);
+  }, [fetchScheduledPosts]);
   
-  const refreshPosts = () => {
-    fetchScheduledPosts();
+  const deleteScheduledPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('scheduled_posts')
+        .delete()
+        .eq('id', postId);
+      
+      if (error) throw new Error(error.message);
+      
+      // Atualizar lista após exclusão
+      fetchScheduledPosts();
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao excluir publicação:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erro desconhecido' 
+      };
+    }
   };
   
   return {
     ...result,
-    refreshPosts,
+    refreshPosts: fetchScheduledPosts,
+    deleteScheduledPost,
     page,
     limit,
     totalPages: Math.ceil(result.totalCount / limit)

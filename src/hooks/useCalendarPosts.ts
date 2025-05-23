@@ -10,7 +10,7 @@ export const useCalendarPosts = (posts: ScheduledPost[]) => {
   const selectedDatePosts = useMemo(() => {
     if (!selectedDate) return [];
     return posts.filter(post => {
-      const postDate = new Date(post.scheduledFor);
+      const postDate = new Date(post.scheduled_for);
       return isSameDay(postDate, selectedDate);
     });
   }, [posts, selectedDate]);
@@ -18,7 +18,7 @@ export const useCalendarPosts = (posts: ScheduledPost[]) => {
   // Obter todas as datas que possuem postagens
   const datesWithPosts = useMemo(() => {
     return posts.map(post => {
-      const date = new Date(post.scheduledFor);
+      const date = new Date(post.scheduled_for);
       return startOfDay(date);
     });
   }, [posts]);
@@ -26,7 +26,7 @@ export const useCalendarPosts = (posts: ScheduledPost[]) => {
   // Função para obter postagens por data específica
   const getPostsByDate = (date: Date) => {
     return posts.filter(post => {
-      const postDate = new Date(post.scheduledFor);
+      const postDate = new Date(post.scheduled_for);
       return isSameDay(postDate, date);
     });
   };

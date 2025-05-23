@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useScheduledPosts, PostFilters } from "@/hooks/useScheduledPosts";
+import useScheduledPosts, { PostFilters } from "@/hooks/useScheduledPosts";
 import { useState } from "react";
 import AgendamentosLista from "./AgendamentosLista";
 
@@ -22,7 +22,7 @@ const AgendamentosListaWrapper: React.FC<AgendamentosListaWrapperProps> = ({
   const { 
     posts, 
     isLoading, 
-    refetch, 
+    refreshPosts, 
     deleteScheduledPost 
   } = useScheduledPosts(DEMO_CLIENT_ID);
 
