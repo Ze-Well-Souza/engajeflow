@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { 
@@ -93,6 +94,13 @@ const InsightsWidget: React.FC<InsightsWidgetProps> = ({
         return "Prioridade";
     }
   };
+
+  const formatMetricValue = (value: unknown): string => {
+    if (typeof value === 'number') {
+      return value % 1 === 0 ? value.toLocaleString() : value.toFixed(2);
+    }
+    return String(value);
+  };
   
   return (
     <Card className="w-full">
@@ -159,11 +167,7 @@ const InsightsWidget: React.FC<InsightsWidgetProps> = ({
                           </Tooltip>
                         </TooltipProvider>
                         <p className="text-sm font-medium">
-                          {typeof value === 'number' && value % 1 === 0 
-                            ? value.toLocaleString() 
-                            : typeof value === 'number'
-                              ? value.toFixed(2)
-                              : value}
+                          {formatMetricValue(value)}
                         </p>
                       </div>
                     ))}
