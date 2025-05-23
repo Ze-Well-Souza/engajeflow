@@ -23,7 +23,7 @@ vi.mock('../../services/techcare/NavigationService', () => ({
 describe('FinancialService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // Configurando o mock para corresponder à assinatura real
+    // Configurando o mock para corresponder à assinatura real que não recebe argumentos
     vi.mocked(AuthService.isAuthenticated).mockReturnValue(true);
   });
 
