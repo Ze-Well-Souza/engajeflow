@@ -9,6 +9,14 @@ export interface Professional {
   created_at: string;
 }
 
+export interface Specialty {
+  id: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  created_at: string;
+}
+
 export interface SalonService {
   id: string;
   name: string;
@@ -30,4 +38,16 @@ export interface Appointment {
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
   created_at: string;
+}
+
+export interface SocialAccount {
+  id: string;
+  platform: string;
+  username: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: string;
+  isActive: boolean;
+  profile_picture_url?: string;
+  profilePictureUrl?: string;
 }

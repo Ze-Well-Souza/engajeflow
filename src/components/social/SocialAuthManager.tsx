@@ -1,317 +1,257 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { Facebook, Instagram, Twitter, Youtube, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
-import { SocialAccount, SocialAuthService } from "@/services/social/SocialAuthService";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { SocialAccount } from '@/types/salon';
+import { toast } from 'sonner';
 
 interface SocialAuthManagerProps {
-  clientId?: string;
-  onAccountConnected?: (account: SocialAccount) => void;
+  onAccountChange?: (accounts: SocialAccount[]) => void;
 }
 
-const SocialAuthManager: React.FC<SocialAuthManagerProps> = ({ clientId, onAccountConnected }) => {
-  const [connectedAccounts, setConnectedAccounts] = useState<SocialAccount[]>([]);
-  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({});
-  const [activeTab, setActiveTab] = useState("connected");
-  
+const SocialAuthManager: React.FC<SocialAuthManagerProps> = ({ onAccountChange }) => {
+  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
+
   useEffect(() => {
-    // Simulação de contas conectadas
-    setConnectedAccounts([
-      {
-        id: "1",
-        platform: "instagram",
-        username: "meu_negocio",
-        displayName: "Meu Negócio",
-        profilePictureUrl: "https://randomuser.me/api/portraits/men/32.jpg",
-        isConnected: true,
-        lastSyncTime: new Date(Date.now() - 48 * 60 * 60 * 1000), // 48 horas atrás
-      },
-      {
-        id: "2",
-        platform: "facebook",
-        username: "meu_negocio_oficial",
-        displayName: "Meu Negócio Oficial",
-        profilePictureUrl: "https://randomuser.me/api/portraits/men/32.jpg",
-        isConnected: true,
-        lastSyncTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
-      }
-    ]);
-  }, [clientId]);
-  
-  const handleConnect = async (platform: string) => {
-    setIsLoading(prev => ({ ...prev, [platform]: true }));
-    
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    setIsLoading(true);
     try {
-      // Simulação de conexão OAuth
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newAccount: SocialAccount = {
-        id: Math.random().toString(),
-        platform,
-        username: `minha_conta_${platform}`,
-        displayName: platform === "instagram" ? "Minha Conta Instagram" : 
-                    platform === "facebook" ? "Minha Página no Facebook" : 
-                    platform === "twitter" ? "Minha Conta no Twitter" : 
-                    "Meu Canal no YouTube",
-        profilePictureUrl: "https://randomuser.me/api/portraits/women/44.jpg",
-        isConnected: true,
-        lastSyncTime: new Date(),
-      };
-      
-      setConnectedAccounts(prev => [...prev, newAccount]);
-      
-      if (onAccountConnected) {
-        onAccountConnected(newAccount);
-      }
-      
-      toast.success(`Conta ${platform} conectada com sucesso!`);
-      setActiveTab("connected");
-    } catch (error) {
-      console.error("Erro ao conectar conta:", error);
-      toast.error(`Erro ao conectar conta ${platform}. Tente novamente.`);
-    } finally {
-      setIsLoading(prev => ({ ...prev, [platform]: false }));
-    }
-  };
-  
-  const handleDisconnect = async (accountId: string) => {
-    const account = connectedAccounts.find(acc => acc.id === accountId);
-    if (!account) return;
-    
-    setIsLoading(prev => ({ ...prev, [accountId]: true }));
-    
-    try {
-      // Simulação de desconexão
+      // Simular carregamento de contas conectadas
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setConnectedAccounts(prev => prev.filter(acc => acc.id !== accountId));
-      toast.success(`Conta ${account.platform} desconectada com sucesso.`);
-    } catch (error) {
-      console.error("Erro ao desconectar conta:", error);
-      toast.error(`Erro ao desconectar conta. Tente novamente.`);
-    } finally {
-      setIsLoading(prev => ({ ...prev, [accountId]: false }));
-    }
-  };
-  
-  const handleRefreshToken = async (accountId: string) => {
-    const account = connectedAccounts.find(acc => acc.id === accountId);
-    if (!account) return;
-    
-    setIsLoading(prev => ({ ...prev, [accountId + "_refresh"]: true }));
-    
-    try {
-      // Simulação de renovação de token
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const updatedAccounts = connectedAccounts.map(acc => {
-        if (acc.id === accountId) {
-          return { ...acc, lastSyncTime: new Date() };
+      const mockAccounts: SocialAccount[] = [
+        {
+          id: '1',
+          platform: 'instagram',
+          username: '@salaoexemplo',
+          accessToken: 'mock_token_1',
+          isActive: true,
+          profile_picture_url: 'https://via.placeholder.com/40'
+        },
+        {
+          id: '2',
+          platform: 'facebook',
+          username: 'Salão Exemplo',
+          accessToken: 'mock_token_2',
+          isActive: true,
+          profile_picture_url: 'https://via.placeholder.com/40'
+        },
+        {
+          id: '3',
+          platform: 'youtube',
+          username: 'Salão Exemplo TV',
+          accessToken: 'mock_token_3',
+          isActive: false,
+          profile_picture_url: 'https://via.placeholder.com/40'
         }
-        return acc;
-      });
+      ];
       
-      setConnectedAccounts(updatedAccounts);
-      toast.success(`Token da conta ${account.platform} renovado com sucesso.`);
+      setAccounts(mockAccounts);
+      onAccountChange?.(mockAccounts);
     } catch (error) {
-      console.error("Erro ao renovar token:", error);
-      toast.error(`Erro ao renovar token. Tente novamente.`);
+      console.error('Erro ao carregar contas:', error);
+      toast.error('Erro ao carregar contas conectadas');
     } finally {
-      setIsLoading(prev => ({ ...prev, [accountId + "_refresh"]: false }));
+      setIsLoading(false);
     }
   };
-  
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'instagram':
-        return <Instagram className="h-5 w-5 text-pink-500" />;
-      case 'facebook':
-        return <Facebook className="h-5 w-5 text-blue-600" />;
-      case 'twitter':
-        return <Twitter className="h-5 w-5 text-blue-400" />;
-      case 'youtube':
-        return <Youtube className="h-5 w-5 text-red-600" />;
-      default:
-        return null;
-    }
-  };
-  
-  const getConnectionStatus = (account: SocialAccount) => {
-    if (!account.isConnected) {
-      return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-          Desconectado
-        </Badge>
-      );
-    }
-    
-    // Verificar se o token está próximo de expirar (simulação)
-    const hoursSinceLastSync = (new Date().getTime() - account.lastSyncTime!.getTime()) / (1000 * 60 * 60);
-    
-    if (hoursSinceLastSync > 24) {
-      return (
-        <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-          Reconectar
-        </Badge>
-      );
-    }
-    
-    return (
-      <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-        Conectado
-      </Badge>
-    );
-  };
-  
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gerenciamento de Contas Sociais</CardTitle>
-        <CardDescription>
-          Conecte suas redes sociais para gerenciamento centralizado
-        </CardDescription>
-      </CardHeader>
+
+  const connectAccount = async (platform: string) => {
+    setConnectingPlatform(platform);
+    try {
+      // Simular processo de conexão
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="connected">
-              Contas Conectadas
-              {connectedAccounts.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {connectedAccounts.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="connect">Conectar Nova Conta</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="connected" className="space-y-4">
-            {connectedAccounts.length === 0 ? (
-              <div className="text-center py-6">
-                <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <h3 className="text-lg font-medium">Nenhuma conta conectada</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Conecte suas redes sociais para começar a gerenciar seu conteúdo
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => setActiveTab("connect")}
-                >
-                  Conectar Conta
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {connectedAccounts.map((account) => (
-                  <div
-                    key={account.id}
-                    className="flex items-center justify-between p-4 border rounded-md"
+      const newAccount: SocialAccount = {
+        id: Math.random().toString(36).substr(2, 9),
+        platform,
+        username: `@${platform}_account`,
+        accessToken: `mock_token_${Date.now()}`,
+        isActive: true,
+        profile_picture_url: 'https://via.placeholder.com/40'
+      };
+      
+      setAccounts(prev => [...prev, newAccount]);
+      toast.success(`Conta ${platform} conectada com sucesso!`);
+      onAccountChange?.([...accounts, newAccount]);
+    } catch (error) {
+      console.error(`Erro ao conectar ${platform}:`, error);
+      toast.error(`Erro ao conectar conta ${platform}`);
+    } finally {
+      setConnectingPlatform(null);
+    }
+  };
+
+  const disconnectAccount = async (accountId: string) => {
+    try {
+      // Simular processo de desconexão
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const updatedAccounts = accounts.filter(account => account.id !== accountId);
+      setAccounts(updatedAccounts);
+      toast.success('Conta desconectada com sucesso!');
+      onAccountChange?.(updatedAccounts);
+    } catch (error) {
+      console.error('Erro ao desconectar conta:', error);
+      toast.error('Erro ao desconectar conta');
+    }
+  };
+
+  const toggleAccountStatus = async (accountId: string) => {
+    try {
+      const updatedAccounts = accounts.map(account => 
+        account.id === accountId 
+          ? { ...account, isActive: !account.isActive }
+          : account
+      );
+      setAccounts(updatedAccounts);
+      toast.success('Status da conta atualizado!');
+      onAccountChange?.(updatedAccounts);
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status da conta');
+    }
+  };
+
+  const getPlatformColor = (platform: string) => {
+    const colors: Record<string, string> = {
+      instagram: 'bg-pink-500',
+      facebook: 'bg-blue-600',
+      youtube: 'bg-red-500',
+      twitter: 'bg-blue-400',
+      linkedin: 'bg-blue-700'
+    };
+    return colors[platform] || 'bg-gray-500';
+  };
+
+  const availablePlatforms = [
+    { id: 'instagram', name: 'Instagram', icon: '📷' },
+    { id: 'facebook', name: 'Facebook', icon: '📘' },
+    { id: 'youtube', name: 'YouTube', icon: '📺' },
+    { id: 'twitter', name: 'Twitter', icon: '🐦' },
+    { id: 'linkedin', name: 'LinkedIn', icon: '💼' }
+  ];
+
+  const unconnectedPlatforms = availablePlatforms.filter(
+    platform => !accounts.some(account => account.platform === platform.id)
+  );
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Contas Conectadas
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={loadAccounts}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </CardTitle>
+          <CardDescription>
+            Gerencie suas contas de redes sociais conectadas
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2">Carregando contas...</span>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {accounts.length === 0 ? (
+                <Alert>
+                  <AlertDescription>
+                    Nenhuma conta conectada. Conecte suas redes sociais para começar a publicar.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                accounts.map((account) => (
+                  <div 
+                    key={account.id} 
+                    className="flex items-center justify-between p-4 border rounded-lg"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {account.profilePictureUrl ? (
-                          <img
-                            src={account.profilePictureUrl}
-                            alt={account.displayName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          getPlatformIcon(account.platform)
-                        )}
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-full ${getPlatformColor(account.platform)} flex items-center justify-center text-white font-bold`}>
+                        {account.platform.charAt(0).toUpperCase()}
                       </div>
-                      
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{account.displayName}</h3>
-                          {getPlatformIcon(account.platform)}
-                        </div>
-                        <p className="text-sm text-gray-500">@{account.username}</p>
+                        <h3 className="font-medium capitalize">{account.platform}</h3>
+                        <p className="text-sm text-gray-600">{account.username}</p>
                       </div>
+                      <Badge variant={account.isActive ? "default" : "secondary"}>
+                        {account.isActive ? 'Ativa' : 'Inativa'}
+                      </Badge>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {getConnectionStatus(account)}
-                      
+                    <div className="flex space-x-2">
                       <Button
-                        size="sm"
                         variant="outline"
-                        className="gap-1"
-                        onClick={() => handleRefreshToken(account.id)}
-                        disabled={isLoading[account.id + "_refresh"]}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        {isLoading[account.id + "_refresh"] ? "Renovando..." : "Renovar"}
-                      </Button>
-                      
-                      <Button
                         size="sm"
-                        variant="destructive"
-                        onClick={() => handleDisconnect(account.id)}
-                        disabled={isLoading[account.id]}
+                        onClick={() => toggleAccountStatus(account.id)}
                       >
-                        {isLoading[account.id] ? "Processando..." : "Desconectar"}
+                        {account.isActive ? 'Desativar' : 'Ativar'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => disconnectAccount(account.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="connect" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {['instagram', 'facebook', 'twitter', 'youtube'].map((platform) => {
-                const isConnected = connectedAccounts.some(acc => acc.platform === platform);
-                
-                return (
-                  <Card key={platform} className={`overflow-hidden ${isConnected ? 'border-green-500/50' : ''}`}>
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <div className="flex items-center gap-3">
-                          {getPlatformIcon(platform)}
-                          <h3 className="font-medium capitalize">{platform}</h3>
-                        </div>
-                        
-                        {isConnected && (
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                            <CheckCircle className="h-3 w-3 mr-1" /> Conectado
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-gray-500 mb-4">
-                        {!isConnected
-                          ? `Conecte sua conta ${platform} para gerenciar publicações e análises.`
-                          : `Sua conta ${platform} já está conectada e pronta para uso.`}
-                      </p>
-                      
-                      <Button
-                        className="w-full"
-                        variant={isConnected ? "outline" : "default"}
-                        disabled={isLoading[platform] || isConnected}
-                        onClick={() => handleConnect(platform)}
-                      >
-                        {isLoading[platform]
-                          ? "Conectando..."
-                          : isConnected
-                          ? "Já Conectado"
-                          : `Conectar ${platform}`}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                ))
+              )}
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+
+      {unconnectedPlatforms.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Conectar Nova Conta</CardTitle>
+            <CardDescription>
+              Adicione mais redes sociais para expandir seu alcance
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {unconnectedPlatforms.map((platform) => (
+                <Button
+                  key={platform.id}
+                  variant="outline"
+                  className="h-16 flex flex-col items-center justify-center space-y-2"
+                  onClick={() => connectAccount(platform.id)}
+                  disabled={connectingPlatform === platform.id}
+                >
+                  {connectingPlatform === platform.id ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <>
+                      <span className="text-2xl">{platform.icon}</span>
+                      <span className="text-sm">{platform.name}</span>
+                    </>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

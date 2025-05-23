@@ -1,162 +1,144 @@
 
 import React from 'react';
-import { ScheduledPost } from '@/hooks/useScheduledPosts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Eye, Edit, Trash2 } from 'lucide-react';
+import { useScheduledPosts, ScheduledPost } from '@/hooks/useScheduledPosts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Pencil, Trash2, Eye } from 'lucide-react';
 
 interface ScheduledPostsTableProps {
-  posts: ScheduledPost[];
-  isLoading: boolean;
-  onDelete?: (postId: string) => void;
-  onEdit?: (post: ScheduledPost) => void;
-  onView?: (post: ScheduledPost) => void;
+  clientId?: string;
+  limit?: number;
 }
 
 const ScheduledPostsTable: React.FC<ScheduledPostsTableProps> = ({ 
-  posts, 
-  isLoading,
-  onDelete,
-  onEdit,
-  onView
+  clientId = '', 
+  limit = 5 
 }) => {
-  const [dialogPost, setDialogPost] = React.useState<ScheduledPost | null>(null);
-  
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/50">Pendente</Badge>;
-      case 'processing':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/50">Processando</Badge>;
-      case 'posted':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/50">Publicado</Badge>;
+  const { posts, isLoading, deleteScheduledPost } = useScheduledPosts(clientId, limit, 1);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800';
+      case 'published':
+        return 'bg-green-100 text-green-800';
       case 'failed':
-        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/50">Falha</Badge>;
+        return 'bg-red-100 text-red-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return 'bg-blue-100 text-blue-800';
     }
   };
-  
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "dd MMM yyyy 'às' HH:mm", { locale: ptBR });
-  };
-  
-  const handleDelete = (postId: string) => {
-    if (onDelete) {
-      onDelete(postId);
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'instagram':
+        return '📷';
+      case 'facebook':
+        return '📘';
+      case 'youtube':
+        return '📺';
+      case 'twitter':
+        return '🐦';
+      default:
+        return '🌐';
     }
   };
-  
+
+  const handleDelete = async (postId: string) => {
+    const result = await deleteScheduledPost(postId);
+    if (!result.success) {
+      console.error('Erro ao excluir post:', result.error);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full"></div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Publicações Agendadas</CardTitle>
+          <CardDescription>Suas próximas publicações programadas</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p>Carregando publicações...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
-  
-  if (posts.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Nenhuma publicação agendada encontrada.</p>
-      </div>
-    );
-  }
-  
+
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Plataforma</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Data Agendada</TableHead>
-            <TableHead>Mídia</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {posts.map((post) => (
-            <TableRow key={post.id}>
-              <TableCell className="capitalize">{post.platform}</TableCell>
-              <TableCell>{getStatusBadge(post.status)}</TableCell>
-              <TableCell>{formatDateTime(post.scheduled_for)}</TableCell>
-              <TableCell>{post.media_title || "Sem título"}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  {onView && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => onView(post)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onEdit && post.status === 'pending' && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => onEdit(post)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onDelete && post.status !== 'processing' && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleDelete(post.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+    <Card>
+      <CardHeader>
+        <CardTitle>Publicações Agendadas</CardTitle>
+        <CardDescription>Suas próximas publicações programadas</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {posts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Nenhuma publicação agendada</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post: ScheduledPost) => (
+              <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center space-x-4">
+                  <div className="text-2xl">
+                    {getPlatformIcon(post.platform)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h4 className="font-medium text-sm">
+                        {post.media_title || `Publicação ${post.id.substring(0, 8)}`}
+                      </h4>
+                      <Badge className={getStatusColor(post.status)}>
+                        {post.status}
+                      </Badge>
+                    </div>
+                    <p className="text-gray-600 text-sm line-clamp-1">
+                      {post.caption || "Sem legenda"}
+                    </p>
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                      <span>
+                        📅 {format(new Date(post.scheduled_for), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </span>
+                      <span className="capitalize">
+                        📱 {post.platform}
+                      </span>
+                      {post.client_name && (
+                        <span>
+                          👤 {post.client_name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      
-      <Dialog open={!!dialogPost} onOpenChange={(open) => !open && setDialogPost(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Detalhes da Publicação</DialogTitle>
-          </DialogHeader>
-          {dialogPost && (
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium">Plataforma</h4>
-                <p>{dialogPost.platform}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium">Legenda</h4>
-                <p>{dialogPost.caption || "Sem legenda"}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium">Data Agendada</h4>
-                <p>{formatDateTime(dialogPost.scheduled_for)}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium">Status</h4>
-                <div>{getStatusBadge(dialogPost.status)}</div>
-              </div>
-              {dialogPost.error_message && (
-                <div>
-                  <h4 className="text-sm font-medium text-red-500">Erro</h4>
-                  <p className="text-red-500">{dialogPost.error_message}</p>
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDelete(post.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

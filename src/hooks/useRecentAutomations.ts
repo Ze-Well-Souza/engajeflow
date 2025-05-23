@@ -11,6 +11,8 @@ export interface RecentAutomation {
   last_run?: string;
   next_run?: string;
   success_rate?: number;
+  task_type?: string;
+  client_name?: string;
 }
 
 export interface UseRecentAutomationsResult {
@@ -52,7 +54,9 @@ export const useRecentAutomations = (limit: number = 10, page: number = 1): UseR
           created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
           last_run: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
           next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          success_rate: 95
+          success_rate: 95,
+          task_type: 'communication',
+          client_name: 'Salão Exemplo'
         },
         {
           id: '2',
@@ -60,7 +64,9 @@ export const useRecentAutomations = (limit: number = 10, page: number = 1): UseR
           status: 'processing',
           created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
           last_run: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-          success_rate: 88
+          success_rate: 88,
+          task_type: 'scheduling',
+          client_name: 'Clínica ABC'
         },
         {
           id: '3',
@@ -68,7 +74,9 @@ export const useRecentAutomations = (limit: number = 10, page: number = 1): UseR
           status: 'pending',
           created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
           next_run: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          success_rate: 92
+          success_rate: 92,
+          task_type: 'reporting',
+          client_name: 'Empresa XYZ'
         },
         {
           id: '4',
@@ -76,7 +84,9 @@ export const useRecentAutomations = (limit: number = 10, page: number = 1): UseR
           status: 'failed',
           created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
           last_run: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          success_rate: 45
+          success_rate: 45,
+          task_type: 'maintenance',
+          client_name: 'Sistema Interno'
         },
         {
           id: '5',
@@ -85,7 +95,9 @@ export const useRecentAutomations = (limit: number = 10, page: number = 1): UseR
           created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
           last_run: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
           next_run: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-          success_rate: 98
+          success_rate: 98,
+          task_type: 'social',
+          client_name: 'Marketing Digital'
         }
       ];
       
