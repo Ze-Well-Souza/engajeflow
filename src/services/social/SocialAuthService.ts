@@ -1,111 +1,74 @@
 
-// Implementação do serviço de autenticação social
+/**
+ * Serviço de autenticação para redes sociais
+ */
 
 export interface SocialAccount {
   id: string;
   platform: string;
   username: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: string;
+  isActive: boolean;
+  profile_picture_url?: string;
   displayName: string;
   isConnected: boolean;
-  tokenExpiry?: string;
 }
 
-class SocialAuthServiceClass {
-  // Método para obter contas por plataforma
-  public getAccountsByPlatform(platform?: string): SocialAccount[] {
-    // Simular contas de redes sociais para demonstração
-    const mockAccounts: SocialAccount[] = [
+class SocialAuthService {
+  async connectAccount(platform: string): Promise<SocialAccount> {
+    // Simulação de conexão de conta
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      platform,
+      username: `usuario_${platform}`,
+      accessToken: 'token_simulado',
+      isActive: true,
+      displayName: `Usuário ${platform}`,
+      isConnected: true
+    };
+  }
+
+  async disconnectAccount(accountId: string): Promise<boolean> {
+    // Simulação de desconexão
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return true;
+  }
+
+  async getConnectedAccounts(): Promise<SocialAccount[]> {
+    // Simulação de contas conectadas
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    return [
       {
         id: '1',
         platform: 'instagram',
-        username: 'instagram_user',
-        displayName: 'Instagram User',
-        isConnected: true,
-        tokenExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias no futuro
+        username: 'minha_conta_insta',
+        accessToken: 'token1',
+        isActive: true,
+        displayName: 'Minha Conta Instagram',
+        isConnected: true
       },
       {
         id: '2',
         platform: 'facebook',
-        username: 'facebook_user',
-        displayName: 'Facebook Page',
-        isConnected: true,
-        tokenExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias no futuro
-      },
-      {
-        id: '3',
-        platform: 'twitter',
-        username: 'twitter_user',
-        displayName: 'Twitter Account',
-        isConnected: true,
-        tokenExpiry: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 dia atrás (expirado)
+        username: 'minha_pagina_fb',
+        accessToken: 'token2',
+        isActive: true,
+        displayName: 'Minha Página Facebook',
+        isConnected: true
       }
     ];
-    
-    // Filtrar por plataforma se especificado
-    if (platform) {
-      return mockAccounts.filter(account => account.platform === platform);
-    }
-    
-    return mockAccounts;
   }
 
-  // Método para obter URL de autorização
-  public getAuthorizationUrl(platform: string): string {
-    // Simulação de URLs de autorização
-    const baseUrl = 'https://api.example.com/oauth';
-    const clientId = 'mock_client_id';
-    const redirectUri = encodeURIComponent('https://app.example.com/callback');
-    
-    const urls: Record<string, string> = {
-      instagram: `${baseUrl}/instagram?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=user_profile,user_media`,
-      facebook: `${baseUrl}/facebook?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=pages_show_list,pages_read_engagement`,
-      twitter: `${baseUrl}/twitter?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=tweet.read,tweet.write`,
-      linkedin: `${baseUrl}/linkedin?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=r_liteprofile,r_emailaddress,w_member_social`,
-      tiktok: `${baseUrl}/tiktok?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=user.info.basic,video.upload,video.list`
-    };
-    
-    return urls[platform] || `${baseUrl}/unknown?client_id=${clientId}`;
-  }
-
-  // Método para processar callback de autorização
-  public async handleAuthCallback(platform: string, code: string): Promise<SocialAccount> {
-    // Simulação de processamento de callback OAuth
-    console.log(`Processando callback para ${platform} com código: ${code}`);
-    
-    // Em ambiente real, aqui faríamos uma chamada para obter os tokens de acesso
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay de API
-    
-    // Retornar conta mock
-    return {
-      id: `${platform}_${Date.now()}`,
-      platform,
-      username: `${platform}_user_${Date.now().toString().substring(8)}`,
-      displayName: `${platform.charAt(0).toUpperCase() + platform.slice(1)} User`,
-      isConnected: true,
-      tokenExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias
-    };
-  }
-
-  // Método para desconectar conta
-  public async disconnectAccount(accountId: string): Promise<boolean> {
-    console.log(`Desconectando conta ${accountId}`);
-    
-    // Em ambiente real, aqui revogaríamos os tokens
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simular delay de API
-    
-    return true;
-  }
-
-  // Método para renovar token
-  public async refreshToken(accountId: string): Promise<boolean> {
-    console.log(`Renovando token para conta ${accountId}`);
-    
-    // Em ambiente real, aqui renovaríamos o token usando o refresh token
-    await new Promise(resolve => setTimeout(resolve, 800)); // Simular delay de API
-    
-    return true;
+  async refreshToken(accountId: string): Promise<string> {
+    // Simulação de renovação de token
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return 'novo_token_' + Math.random().toString(36).substr(2, 9);
   }
 }
 
-// Exportar instância do serviço
-export const SocialAuthService = new SocialAuthServiceClass();
+export default new SocialAuthService();

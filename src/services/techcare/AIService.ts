@@ -1,7 +1,9 @@
 
 /**
- * Serviço de IA para TechCare Connect
+ * Serviço de IA para TechCare Connect - Atualizado com Gemini
  */
+
+import GeminiService from '../ai/GeminiService';
 
 export interface AIResponse {
   success: boolean;
@@ -46,15 +48,25 @@ export interface AIInsight {
 class AIService {
   private apiKey: string = '';
   private isConfigured: boolean = false;
+  private useGemini: boolean = true;
 
-  configure(config: { apiKey: string }): void {
+  configure(config: { apiKey: string; useGemini?: boolean }): void {
     this.apiKey = config.apiKey;
     this.isConfigured = true;
+    this.useGemini = config.useGemini !== false;
+    
+    if (this.useGemini) {
+      GeminiService.configure({ apiKey: config.apiKey });
+    }
   }
 
   async generateContent(prompt: string, type: string): Promise<AIResponse> {
     try {
-      // Simular resposta da IA
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.generateContent(prompt);
+      }
+      
+      // Fallback para simulação
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       return {
@@ -75,6 +87,10 @@ class AIService {
 
   async analyzeText(text: string): Promise<AIResponse> {
     try {
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.analyzeSentiment(text);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       return {
@@ -95,6 +111,10 @@ class AIService {
 
   async analyzeSentiment(text: string): Promise<AIResponse> {
     try {
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.analyzeSentiment(text);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const result: SentimentAnalysisResult = {
@@ -118,6 +138,10 @@ class AIService {
 
   async classifyText(text: string): Promise<AIResponse> {
     try {
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.classifyText(text);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const result: TextClassificationResult = {
@@ -140,6 +164,10 @@ class AIService {
 
   async summarizeText(text: string, maxLength?: number): Promise<AIResponse> {
     try {
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.summarizeText(text, maxLength);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const result: TextSummaryResult = {
@@ -167,6 +195,10 @@ class AIService {
 
   async generateResponse(prompt: string, options?: any): Promise<AIResponse> {
     try {
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.generateResponse(prompt, options?.context);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1200));
       
       const result: AIGeneratedResponse = {
@@ -193,6 +225,10 @@ class AIService {
 
   async generateInsights(data: any): Promise<AIResponse> {
     try {
+      if (this.useGemini && this.isConfigured) {
+        return await GeminiService.generateInsights(data);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const insights: AIInsight[] = [
