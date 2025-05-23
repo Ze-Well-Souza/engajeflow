@@ -19,4 +19,14 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Adicionar configuração de teste para Vitest
+  test: {
+    globals: true, // Para usar APIs globais como describe, it, expect
+    environment: 'jsdom', // Definir ambiente de teste para simular DOM
+    setupFiles: './src/tests/setup.ts', // Arquivo de setup para mocks globais (se necessário)
+    coverage: {
+        provider: 'v8' // ou 'istanbul'
+    }
+  },
 }));
+
