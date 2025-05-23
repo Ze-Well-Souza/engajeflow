@@ -3,26 +3,27 @@ import SocialMediaConnector, {
   PostContent, 
   PostResult, 
   SocialAccount 
-} from './SocialMediaConnector';
+} from './SocialMediaConnector";
 
 /**
  * InstagramConnector - Implementação específica para integração com Instagram Graph API
- * 
- * Este conector permite publicar conteúdo em contas de negócio do Instagram,
- * gerenciar mídias e obter métricas de engajamento.
  */
 export class InstagramConnector extends SocialMediaConnector {
-  private apiVersion = 'v17.0'; // Versão atual da API do Instagram/Facebook
-  private baseUrl = 'https://graph.facebook.com';
+  private apiVersion = 'v17.0';
+  private baseUrl = 'https://graph.facebook.com'; // Instagram API uses Facebook Graph
   private instagramBusinessAccountId: string | null = null;
-  private facebookPageId: string | null = null;
-  
+  private facebookPageId: string | null = null; // Needed to find the IG Business Account
+
   constructor(authConfig: AuthConfig, instagramBusinessAccountId?: string, facebookPageId?: string) {
     super(authConfig);
     this.instagramBusinessAccountId = instagramBusinessAccountId || null;
     this.facebookPageId = facebookPageId || null;
   }
-  
+
+  protected getPlatformName(): string {
+    return 'Instagram';
+  }
+
   /**
    * Gera a URL de autorização para o fluxo OAuth do Facebook/Instagram
    */
@@ -30,193 +31,132 @@ export class InstagramConnector extends SocialMediaConnector {
     const params = new URLSearchParams({
       client_id: this.authConfig.clientId,
       redirect_uri: this.authConfig.redirectUri,
-      scope: this.authConfig.scopes.join(','),
+      scope: this.authConfig.scopes.join(','), // Scopes for Instagram/Facebook
       response_type: 'code',
-      state: this.generateRandomState()
+      state: this.generateRandomState() // Método herdado
     });
-    
     return `https://www.facebook.com/${this.apiVersion}/dialog/oauth?${params.toString()}`;
   }
-  
+
   /**
    * Processa o código de autorização recebido após o redirecionamento OAuth
    */
   async handleAuthorizationCode(code: string): Promise<SocialAccount> {
     try {
-      // Simulação da troca do código por tokens de acesso
-      // Em produção, isso faria uma chamada real à API do Facebook
+      // Usa simulação da classe base para troca de código por token
       const tokenResponse = await this.simulateTokenExchange(code);
-      
-      // Simulação da obtenção de informações do usuário
-      const userInfo = await this.simulateGetUserInfo(tokenResponse.access_token);
-      
-      // Simulação da obtenção de páginas do Facebook
+
+      // Simulação da obtenção de páginas do Facebook (necessário para encontrar a conta IG)
       const pagesResponse = await this.simulateGetPages(tokenResponse.access_token);
-      
-      // Simulação da obtenção de contas de negócio do Instagram
-      let instagramAccount = null;
-      if (this.facebookPageId) {
-        const page = pagesResponse.data.find((p: any) => p.id === this.facebookPageId);
-        if (page) {
-          const instagramAccounts = await this.simulateGetInstagramAccounts(page.id, page.access_token);
-          if (instagramAccounts.data.length > 0) {
-            instagramAccount = instagramAccounts.data[0];
-            this.instagramBusinessAccountId = instagramAccount.id;
-          }
-        }
+
+      let instagramAccountData = null;
+      let associatedPageId = this.facebookPageId;
+
+      // Tenta encontrar a conta IG associada à página especificada ou à primeira página encontrada
+      if (associatedPageId) {
+        instagramAccountData = await this.findInstagramAccountForPage(associatedPageId, pagesResponse.data, tokenResponse.access_token);
       } else if (pagesResponse.data.length > 0) {
-        // Se não foi especificado um ID de página, usar a primeira disponível
-        const page = pagesResponse.data[0];
-        this.facebookPageId = page.id;
-        
-        const instagramAccounts = await this.simulateGetInstagramAccounts(page.id, page.access_token);
-        if (instagramAccounts.data.length > 0) {
-          instagramAccount = instagramAccounts.data[0];
-          this.instagramBusinessAccountId = instagramAccount.id;
-        }
+        associatedPageId = pagesResponse.data[0].id;
+        instagramAccountData = await this.findInstagramAccountForPage(associatedPageId, pagesResponse.data, tokenResponse.access_token);
       }
-      
-      if (!instagramAccount) {
-        throw new Error('Nenhuma conta de negócio do Instagram encontrada');
+
+      if (!instagramAccountData) {
+        throw new Error('Nenhuma conta de negócio do Instagram encontrada ou associada à página do Facebook.');
       }
-      
+
+      this.instagramBusinessAccountId = instagramAccountData.id;
+      this.facebookPageId = associatedPageId; // Guarda o ID da página associada
+
       this.account = {
-        id: instagramAccount.id,
+        id: instagramAccountData.id,
         platform: 'instagram',
-        username: instagramAccount.username,
-        displayName: instagramAccount.name || instagramAccount.username,
-        profilePictureUrl: instagramAccount.profile_picture_url,
+        username: instagramAccountData.username,
+        displayName: instagramAccountData.name || instagramAccountData.username,
+        profilePictureUrl: instagramAccountData.profile_picture_url,
         isConnected: true,
         lastSyncTime: new Date(),
         accessToken: tokenResponse.access_token,
         refreshToken: tokenResponse.refresh_token,
         tokenExpiry: new Date(Date.now() + tokenResponse.expires_in * 1000)
       };
-      
+
       return this.account;
     } catch (error) {
-      console.error('Erro ao processar código de autorização:', error);
+      console.error('Erro ao processar código de autorização Instagram:', error);
       throw new Error('Falha na autenticação com Instagram Graph API');
     }
   }
-  
+
   /**
-   * Atualiza o token de acesso se necessário
+   * Atualiza o token de acesso se necessário, usando a lógica base
    */
   async refreshAccessTokenIfNeeded(): Promise<boolean> {
-    if (!this.account || !this.account.refreshToken) {
-      return false;
-    }
-    
-    // Verifica se o token está prestes a expirar (menos de 1 hora restante)
-    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
-    if (this.account.tokenExpiry && this.account.tokenExpiry > oneHourFromNow) {
-      return true; // Token ainda é válido
-    }
-    
-    try {
-      // Simulação da atualização do token
-      // Em produção, isso faria uma chamada real à API do Facebook
-      const tokenResponse = await this.simulateTokenRefresh(this.account.refreshToken);
-      
-      if (this.account) {
-        this.account.accessToken = tokenResponse.access_token;
-        this.account.refreshToken = tokenResponse.refresh_token || this.account.refreshToken;
-        this.account.tokenExpiry = new Date(Date.now() + tokenResponse.expires_in * 1000);
-        this.account.lastSyncTime = new Date();
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao atualizar token de acesso:', error);
-      return false;
-    }
+    // Instagram usa o mesmo fluxo de token do Facebook, threshold de 60 minutos
+    return this.baseRefreshAccessTokenIfNeeded(60);
   }
-  
+
   /**
    * Publica conteúdo no Instagram
    */
   async publishPost(content: PostContent): Promise<PostResult> {
     if (!this.isAuthenticated() || !this.instagramBusinessAccountId) {
-      return {
-        success: false,
-        error: 'Não autenticado ou conta de negócio do Instagram não configurada',
-        timestamp: new Date(),
-        platform: 'instagram'
-      };
+      return this.createErrorResult('Não autenticado ou conta de negócio do Instagram não configurada');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      return this.createErrorResult('Falha ao atualizar token de acesso');
+    }
+
     const validation = this.validateContent(content);
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.errors.join(', '),
-        timestamp: new Date(),
-        platform: 'instagram'
-      };
+      return this.createErrorResult(validation.errors.join(', '));
     }
-    
+
     try {
-      // Simulação da publicação de conteúdo
-      // Em produção, isso faria uma chamada real à API do Instagram
       const postData = this.formatContent(content);
+      // Simulação da publicação (específico do Instagram)
       const result = await this.simulateCreatePost(postData);
-      
+
       return {
         success: true,
         postId: result.id,
-        url: `https://www.instagram.com/p/${result.shortcode}/`,
+        url: `https://www.instagram.com/p/${result.shortcode}/`, // URL típica de post do Instagram
         timestamp: new Date(),
         platform: 'instagram'
       };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao publicar conteúdo',
-        timestamp: new Date(),
-        platform: 'instagram'
-      };
+      return this.createErrorResult(error.message || 'Erro ao publicar conteúdo');
     }
   }
-  
+
   /**
    * Agenda uma publicação para um momento futuro no Instagram
    */
   async schedulePost(content: PostContent, scheduledTime: Date): Promise<PostResult> {
     if (!this.isAuthenticated() || !this.instagramBusinessAccountId) {
-      return {
-        success: false,
-        error: 'Não autenticado ou conta de negócio do Instagram não configurada',
-        timestamp: new Date(),
-        platform: 'instagram'
-      };
+      return this.createErrorResult('Não autenticado ou conta de negócio do Instagram não configurada');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
-    const validation = this.validateContent({...content, scheduledTime});
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      return this.createErrorResult('Falha ao atualizar token de acesso');
+    }
+
+    const validation = this.validateContent({ ...content, scheduledTime });
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.errors.join(', '),
-        timestamp: new Date(),
-        platform: 'instagram'
-      };
+      return this.createErrorResult(validation.errors.join(', '));
     }
-    
+
     try {
-      // Simulação do agendamento de publicação
-      // Em produção, isso faria uma chamada real à API do Instagram
+      // Simulação do agendamento (específico do Instagram)
       const postData = {
         ...this.formatContent(content),
-        published: false,
-        scheduled_publish_time: Math.floor(scheduledTime.getTime() / 1000)
+        // A API real pode exigir parâmetros diferentes para agendamento
+        is_scheduled: true,
+        publish_time: Math.floor(scheduledTime.getTime() / 1000)
       };
-      
+
       const result = await this.simulateSchedulePost(postData);
-      
+
       return {
         success: true,
         postId: result.id,
@@ -225,15 +165,10 @@ export class InstagramConnector extends SocialMediaConnector {
         platform: 'instagram'
       };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao agendar publicação',
-        timestamp: new Date(),
-        platform: 'instagram'
-      };
+      return this.createErrorResult(error.message || 'Erro ao agendar publicação');
     }
   }
-  
+
   /**
    * Obtém métricas de uma publicação
    */
@@ -241,43 +176,20 @@ export class InstagramConnector extends SocialMediaConnector {
     if (!this.isAuthenticated()) {
       throw new Error('Não autenticado');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de métricas
-      // Em produção, isso faria uma chamada real à API do Instagram
+      // Simulação da obtenção de métricas (específico do Instagram)
       return await this.simulateGetPostInsights(postId);
     } catch (error) {
-      console.error('Erro ao obter métricas da publicação:', error);
+      console.error('Erro ao obter métricas da publicação Instagram:', error);
       throw new Error('Falha ao obter métricas da publicação');
     }
   }
-  
-  /**
-   * Desconecta a conta atual
-   */
-  async disconnect(): Promise<boolean> {
-    if (!this.isAuthenticated() || !this.account?.accessToken) {
-      return false;
-    }
-    
-    try {
-      // Simulação da revogação do token
-      // Em produção, isso faria uma chamada real à API do Facebook
-      await this.simulateRevokeToken(this.account.accessToken);
-      
-      this.account = null;
-      this.instagramBusinessAccountId = null;
-      this.facebookPageId = null;
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao desconectar conta:', error);
-      return false;
-    }
-  }
-  
+
   /**
    * Obtém informações da conta de negócio do Instagram
    */
@@ -285,19 +197,20 @@ export class InstagramConnector extends SocialMediaConnector {
     if (!this.isAuthenticated() || !this.instagramBusinessAccountId || !this.account?.accessToken) {
       throw new Error('Não autenticado ou conta de negócio do Instagram não configurada');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de informações da conta
-      // Em produção, isso faria uma chamada real à API do Instagram
+      // Simulação da obtenção de informações da conta (específico do Instagram)
       return await this.simulateGetAccountInfo();
     } catch (error) {
-      console.error('Erro ao obter informações da conta:', error);
+      console.error('Erro ao obter informações da conta Instagram:', error);
       throw new Error('Falha ao obter informações da conta');
     }
   }
-  
+
   /**
    * Formata o conteúdo de acordo com as especificações da API do Instagram
    */
@@ -305,207 +218,149 @@ export class InstagramConnector extends SocialMediaConnector {
     const formattedContent: any = {
       caption: content.text || ''
     };
-    
     if (content.media && content.media.length > 0) {
-      // No Instagram, é necessário primeiro fazer upload da mídia e depois criar a publicação
-      // Esta é uma simulação simplificada
+      // A API real exige upload prévio da mídia e uso do ID do container
       formattedContent.media_type = content.media[0].type === 'video' ? 'VIDEO' : 'IMAGE';
-      formattedContent.media_url = content.media[0].url;
+      formattedContent.media_url = content.media[0].url; // Simplificação para simulação
     }
-    
     return formattedContent;
   }
-  
+
   /**
    * Validação específica para conteúdo do Instagram
    */
   validateContent(content: PostContent): { isValid: boolean; errors: string[] } {
     const baseValidation = super.validateContent(content);
     const errors = [...baseValidation.errors];
-    
-    // Validações específicas para Instagram
+
     if (content.text && content.text.length > 2200) {
       errors.push('A legenda não pode exceder 2.200 caracteres');
     }
-    
     if (!content.media || content.media.length === 0) {
       errors.push('É necessário incluir pelo menos uma mídia (imagem ou vídeo)');
     }
-    
     if (content.media && content.media.length > 10) {
-      errors.push('O Instagram permite no máximo 10 mídias em uma única publicação');
+      errors.push('O Instagram permite no máximo 10 mídias (carrossel)');
     }
-    
     if (content.scheduledTime) {
       const now = new Date();
-      const twentyMinutesFromNow = new Date(now.getTime() + 20 * 60 * 1000);
-      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      
-      if (content.scheduledTime < twentyMinutesFromNow) {
-        errors.push('A data de agendamento deve ser pelo menos 20 minutos no futuro');
+      // Limites de agendamento da API do Instagram podem variar
+      const twentyFiveMinutesFromNow = new Date(now.getTime() + 25 * 60 * 1000);
+      const sixMonthsFromNow = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
+      if (content.scheduledTime < twentyFiveMinutesFromNow) {
+        errors.push('A data de agendamento deve ser pelo menos 25 minutos no futuro');
       }
-      
-      if (content.scheduledTime > thirtyDaysFromNow) {
-        errors.push('A data de agendamento não pode ser mais de 30 dias no futuro');
+      if (content.scheduledTime > sixMonthsFromNow) {
+        errors.push('A data de agendamento não pode ser mais de 6 meses no futuro');
       }
     }
-    
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
+    return { isValid: errors.length === 0, errors };
   }
-  
-  // Métodos auxiliares para simulação (em produção, seriam substituídos por chamadas reais à API)
-  
-  private generateRandomState(): string {
-    return Math.random().toString(36).substring(2, 15);
+
+  /**
+   * Implementação da revogação de token para Instagram (usa fluxo do Facebook)
+   */
+  protected async revokeToken(token: string): Promise<void> {
+    // A revogação é feita pela API do Facebook
+    await this.simulateRevokeToken(token);
   }
-  
-  private async simulateTokenExchange(code: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      access_token: 'EAABwzLixnjYBO' + Math.random().toString(36).substring(2, 15),
-      token_type: 'Bearer',
-      expires_in: 5184000, // 60 dias
-      refresh_token: 'GBPYx3zQx6XxTMnq' + Math.random().toString(36).substring(2, 15)
-    };
+
+  /**
+   * Limpa dados específicos do Instagram ao desconectar
+   */
+  protected clearAccountData(): void {
+    super.clearAccountData();
+    this.instagramBusinessAccountId = null;
+    this.facebookPageId = null;
   }
-  
-  private async simulateGetUserInfo(accessToken: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      id: '1234567890',
-      name: 'João Silva',
-      email: 'joao.silva@example.com',
-      picture: {
-        data: {
-          url: 'https://placehold.co/400x400/E1306C/ffffff?text=IG'
-        }
-      }
-    };
-  }
-  
-  private async simulateTokenRefresh(refreshToken: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      access_token: 'EAABwzLixnjYBO' + Math.random().toString(36).substring(2, 15),
-      token_type: 'Bearer',
-      expires_in: 5184000, // 60 dias
-      refresh_token: 'GBPYx3zQx6XxTMnq' + Math.random().toString(36).substring(2, 15)
-    };
-  }
-  
+
+  // --- Métodos Auxiliares Específicos (Simulação) ---
+
   private async simulateGetPages(accessToken: string): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API do Facebook para obter páginas
     return {
       data: [
-        {
-          id: '123456789012345',
-          name: 'Minha Empresa',
-          category: 'Negócio local',
-          access_token: 'EAABwzLixnjYBO' + Math.random().toString(36).substring(2, 15)
-        },
-        {
-          id: '234567890123456',
-          name: 'Minha Loja',
-          category: 'Loja de varejo',
-          access_token: 'EAABwzLixnjYBO' + Math.random().toString(36).substring(2, 15)
-        }
+        { id: 'fb_page_1', name: 'Página Empresa Simulada', category: 'Negócio', access_token: 'fb_page_token_1' + Math.random().toString(36).substring(2, 15) },
+        { id: 'fb_page_2', name: 'Página Loja Simulada', category: 'Varejo', access_token: 'fb_page_token_2' + Math.random().toString(36).substring(2, 15) }
       ]
     };
   }
-  
+
+  private async findInstagramAccountForPage(pageId: string, pagesData: any[], userAccessToken: string): Promise<any | null> {
+    const page = pagesData.find((p: any) => p.id === pageId);
+    if (!page) return null;
+
+    // Simula a chamada para obter a conta IG associada à página FB
+    const instagramAccounts = await this.simulateGetInstagramAccounts(page.id, page.access_token);
+    return instagramAccounts.data.length > 0 ? instagramAccounts.data[0] : null;
+  }
+
   private async simulateGetInstagramAccounts(pageId: string, pageAccessToken: string): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API para obter contas IG associadas a uma página FB
     return {
       data: [
         {
-          id: '987654321098765',
-          username: 'minhaempresa',
-          name: 'Minha Empresa',
+          id: 'ig_biz_acc_' + Math.random().toString(36).substring(2, 15),
+          username: 'negocio_simulado_ig',
+          name: 'Negócio Simulado IG',
           profile_picture_url: 'https://placehold.co/400x400/E1306C/ffffff?text=IG',
-          followers_count: 1250,
-          media_count: 87
+          followers_count: Math.floor(Math.random() * 10000),
+          media_count: Math.floor(Math.random() * 500)
         }
       ]
     };
   }
-  
+
   private async simulateCreatePost(postData: any): Promise<any> {
-    // Simulação da resposta da API
-    const id = Math.random().toString(36).substring(2, 15);
-    const shortcode = 'B' + Math.random().toString(36).substring(2, 12).toUpperCase();
-    
-    return {
-      id,
-      shortcode,
-      created_time: new Date().toISOString()
-    };
+    // Simulação da API do Instagram para criar post (requer upload prévio na real)
+    const id = '17' + Math.random().toString().substring(2, 17); // Formato de ID do Instagram
+    const shortcode = 'C' + Math.random().toString(36).substring(2, 12).toUpperCase();
+    return { id, shortcode, created_time: new Date().toISOString() };
   }
-  
+
   private async simulateSchedulePost(postData: any): Promise<any> {
-    // Simulação da resposta da API
-    const id = Math.random().toString(36).substring(2, 15);
-    const shortcode = 'B' + Math.random().toString(36).substring(2, 12).toUpperCase();
-    
-    return {
-      id,
-      shortcode,
-      scheduled_publish_time: postData.scheduled_publish_time,
-      status: 'SCHEDULED'
-    };
+    // Simulação da API do Instagram para agendar post
+    const id = '17' + Math.random().toString().substring(2, 17);
+    const shortcode = 'C' + Math.random().toString(36).substring(2, 12).toUpperCase();
+    return { id, shortcode, status: 'SCHEDULED' };
   }
-  
+
   private async simulateGetPostInsights(postId: string): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API do Instagram para obter métricas
     return {
       data: [
-        {
-          name: 'impressions',
-          period: 'lifetime',
-          values: [{ value: Math.floor(Math.random() * 5000) }]
-        },
-        {
-          name: 'reach',
-          period: 'lifetime',
-          values: [{ value: Math.floor(Math.random() * 3000) }]
-        },
-        {
-          name: 'engagement',
-          period: 'lifetime',
-          values: [{ value: Math.floor(Math.random() * 500) }]
-        },
-        {
-          name: 'saved',
-          period: 'lifetime',
-          values: [{ value: Math.floor(Math.random() * 100) }]
-        }
+        { name: 'impressions', period: 'lifetime', values: [{ value: Math.floor(Math.random() * 5000) }] },
+        { name: 'reach', period: 'lifetime', values: [{ value: Math.floor(Math.random() * 3000) }] },
+        { name: 'engagement', period: 'lifetime', values: [{ value: Math.floor(Math.random() * 500) }] },
+        { name: 'saved', period: 'lifetime', values: [{ value: Math.floor(Math.random() * 100) }] }
       ]
     };
   }
-  
-  private async simulateRevokeToken(accessToken: string): Promise<void> {
-    // Simulação da revogação do token
-    return Promise.resolve();
-  }
-  
+
   private async simulateGetAccountInfo(): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API do Instagram para obter informações da conta
     return {
       id: this.instagramBusinessAccountId,
       username: this.account?.username,
       name: this.account?.displayName,
       profile_picture_url: this.account?.profilePictureUrl,
-      biography: 'Conta oficial da Minha Empresa no Instagram. Produtos de qualidade e atendimento personalizado.',
-      website: 'https://www.minhaempresa.com.br',
-      followers_count: 1250,
-      follows_count: 450,
-      media_count: 87,
-      is_private: false,
-      is_verified: false
+      biography: 'Descrição simulada da conta de negócio do Instagram.',
+      followers_count: Math.floor(Math.random() * 10000),
+      follows_count: Math.floor(Math.random() * 1000),
+      media_count: Math.floor(Math.random() * 500),
+      website: 'https://example.com'
+    };
+  }
+
+  private createErrorResult(error: string): PostResult {
+    return {
+      success: false,
+      error,
+      timestamp: new Date(),
+      platform: 'instagram'
     };
   }
 }
 
 export default InstagramConnector;
+

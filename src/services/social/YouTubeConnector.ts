@@ -3,24 +3,25 @@ import SocialMediaConnector, {
   PostContent, 
   PostResult, 
   SocialAccount 
-} from './SocialMediaConnector';
+} from './SocialMediaConnector");
 
 /**
  * YouTubeConnector - Implementação específica para integração com YouTube Data API
- * 
- * Este conector permite publicar vídeos no YouTube,
- * gerenciar canais e obter métricas de engajamento.
  */
 export class YouTubeConnector extends SocialMediaConnector {
-  private apiVersion = 'v3'; // Versão atual da API do YouTube
+  private apiVersion = 'v3';
   private baseUrl = 'https://www.googleapis.com/youtube';
   private channelId: string | null = null;
-  
+
   constructor(authConfig: AuthConfig, channelId?: string) {
     super(authConfig);
     this.channelId = channelId || null;
   }
-  
+
+  protected getPlatformName(): string {
+    return 'YouTube';
+  }
+
   /**
    * Gera a URL de autorização para o fluxo OAuth do Google/YouTube
    */
@@ -28,115 +29,83 @@ export class YouTubeConnector extends SocialMediaConnector {
     const params = new URLSearchParams({
       client_id: this.authConfig.clientId,
       redirect_uri: this.authConfig.redirectUri,
-      scope: this.authConfig.scopes.join(' '),
+      scope: this.authConfig.scopes.join(' '), // Google usa espaço como separador
       response_type: 'code',
-      access_type: 'offline',
-      prompt: 'consent',
-      state: this.generateRandomState()
+      access_type: 'offline', // Solicita refresh token
+      prompt: 'consent', // Garante que o usuário veja a tela de consentimento
+      state: this.generateRandomState() // Método herdado
     });
-    
     return `https://accounts.google.com/o/oauth2/auth?${params.toString()}`;
   }
-  
+
   /**
    * Processa o código de autorização recebido após o redirecionamento OAuth
    */
   async handleAuthorizationCode(code: string): Promise<SocialAccount> {
     try {
-      // Simulação da troca do código por tokens de acesso
-      // Em produção, isso faria uma chamada real à API do Google
-      const tokenResponse = await this.simulateTokenExchange(code);
-      
-      // Simulação da obtenção de informações do canal
+      // Usa simulação da classe base para troca de código por token
+      // A API real do Google requer parâmetros específicos no corpo da requisição
+      const tokenResponse = await this.simulateTokenExchange(code, { grant_type: 'authorization_code' });
+
+      // Simulação da obtenção de informações do canal (específico do YouTube)
       const channelInfo = await this.simulateGetChannelInfo(tokenResponse.access_token);
-      
+
+      if (!channelInfo || !channelInfo.id) {
+        throw new Error('Não foi possível obter informações do canal do YouTube.');
+      }
+
       this.channelId = channelInfo.id;
-      
+
       this.account = {
         id: channelInfo.id,
         platform: 'youtube',
-        username: channelInfo.snippet.title,
+        username: channelInfo.snippet.title, // YouTube usa 'title' para nome do canal
         displayName: channelInfo.snippet.title,
-        profilePictureUrl: channelInfo.snippet.thumbnails.default.url,
+        profilePictureUrl: channelInfo.snippet.thumbnails?.default?.url,
         isConnected: true,
         lastSyncTime: new Date(),
         accessToken: tokenResponse.access_token,
         refreshToken: tokenResponse.refresh_token,
         tokenExpiry: new Date(Date.now() + tokenResponse.expires_in * 1000)
       };
-      
+
       return this.account;
     } catch (error) {
-      console.error('Erro ao processar código de autorização:', error);
+      console.error('Erro ao processar código de autorização YouTube:', error);
       throw new Error('Falha na autenticação com YouTube Data API');
     }
   }
-  
+
   /**
-   * Atualiza o token de acesso se necessário
+   * Atualiza o token de acesso se necessário, usando a lógica base
    */
   async refreshAccessTokenIfNeeded(): Promise<boolean> {
-    if (!this.account || !this.account.refreshToken) {
-      return false;
-    }
-    
-    // Verifica se o token está prestes a expirar (menos de 5 minutos restante)
-    const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
-    if (this.account.tokenExpiry && this.account.tokenExpiry > fiveMinutesFromNow) {
-      return true; // Token ainda é válido
-    }
-    
-    try {
-      // Simulação da atualização do token
-      // Em produção, isso faria uma chamada real à API do Google
-      const tokenResponse = await this.simulateTokenRefresh(this.account.refreshToken);
-      
-      if (this.account) {
-        this.account.accessToken = tokenResponse.access_token;
-        this.account.tokenExpiry = new Date(Date.now() + tokenResponse.expires_in * 1000);
-        this.account.lastSyncTime = new Date();
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao atualizar token de acesso:', error);
-      return false;
-    }
+    // Google tokens geralmente expiram em 1 hora, usamos threshold de 5 minutos
+    return this.baseRefreshAccessTokenIfNeeded(5);
   }
-  
+
   /**
    * Publica um vídeo no YouTube
-   * Nota: O processo real de upload de vídeos para o YouTube é mais complexo
-   * e envolve múltiplas etapas. Esta implementação simula esse comportamento.
    */
   async publishPost(content: PostContent): Promise<PostResult> {
     if (!this.isAuthenticated() || !this.channelId) {
-      return {
-        success: false,
-        error: 'Não autenticado ou channelId não configurado',
-        timestamp: new Date(),
-        platform: 'youtube'
-      };
+      return this.createErrorResult('Não autenticado ou channelId não configurado');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      return this.createErrorResult('Falha ao atualizar token de acesso');
+    }
+
     const validation = this.validateContent(content);
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.errors.join(', '),
-        timestamp: new Date(),
-        platform: 'youtube'
-      };
+      return this.createErrorResult(validation.errors.join(', '));
     }
-    
+
     try {
-      // Simulação da publicação de vídeo
-      // Em produção, isso faria uma chamada real à API do YouTube
       const videoData = this.formatContent(content);
+      // Simulação da publicação (específico do YouTube)
       const result = await this.simulateUploadVideo(videoData);
-      
+
       return {
         success: true,
         postId: result.id,
@@ -145,53 +114,40 @@ export class YouTubeConnector extends SocialMediaConnector {
         platform: 'youtube'
       };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao publicar vídeo',
-        timestamp: new Date(),
-        platform: 'youtube'
-      };
+      return this.createErrorResult(error.message || 'Erro ao publicar vídeo');
     }
   }
-  
+
   /**
    * Agenda um vídeo para publicação futura no YouTube
    */
   async schedulePost(content: PostContent, scheduledTime: Date): Promise<PostResult> {
     if (!this.isAuthenticated() || !this.channelId) {
-      return {
-        success: false,
-        error: 'Não autenticado ou channelId não configurado',
-        timestamp: new Date(),
-        platform: 'youtube'
-      };
+      return this.createErrorResult('Não autenticado ou channelId não configurado');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
-    const validation = this.validateContent({...content, scheduledTime});
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      return this.createErrorResult('Falha ao atualizar token de acesso');
+    }
+
+    const validation = this.validateContent({ ...content, scheduledTime });
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.errors.join(', '),
-        timestamp: new Date(),
-        platform: 'youtube'
-      };
+      return this.createErrorResult(validation.errors.join(', '));
     }
-    
+
     try {
-      // Simulação do agendamento de vídeo
-      // Em produção, isso faria uma chamada real à API do YouTube
+      // Simulação do agendamento (específico do YouTube)
       const videoData = {
         ...this.formatContent(content),
         status: {
-          privacyStatus: 'private',
+          ...(this.formatContent(content).status || {}),
+          privacyStatus: 'private', // Vídeos agendados começam como privados
           publishAt: scheduledTime.toISOString()
         }
       };
-      
+
       const result = await this.simulateUploadVideo(videoData);
-      
+
       return {
         success: true,
         postId: result.id,
@@ -200,15 +156,10 @@ export class YouTubeConnector extends SocialMediaConnector {
         platform: 'youtube'
       };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao agendar vídeo',
-        timestamp: new Date(),
-        platform: 'youtube'
-      };
+      return this.createErrorResult(error.message || 'Erro ao agendar vídeo');
     }
   }
-  
+
   /**
    * Obtém métricas de um vídeo
    */
@@ -216,42 +167,20 @@ export class YouTubeConnector extends SocialMediaConnector {
     if (!this.isAuthenticated()) {
       throw new Error('Não autenticado');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de métricas
-      // Em produção, isso faria uma chamada real à API do YouTube
+      // Simulação da obtenção de métricas (específico do YouTube)
       return await this.simulateGetVideoMetrics(videoId);
     } catch (error) {
-      console.error('Erro ao obter métricas do vídeo:', error);
+      console.error('Erro ao obter métricas do vídeo YouTube:', error);
       throw new Error('Falha ao obter métricas do vídeo');
     }
   }
-  
-  /**
-   * Desconecta a conta atual
-   */
-  async disconnect(): Promise<boolean> {
-    if (!this.isAuthenticated() || !this.account?.accessToken) {
-      return false;
-    }
-    
-    try {
-      // Simulação da revogação do token
-      // Em produção, isso faria uma chamada real à API do Google
-      await this.simulateRevokeToken(this.account.accessToken);
-      
-      this.account = null;
-      this.channelId = null;
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao desconectar conta:', error);
-      return false;
-    }
-  }
-  
+
   /**
    * Obtém informações do canal do YouTube
    */
@@ -259,19 +188,20 @@ export class YouTubeConnector extends SocialMediaConnector {
     if (!this.isAuthenticated() || !this.channelId || !this.account?.accessToken) {
       throw new Error('Não autenticado ou channelId não configurado');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de informações do canal
-      // Em produção, isso faria uma chamada real à API do YouTube
+      // Simulação da obtenção de informações do canal (específico do YouTube)
       return await this.simulateGetChannelInfo(this.account.accessToken);
     } catch (error) {
-      console.error('Erro ao obter informações do canal:', error);
+      console.error('Erro ao obter informações do canal YouTube:', error);
       throw new Error('Falha ao obter informações do canal');
     }
   }
-  
+
   /**
    * Obtém vídeos do canal do YouTube
    */
@@ -279,326 +209,230 @@ export class YouTubeConnector extends SocialMediaConnector {
     if (!this.isAuthenticated() || !this.channelId || !this.account?.accessToken) {
       throw new Error('Não autenticado ou channelId não configurado');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de vídeos
-      // Em produção, isso faria uma chamada real à API do YouTube
+      // Simulação da obtenção de vídeos (específico do YouTube)
       const response = await this.simulateGetVideos(maxResults);
       return response.items;
     } catch (error) {
-      console.error('Erro ao obter vídeos:', error);
+      console.error('Erro ao obter vídeos YouTube:', error);
       throw new Error('Falha ao obter vídeos');
     }
   }
-  
+
   /**
    * Formata o conteúdo de acordo com as especificações da API do YouTube
    */
   protected formatContent(content: PostContent): any {
     const formattedContent: any = {
       snippet: {
-        title: content.text?.split('\n')[0] || 'Vídeo sem título',
-        description: content.text || '',
+        title: content.text?.split('\n')[0].substring(0, 100) || 'Vídeo sem título',
+        description: content.text?.substring(0, 5000) || '',
         tags: [],
-        categoryId: '22' // Categoria "People & Blogs"
+        categoryId: '22' // Default: People & Blogs
       },
       status: {
-        privacyStatus: 'public',
+        privacyStatus: 'public', // Default: public
         selfDeclaredMadeForKids: false
       }
     };
-    
-    // Extração de hashtags do texto para tags
+
     if (content.text) {
       const hashtags = content.text.match(/#\w+/g);
       if (hashtags) {
         formattedContent.snippet.tags = hashtags.map(tag => tag.substring(1));
       }
     }
-    
-    if (content.media && content.media.length > 0) {
-      formattedContent.media = {
-        videoUrl: content.media[0].url
-      };
-      
+
+    if (content.media && content.media.length > 0 && content.media[0].type === 'video') {
+      // A API real requer upload do vídeo, aqui simulamos com a URL
+      formattedContent.mediaUrl = content.media[0].url;
       if (content.media[0].altText) {
-        formattedContent.snippet.description = content.media[0].altText + '\n\n' + formattedContent.snippet.description;
+        // Adiciona altText ao início da descrição se não houver descrição principal
+        if (!formattedContent.snippet.description) {
+            formattedContent.snippet.description = content.media[0].altText;
+        }
       }
     }
-    
+
     return formattedContent;
   }
-  
+
   /**
    * Validação específica para conteúdo do YouTube
    */
   validateContent(content: PostContent): { isValid: boolean; errors: string[] } {
     const baseValidation = super.validateContent(content);
     const errors = [...baseValidation.errors];
-    
-    // Validações específicas para YouTube
-    if (!content.text) {
-      errors.push('É necessário fornecer um título para o vídeo');
+
+    if (!content.text?.split('\n')[0]) {
+      errors.push('É necessário fornecer um título para o vídeo (primeira linha do texto)');
     } else if (content.text.split('\n')[0].length > 100) {
-      errors.push('O título do vídeo não pode exceder 100 caracteres');
+      errors.push('O título do vídeo (primeira linha) não pode exceder 100 caracteres');
     }
-    
     if (content.text && content.text.length > 5000) {
       errors.push('A descrição do vídeo não pode exceder 5.000 caracteres');
     }
-    
     if (!content.media || content.media.length === 0) {
       errors.push('É necessário incluir um vídeo');
     } else if (content.media.length > 1) {
       errors.push('O YouTube permite apenas um vídeo por publicação');
     } else if (content.media[0].type !== 'video') {
-      errors.push('O YouTube só aceita vídeos');
+      errors.push('O YouTube só aceita conteúdo do tipo vídeo');
     }
-    
     if (content.scheduledTime) {
       const now = new Date();
-      const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+      // YouTube pode ter limites diferentes, mas usamos estes para simulação
+      const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000);
       const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-      
-      if (content.scheduledTime < oneHourFromNow) {
-        errors.push('A data de agendamento deve ser pelo menos 1 hora no futuro');
+      if (content.scheduledTime < fifteenMinutesFromNow) {
+        errors.push('A data de agendamento deve ser pelo menos 15 minutos no futuro');
       }
-      
       if (content.scheduledTime > oneYearFromNow) {
         errors.push('A data de agendamento não pode ser mais de 1 ano no futuro');
       }
     }
-    
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
+    return { isValid: errors.length === 0, errors };
   }
-  
-  // Métodos auxiliares para simulação (em produção, seriam substituídos por chamadas reais à API)
-  
-  private generateRandomState(): string {
-    return Math.random().toString(36).substring(2, 15);
+
+  /**
+   * Implementação da revogação de token para Google/YouTube (usa simulação base)
+   */
+  protected async revokeToken(token: string): Promise<void> {
+    // Em produção, faria uma chamada POST para https://oauth2.googleapis.com/revoke?token={token}
+    await this.simulateRevokeToken(token);
   }
-  
-  private async simulateTokenExchange(code: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      access_token: 'ya29.' + Math.random().toString(36).substring(2, 15),
-      token_type: 'Bearer',
-      expires_in: 3600, // 1 hora
-      refresh_token: '1//xEo' + Math.random().toString(36).substring(2, 15)
-    };
+
+  /**
+   * Limpa dados específicos do YouTube ao desconectar
+   */
+  protected clearAccountData(): void {
+    super.clearAccountData();
+    this.channelId = null;
   }
-  
+
+  // --- Métodos Auxiliares Específicos (Simulação) ---
+
   private async simulateGetChannelInfo(accessToken: string): Promise<any> {
-    // Simulação da resposta da API
-    const channelId = 'UC' + Math.random().toString(36).substring(2, 15);
-    
+    // Simulação da API do YouTube para obter informações do canal
+    const channelId = 'UC' + Math.random().toString(36).substring(2, 20).toUpperCase();
     return {
-      kind: 'youtube#channel',
-      etag: '"XI7nbFXulYBIpL0ayR_gDh3eu1k/Dn_HMiUS0gL-KlLMHpkB45BfVfY"',
-      id: channelId,
-      snippet: {
-        title: 'TechCare Channel',
-        description: 'Canal oficial da TechCare no YouTube',
-        customUrl: 'techcare',
-        publishedAt: '2020-01-01T00:00:00.000Z',
-        thumbnails: {
-          default: {
-            url: 'https://placehold.co/88x88/FF0000/ffffff?text=YT',
-            width: 88,
-            height: 88
+      kind: 'youtube#channelListResponse',
+      items: [
+        {
+          kind: 'youtube#channel',
+          id: channelId,
+          snippet: {
+            title: 'Canal YouTube Simulado',
+            description: 'Descrição simulada do canal.',
+            publishedAt: '2020-01-01T00:00:00Z',
+            thumbnails: {
+              default: { url: 'https://placehold.co/88x88/FF0000/ffffff?text=YT', width: 88, height: 88 },
+              medium: { url: 'https://placehold.co/240x240/FF0000/ffffff?text=YT', width: 240, height: 240 },
+              high: { url: 'https://placehold.co/800x800/FF0000/ffffff?text=YT', width: 800, height: 800 }
+            }
           },
-          medium: {
-            url: 'https://placehold.co/240x240/FF0000/ffffff?text=YT',
-            width: 240,
-            height: 240
-          },
-          high: {
-            url: 'https://placehold.co/800x800/FF0000/ffffff?text=YT',
-            width: 800,
-            height: 800
+          statistics: {
+            viewCount: Math.floor(Math.random() * 100000).toString(),
+            subscriberCount: Math.floor(Math.random() * 10000).toString(),
+            videoCount: Math.floor(Math.random() * 100).toString()
           }
-        },
-        localized: {
-          title: 'TechCare Channel',
-          description: 'Canal oficial da TechCare no YouTube'
-        },
-        country: 'BR'
-      },
-      statistics: {
-        viewCount: '10000',
-        subscriberCount: '1000',
-        hiddenSubscriberCount: false,
-        videoCount: '50'
-      }
+        }
+      ]
     };
   }
-  
-  private async simulateTokenRefresh(refreshToken: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      access_token: 'ya29.' + Math.random().toString(36).substring(2, 15),
-      token_type: 'Bearer',
-      expires_in: 3600 // 1 hora
-    };
-  }
-  
+
   private async simulateUploadVideo(videoData: any): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API do YouTube para upload de vídeo
     const videoId = Math.random().toString(36).substring(2, 13);
-    
     return {
       kind: 'youtube#video',
-      etag: '"XI7nbFXulYBIpL0ayR_gDh3eu1k/Dn_HMiUS0gL-KlLMHpkB45BfVfY"',
       id: videoId,
       snippet: {
         publishedAt: new Date().toISOString(),
         channelId: this.channelId,
         title: videoData.snippet.title,
         description: videoData.snippet.description,
-        thumbnails: {
-          default: {
-            url: `https://i.ytimg.com/vi/${videoId}/default.jpg`,
-            width: 120,
-            height: 90
-          },
-          medium: {
-            url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-            width: 320,
-            height: 180
-          },
-          high: {
-            url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-            width: 480,
-            height: 360
-          }
-        },
-        channelTitle: this.account?.displayName || 'TechCare Channel',
         tags: videoData.snippet.tags,
         categoryId: videoData.snippet.categoryId,
-        liveBroadcastContent: 'none',
-        localized: {
-          title: videoData.snippet.title,
-          description: videoData.snippet.description
+        channelTitle: this.account?.displayName || 'Canal Simulado',
+        thumbnails: {
+            default: { url: `https://i.ytimg.com/vi/${videoId}/default.jpg` },
+            medium: { url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` },
+            high: { url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` }
         }
       },
       status: {
         uploadStatus: 'processed',
         privacyStatus: videoData.status?.privacyStatus || 'public',
+        publishAt: videoData.status?.publishAt,
         license: 'youtube',
         embeddable: true,
-        publicStatsViewable: true,
-        madeForKids: false
-      },
-      statistics: {
-        viewCount: '0',
-        likeCount: '0',
-        dislikeCount: '0',
-        favoriteCount: '0',
-        commentCount: '0'
+        publicStatsViewable: true
       }
     };
   }
-  
+
   private async simulateGetVideoMetrics(videoId: string): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API do YouTube para obter métricas de vídeo
     const views = Math.floor(Math.random() * 10000);
-    const likes = Math.floor(views * 0.1);
-    const dislikes = Math.floor(likes * 0.1);
-    const comments = Math.floor(views * 0.02);
-    
+    const likes = Math.floor(views * (Math.random() * 0.1 + 0.01)); // 1-11% likes
+    const comments = Math.floor(views * (Math.random() * 0.05 + 0.005)); // 0.5-5.5% comments
     return {
       kind: 'youtube#videoListResponse',
-      etag: '"XI7nbFXulYBIpL0ayR_gDh3eu1k/Dn_HMiUS0gL-KlLMHpkB45BfVfY"',
       items: [
         {
           kind: 'youtube#video',
-          etag: '"XI7nbFXulYBIpL0ayR_gDh3eu1k/Dn_HMiUS0gL-KlLMHpkB45BfVfY"',
           id: videoId,
           statistics: {
             viewCount: views.toString(),
             likeCount: likes.toString(),
-            dislikeCount: dislikes.toString(),
-            favoriteCount: '0',
-            commentCount: comments.toString()
+            commentCount: comments.toString(),
+            favoriteCount: '0' // Favorite count is deprecated
           }
         }
       ]
     };
   }
-  
-  private async simulateRevokeToken(accessToken: string): Promise<void> {
-    // Simulação da revogação do token
-    return Promise.resolve();
-  }
-  
+
   private async simulateGetVideos(maxResults: number): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API do YouTube para listar vídeos do canal
     const items = [];
-    
     for (let i = 0; i < maxResults; i++) {
       const videoId = Math.random().toString(36).substring(2, 13);
-      const publishedAt = new Date(Date.now() - i * 86400000).toISOString(); // Um dia de diferença entre cada vídeo
-      
       items.push({
-        kind: 'youtube#video',
-        etag: '"XI7nbFXulYBIpL0ayR_gDh3eu1k/Dn_HMiUS0gL-KlLMHpkB45BfVfY"',
-        id: videoId,
+        kind: 'youtube#searchResult',
+        id: { kind: 'youtube#video', videoId },
         snippet: {
-          publishedAt,
+          publishedAt: new Date(Date.now() - i * 86400000).toISOString(),
           channelId: this.channelId,
-          title: `Vídeo de demonstração #${i+1}`,
-          description: `Descrição do vídeo de demonstração #${i+1}`,
+          title: `Vídeo Simulado ${i + 1}`,
+          description: `Descrição do vídeo simulado ${i + 1}.`,
           thumbnails: {
-            default: {
-              url: `https://i.ytimg.com/vi/${videoId}/default.jpg`,
-              width: 120,
-              height: 90
-            },
-            medium: {
-              url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-              width: 320,
-              height: 180
-            },
-            high: {
-              url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-              width: 480,
-              height: 360
-            }
+            default: { url: `https://i.ytimg.com/vi/${videoId}/default.jpg` },
+            medium: { url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` },
+            high: { url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` }
           },
-          channelTitle: this.account?.displayName || 'TechCare Channel',
-          tags: ['techcare', 'demo', `video${i+1}`],
-          categoryId: '22',
-          liveBroadcastContent: 'none',
-          localized: {
-            title: `Vídeo de demonstração #${i+1}`,
-            description: `Descrição do vídeo de demonstração #${i+1}`
-          }
-        },
-        statistics: {
-          viewCount: Math.floor(Math.random() * 10000).toString(),
-          likeCount: Math.floor(Math.random() * 1000).toString(),
-          dislikeCount: Math.floor(Math.random() * 100).toString(),
-          favoriteCount: '0',
-          commentCount: Math.floor(Math.random() * 200).toString()
+          channelTitle: this.account?.displayName || 'Canal Simulado'
         }
       });
     }
-    
+    return { kind: 'youtube#searchListResponse', items };
+  }
+
+  private createErrorResult(error: string): PostResult {
     return {
-      kind: 'youtube#videoListResponse',
-      etag: '"XI7nbFXulYBIpL0ayR_gDh3eu1k/Dn_HMiUS0gL-KlLMHpkB45BfVfY"',
-      pageInfo: {
-        totalResults: 50,
-        resultsPerPage: maxResults
-      },
-      items
+      success: false,
+      error,
+      timestamp: new Date(),
+      platform: 'youtube'
     };
   }
 }
 
 export default YouTubeConnector;
+

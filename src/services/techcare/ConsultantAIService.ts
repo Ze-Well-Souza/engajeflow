@@ -1,4 +1,3 @@
-
 import AIService from './AIService';
 import NavigationService from './NavigationService';
 import ScrapingService from './ScrapingService';
@@ -43,8 +42,12 @@ class ConsultantAIServiceImpl {
     goal: string,
     options: any = {}
   ) {
+    const operation = logger.startOperation('generateFinancialConsulting');
+    
     try {
       if (!this.apiKey) {
+        consultantLogger.error('[ConsultantAIService] API Key não configurada.');
+        operation.end('failure', { error: 'API Key não configurada' });
         return {
           success: false,
           error: 'API Key não configurada. Configure a API Key antes de utilizar este serviço.'
@@ -55,7 +58,7 @@ class ConsultantAIServiceImpl {
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      return {
+      const result = {
         success: true,
         data: {
           summary: 'Análise financeira baseada nos dados fornecidos e objetivo de ' + goal,
@@ -71,8 +74,17 @@ class ConsultantAIServiceImpl {
           }
         }
       };
+      
+      consultantLogger.info('Consultoria financeira gerada com sucesso', { 
+        goal,
+        recommendationCount: result.data.recommendations.length
+      });
+      
+      operation.end('success', { goal });
+      return result;
     } catch (error) {
       consultantLogger.error('Erro ao gerar consultoria financeira', error);
+      operation.end('failure', { goal, error: error.message });
       return {
         success: false,
         error: 'Falha ao gerar consultoria financeira: ' + error.message
@@ -147,7 +159,7 @@ class ConsultantAIServiceImpl {
         insights: ["Insight 1", "Insight 2"]
       };
       
-      consultantLogger.info('Análise de tendências concluída');
+      consultantLogger.info('Análise de tendências concluída com sucesso');
       
       operation.end('success', {});
       return trendsAnalysis;

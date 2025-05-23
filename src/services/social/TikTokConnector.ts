@@ -3,475 +3,367 @@ import SocialMediaConnector, {
   PostContent, 
   PostResult, 
   SocialAccount 
-} from './SocialMediaConnector';
+} from './SocialMediaConnector");
 
 /**
  * TikTokConnector - Implementação específica para integração com TikTok API
- * 
- * Este conector permite publicar conteúdo em contas do TikTok,
- * gerenciar vídeos e obter métricas de engajamento.
  */
 export class TikTokConnector extends SocialMediaConnector {
-  private apiVersion = 'v2'; // Versão atual da API do TikTok
+  private apiVersion = 'v2';
   private baseUrl = 'https://open.tiktokapis.com';
   private openId: string | null = null;
-  
+
   constructor(authConfig: AuthConfig, openId?: string) {
     super(authConfig);
     this.openId = openId || null;
   }
-  
+
+  protected getPlatformName(): string {
+    return 'TikTok';
+  }
+
   /**
    * Gera a URL de autorização para o fluxo OAuth do TikTok
    */
   getAuthorizationUrl(): string {
     const params = new URLSearchParams({
-      client_key: this.authConfig.clientId,
+      client_key: this.authConfig.clientId, // TikTok usa client_key
       redirect_uri: this.authConfig.redirectUri,
-      scope: this.authConfig.scopes.join(','),
+      scope: this.authConfig.scopes.join(','), // TikTok usa vírgula
       response_type: 'code',
-      state: this.generateRandomState()
+      state: this.generateRandomState() // Método herdado
     });
-    
     return `https://www.tiktok.com/auth/authorize?${params.toString()}`;
   }
-  
+
   /**
    * Processa o código de autorização recebido após o redirecionamento OAuth
    */
   async handleAuthorizationCode(code: string): Promise<SocialAccount> {
     try {
-      // Simulação da troca do código por tokens de acesso
-      // Em produção, isso faria uma chamada real à API do TikTok
-      const tokenResponse = await this.simulateTokenExchange(code);
-      
-      // Simulação da obtenção de informações do usuário
-      const userInfo = await this.simulateGetUserInfo(tokenResponse.access_token, tokenResponse.open_id);
-      
+      // Usa simulação da classe base para troca de código por token
+      // A API real do TikTok requer client_key e client_secret
+      const tokenResponse = await this.simulateTokenExchange(code, { grant_type: 'authorization_code' });
+
+      if (!tokenResponse.open_id) {
+        throw new Error('Resposta da API do TikTok não contém open_id.');
+      }
       this.openId = tokenResponse.open_id;
-      
+
+      // Simulação da obtenção de informações do usuário (específico do TikTok)
+      const userInfo = await this.simulateGetUserInfo(tokenResponse.access_token, this.openId);
+
       this.account = {
-        id: tokenResponse.open_id,
+        id: this.openId,
         platform: 'tiktok',
-        username: userInfo.display_name,
+        username: userInfo.display_name, // TikTok usa display_name
         displayName: userInfo.display_name,
-        profilePictureUrl: userInfo.avatar_url,
+        profilePictureUrl: userInfo.avatar_url_100, // Usar avatar menor
         isConnected: true,
         lastSyncTime: new Date(),
         accessToken: tokenResponse.access_token,
         refreshToken: tokenResponse.refresh_token,
         tokenExpiry: new Date(Date.now() + tokenResponse.expires_in * 1000)
       };
-      
+
       return this.account;
     } catch (error) {
-      console.error('Erro ao processar código de autorização:', error);
+      console.error('Erro ao processar código de autorização TikTok:', error);
       throw new Error('Falha na autenticação com TikTok API');
     }
   }
-  
+
   /**
-   * Atualiza o token de acesso se necessário
+   * Atualiza o token de acesso se necessário, usando a lógica base
    */
   async refreshAccessTokenIfNeeded(): Promise<boolean> {
-    if (!this.account || !this.account.refreshToken) {
-      return false;
-    }
-    
-    // Verifica se o token está prestes a expirar (menos de 1 hora restante)
-    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
-    if (this.account.tokenExpiry && this.account.tokenExpiry > oneHourFromNow) {
-      return true; // Token ainda é válido
-    }
-    
-    try {
-      // Simulação da atualização do token
-      // Em produção, isso faria uma chamada real à API do TikTok
-      const tokenResponse = await this.simulateTokenRefresh(this.account.refreshToken);
-      
-      if (this.account) {
-        this.account.accessToken = tokenResponse.access_token;
-        this.account.refreshToken = tokenResponse.refresh_token || this.account.refreshToken;
-        this.account.tokenExpiry = new Date(Date.now() + tokenResponse.expires_in * 1000);
-        this.account.lastSyncTime = new Date();
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao atualizar token de acesso:', error);
-      return false;
-    }
+    // TikTok tokens geralmente expiram em 24h, usamos threshold de 1 hora
+    return this.baseRefreshAccessTokenIfNeeded(60);
   }
-  
+
   /**
-   * Publica conteúdo no TikTok
-   * Nota: A API oficial do TikTok tem limitações para publicação direta de conteúdo
-   * Esta implementação simula esse comportamento
+   * Publica conteúdo no TikTok (simulação)
+   * Nota: A API real tem limitações e requer upload prévio.
    */
   async publishPost(content: PostContent): Promise<PostResult> {
-    if (!this.isAuthenticated() || !this.openId) {
-      return {
-        success: false,
-        error: 'Não autenticado ou openId não configurado',
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
+    if (!this.isAuthenticated() || !this.openId || !this.account?.accessToken) {
+      return this.createErrorResult('Não autenticado, openId não configurado ou token ausente');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      return this.createErrorResult('Falha ao atualizar token de acesso');
+    }
+
     const validation = this.validateContent(content);
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.errors.join(', '),
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
+      return this.createErrorResult(validation.errors.join(', '));
     }
-    
+
     try {
-      // Simulação da publicação de conteúdo
-      // Em produção, isso faria uma chamada real à API do TikTok
       const postData = this.formatContent(content);
+      // Simulação da publicação (específico do TikTok)
       const result = await this.simulateCreatePost(postData);
-      
+
       return {
         success: true,
-        postId: result.id,
-        url: `https://www.tiktok.com/@${this.account?.username}/video/${result.id}`,
+        postId: result.data?.video?.id, // ID do vídeo retornado pela API simulada
+        url: `https://www.tiktok.com/@${this.account?.username}/video/${result.data?.video?.id}`,
         timestamp: new Date(),
         platform: 'tiktok'
       };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao publicar conteúdo',
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
+      return this.createErrorResult(error.message || 'Erro ao publicar conteúdo');
     }
   }
-  
+
   /**
-   * Agenda uma publicação para um momento futuro no TikTok
-   * Nota: A API oficial do TikTok não suporta agendamento nativo,
-   * então esta implementação simula esse comportamento
+   * Agenda uma publicação para um momento futuro no TikTok (simulação)
+   * Nota: A API oficial não suporta agendamento nativo.
    */
   async schedulePost(content: PostContent, scheduledTime: Date): Promise<PostResult> {
-    if (!this.isAuthenticated()) {
-      return {
-        success: false,
-        error: 'Não autenticado',
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
-    }
-    
-    const validation = this.validateContent({...content, scheduledTime});
+    console.warn(`[${this.getPlatformName()}] Agendamento não suportado nativamente pela API. A lógica deve ser implementada externamente.`);
+    const validation = this.validateContent({ ...content, scheduledTime });
     if (!validation.isValid) {
-      return {
-        success: false,
-        error: validation.errors.join(', '),
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
+      return this.createErrorResult(validation.errors.join(', '));
     }
-    
-    try {
-      // Simulação do agendamento de publicação
-      // Em produção, isso seria implementado no backend da aplicação
-      const scheduleResult = await this.simulateSchedulePost(content, scheduledTime);
-      
-      return {
-        success: true,
-        postId: scheduleResult.schedule_id,
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erro ao agendar publicação',
-        timestamp: new Date(),
-        platform: 'tiktok'
-      };
-    }
+    // Simula um ID de agendamento
+    return {
+      success: true,
+      postId: 'schedule_tt_' + this.generateRandomState(),
+      timestamp: new Date(),
+      platform: 'tiktok',
+      error: 'Agendamento simulado. Implementação real necessária no backend.'
+    };
   }
-  
+
   /**
-   * Obtém métricas de uma publicação
+   * Obtém métricas de uma publicação (vídeo)
    */
-  async getPostMetrics(postId: string): Promise<any> {
-    if (!this.isAuthenticated()) {
-      throw new Error('Não autenticado');
+  async getPostMetrics(videoId: string): Promise<any> {
+    if (!this.isAuthenticated() || !this.account?.accessToken) {
+      throw new Error('Não autenticado ou token ausente');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de métricas
-      // Em produção, isso faria uma chamada real à API do TikTok
-      return await this.simulateGetVideoMetrics(postId);
+      // Simulação da obtenção de métricas (específico do TikTok)
+      return await this.simulateGetVideoMetrics(videoId);
     } catch (error) {
-      console.error('Erro ao obter métricas da publicação:', error);
+      console.error('Erro ao obter métricas da publicação TikTok:', error);
       throw new Error('Falha ao obter métricas da publicação');
     }
   }
-  
-  /**
-   * Desconecta a conta atual
-   */
-  async disconnect(): Promise<boolean> {
-    if (!this.isAuthenticated() || !this.account?.accessToken) {
-      return false;
-    }
-    
-    try {
-      // Simulação da revogação do token
-      // Em produção, isso faria uma chamada real à API do TikTok
-      await this.simulateRevokeToken(this.account.accessToken);
-      
-      this.account = null;
-      this.openId = null;
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao desconectar conta:', error);
-      return false;
-    }
-  }
-  
+
   /**
    * Obtém informações da conta do TikTok
    */
   async getAccountInfo(): Promise<any> {
     if (!this.isAuthenticated() || !this.openId || !this.account?.accessToken) {
-      throw new Error('Não autenticado ou openId não configurado');
+      throw new Error('Não autenticado, openId não configurado ou token ausente');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de informações da conta
-      // Em produção, isso faria uma chamada real à API do TikTok
-      return await this.simulateGetAccountInfo();
+      // Simulação da obtenção de informações da conta (específico do TikTok)
+      return await this.simulateGetUserInfo(this.account.accessToken, this.openId);
     } catch (error) {
-      console.error('Erro ao obter informações da conta:', error);
+      console.error('Erro ao obter informações da conta TikTok:', error);
       throw new Error('Falha ao obter informações da conta');
     }
   }
-  
+
   /**
    * Obtém vídeos da conta do TikTok
    */
   async getVideos(limit: number = 10): Promise<any[]> {
     if (!this.isAuthenticated() || !this.openId || !this.account?.accessToken) {
-      throw new Error('Não autenticado ou openId não configurado');
+      throw new Error('Não autenticado, openId não configurado ou token ausente');
     }
-    
-    await this.refreshAccessTokenIfNeeded();
-    
+
+    if (!await this.refreshAccessTokenIfNeeded()) {
+      throw new Error('Falha ao atualizar token de acesso');
+    }
+
     try {
-      // Simulação da obtenção de vídeos
-      // Em produção, isso faria uma chamada real à API do TikTok
+      // Simulação da obtenção de vídeos (específico do TikTok)
       const response = await this.simulateGetVideos(limit);
-      return response.videos;
+      return response.data?.videos || [];
     } catch (error) {
-      console.error('Erro ao obter vídeos:', error);
+      console.error('Erro ao obter vídeos TikTok:', error);
       throw new Error('Falha ao obter vídeos');
     }
   }
-  
+
   /**
    * Formata o conteúdo de acordo com as especificações da API do TikTok
    */
   protected formatContent(content: PostContent): any {
     const formattedContent: any = {
-      description: content.text || ''
+      post_info: {
+        title: content.text?.substring(0, 150) || '', // Título é opcional e limitado
+        description: content.text || '',
+        // Outros campos como privacy_level, comment_disabled, etc.
+      },
+      source_info: {
+        source: 'FILE_UPLOAD', // Ou PULL_FROM_URL
+        video_url: (content.media && content.media[0]?.type === 'video') ? content.media[0].url : undefined
+      }
     };
-    
-    if (content.media && content.media.length > 0) {
-      // No TikTok, é necessário primeiro fazer upload do vídeo e depois criar a publicação
-      // Esta é uma simulação simplificada
-      formattedContent.video_url = content.media[0].url;
-    }
-    
     return formattedContent;
   }
-  
+
   /**
    * Validação específica para conteúdo do TikTok
    */
   validateContent(content: PostContent): { isValid: boolean; errors: string[] } {
     const baseValidation = super.validateContent(content);
     const errors = [...baseValidation.errors];
-    
-    // Validações específicas para TikTok
+
     if (content.text && content.text.length > 2200) {
       errors.push('A descrição não pode exceder 2.200 caracteres');
     }
-    
     if (!content.media || content.media.length === 0) {
       errors.push('É necessário incluir um vídeo');
     } else if (content.media.length > 1) {
       errors.push('O TikTok permite apenas um vídeo por publicação');
     } else if (content.media[0].type !== 'video') {
-      errors.push('O TikTok só aceita vídeos');
+      errors.push('O TikTok só aceita conteúdo do tipo vídeo');
     }
-    
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
+    // TikTok não suporta agendamento via API padrão
+    if (content.scheduledTime) {
+        errors.push('Agendamento não é suportado nativamente pela API do TikTok.');
+    }
+
+    return { isValid: errors.length === 0, errors };
   }
-  
-  // Métodos auxiliares para simulação (em produção, seriam substituídos por chamadas reais à API)
-  
-  private generateRandomState(): string {
-    return Math.random().toString(36).substring(2, 15);
+
+  /**
+   * Implementação da revogação de token para TikTok (usa simulação base)
+   */
+  protected async revokeToken(token: string): Promise<void> {
+    // A API real pode ter um endpoint específico ou a revogação ser feita pelo usuário
+    await this.simulateRevokeToken(token);
   }
-  
-  private async simulateTokenExchange(code: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      access_token: 'act.' + Math.random().toString(36).substring(2, 15),
-      token_type: 'Bearer',
-      expires_in: 86400, // 24 horas
-      refresh_token: 'rft.' + Math.random().toString(36).substring(2, 15),
-      refresh_expires_in: 31536000, // 1 ano
-      scope: 'user.info.basic,video.list',
-      open_id: 'user' + Math.random().toString(36).substring(2, 15)
-    };
+
+  /**
+   * Limpa dados específicos do TikTok ao desconectar
+   */
+  protected clearAccountData(): void {
+    super.clearAccountData();
+    this.openId = null;
   }
-  
+
+  // --- Métodos Auxiliares Específicos (Simulação) ---
+
   private async simulateGetUserInfo(accessToken: string, openId: string): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API /user/info/
     return {
-      open_id: openId,
-      union_id: 'union' + Math.random().toString(36).substring(2, 15),
-      avatar_url: 'https://placehold.co/400x400/000000/ffffff?text=TT',
-      avatar_url_100: 'https://placehold.co/100x100/000000/ffffff?text=TT',
-      avatar_url_200: 'https://placehold.co/200x200/000000/ffffff?text=TT',
-      display_name: 'TechCare Creator',
-      bio_description: 'Conta oficial da TechCare no TikTok',
-      profile_deep_link: 'https://www.tiktok.com/@techcare',
-      is_verified: false,
-      follower_count: 1500,
-      following_count: 100,
-      likes_count: 25000,
-      video_count: 45
+      data: {
+        user: {
+          open_id: openId,
+          union_id: 'union_tt_' + this.generateRandomState(),
+          avatar_url: 'https://placehold.co/400x400/000000/ffffff?text=TT',
+          avatar_url_100: 'https://placehold.co/100x100/000000/ffffff?text=TT',
+          display_name: 'Usuário TikTok Simulado',
+          bio_description: 'Bio simulada.',
+          profile_deep_link: `https://www.tiktok.com/@simulateduser_${openId.substring(0, 5)}`,
+          is_verified: false,
+          follower_count: Math.floor(Math.random() * 10000),
+          following_count: Math.floor(Math.random() * 1000),
+          likes_count: Math.floor(Math.random() * 50000)
+        }
+      },
+      error: { code: 0, message: 'Success' }
     };
   }
-  
-  private async simulateTokenRefresh(refreshToken: string): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      access_token: 'act.' + Math.random().toString(36).substring(2, 15),
-      token_type: 'Bearer',
-      expires_in: 86400, // 24 horas
-      refresh_token: refreshToken,
-      refresh_expires_in: 31536000, // 1 ano
-      scope: 'user.info.basic,video.list'
-    };
-  }
-  
+
   private async simulateCreatePost(postData: any): Promise<any> {
-    // Simulação da resposta da API
-    const id = Math.floor(Math.random() * 10000000000).toString();
-    
+    // Simulação da API /share/video/upload/
+    console.debug(`[${this.getPlatformName()}] Simulando criação de post com dados:`, postData);
+    const videoId = Math.floor(Math.random() * 1000000000000000000).toString();
     return {
-      id,
-      create_time: Math.floor(Date.now() / 1000),
-      share_url: `https://www.tiktok.com/@${this.account?.username}/video/${id}`
+      data: {
+        share_id: 'share_' + this.generateRandomState(),
+        video: {
+          id: videoId
+        }
+      },
+      error: { code: 0, message: 'Success', log_id: this.generateRandomState() }
     };
   }
-  
-  private async simulateSchedulePost(content: PostContent, scheduledTime: Date): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      schedule_id: 'schedule_' + Math.random().toString(36).substring(2, 15),
-      scheduled_time: scheduledTime.toISOString(),
-      status: 'SCHEDULED'
-    };
-  }
-  
+
   private async simulateGetVideoMetrics(videoId: string): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API /video/query/
     const views = Math.floor(Math.random() * 10000);
-    const likes = Math.floor(views * 0.2);
-    const comments = Math.floor(views * 0.05);
-    const shares = Math.floor(views * 0.03);
-    
+    const likes = Math.floor(views * (Math.random() * 0.2 + 0.05)); // 5-25% likes
+    const comments = Math.floor(views * (Math.random() * 0.1 + 0.01)); // 1-11% comments
+    const shares = Math.floor(views * (Math.random() * 0.05 + 0.005)); // 0.5-5.5% shares
     return {
-      video_id: videoId,
-      metrics: {
-        views,
-        likes,
-        comments,
-        shares,
-        play_duration: Math.floor(Math.random() * 60),
-        total_play_duration: views * Math.floor(Math.random() * 60),
-        average_watch_time: Math.floor(Math.random() * 30),
-        video_completion_rate: Math.random() * 0.8
-      }
+      data: {
+        videos: [
+          {
+            id: videoId,
+            create_time: Math.floor(Date.now() / 1000) - Math.floor(Math.random() * 86400 * 7),
+            // ... outros dados do vídeo
+            stats: {
+              view_count: views,
+              like_count: likes,
+              comment_count: comments,
+              share_count: shares,
+              favorite_count: Math.floor(likes * 0.1) // Simulação
+            }
+          }
+        ]
+      },
+      error: { code: 0, message: 'Success' }
     };
   }
-  
-  private async simulateRevokeToken(accessToken: string): Promise<void> {
-    // Simulação da revogação do token
-    return Promise.resolve();
-  }
-  
-  private async simulateGetAccountInfo(): Promise<any> {
-    // Simulação da resposta da API
-    return {
-      open_id: this.openId,
-      union_id: 'union' + Math.random().toString(36).substring(2, 15),
-      avatar_url: this.account?.profilePictureUrl,
-      display_name: this.account?.displayName,
-      bio_description: 'Conta oficial da TechCare no TikTok',
-      profile_deep_link: `https://www.tiktok.com/@${this.account?.username}`,
-      is_verified: false,
-      follower_count: 1500,
-      following_count: 100,
-      likes_count: 25000,
-      video_count: 45
-    };
-  }
-  
+
   private async simulateGetVideos(limit: number): Promise<any> {
-    // Simulação da resposta da API
+    // Simulação da API /video/list/
     const videos = [];
-    
     for (let i = 0; i < limit; i++) {
-      const id = Math.floor(Math.random() * 10000000000).toString();
-      const createTime = Math.floor(Date.now() / 1000) - i * 86400; // Um dia de diferença entre cada vídeo
-      
+      const videoId = Math.floor(Math.random() * 1000000000000000000).toString();
       videos.push({
-        id,
-        create_time: createTime,
-        cover_image_url: `https://placehold.co/400x720/000000/ffffff?text=Video${i+1}`,
-        share_url: `https://www.tiktok.com/@${this.account?.username}/video/${id}`,
-        video_description: `Vídeo de demonstração #${i+1}`,
-        duration: Math.floor(Math.random() * 60) + 10,
-        height: 1920,
-        width: 1080,
+        id: videoId,
+        create_time: Math.floor(Date.now() / 1000) - i * 86400,
+        cover_image_url: `https://placehold.co/400x720/000000/ffffff?text=TT_Vid_${i + 1}`,
+        share_url: `https://www.tiktok.com/@simulateduser/video/${videoId}`,
+        video_description: `Descrição simulada vídeo ${i + 1}`,
+        duration: Math.floor(Math.random() * 50) + 10,
         stats: {
-          comment_count: Math.floor(Math.random() * 100),
+          view_count: Math.floor(Math.random() * 10000),
           like_count: Math.floor(Math.random() * 1000),
-          share_count: Math.floor(Math.random() * 50),
-          view_count: Math.floor(Math.random() * 10000)
+          comment_count: Math.floor(Math.random() * 100),
+          share_count: Math.floor(Math.random() * 50)
         }
       });
     }
-    
     return {
-      videos,
-      cursor: Math.random().toString(36).substring(2, 15),
-      has_more: true
+      data: {
+        videos,
+        cursor: Math.random() > 0.3 ? Math.floor(Date.now() / 1000) - limit * 86400 : 0,
+        has_more: Math.random() > 0.3
+      },
+      error: { code: 0, message: 'Success' }
+    };
+  }
+
+  private createErrorResult(error: string): PostResult {
+    return {
+      success: false,
+      error,
+      timestamp: new Date(),
+      platform: 'tiktok'
     };
   }
 }
 
 export default TikTokConnector;
+

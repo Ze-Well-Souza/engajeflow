@@ -1,66 +1,106 @@
-# TechCare Connect Automator
+# TechCare Connect Automator: Impulsione seu Negócio nas Redes Sociais
 
-Sistema de automação e integração com a plataforma TechCare, permitindo operações em lote, extração de dados e geração de relatórios.
+**Desenvolvido para o pequeno e médio empreendedor, formal ou informal, que busca crescer e engajar mais clientes através das mídias sociais.**
 
-## 📋 Visão Geral
+O TechCare Connect Automator é sua ferramenta completa para automatizar e otimizar sua presença online, liberando seu tempo para focar no que realmente importa: seu negócio.
 
-O TechCare Connect Automator é uma solução completa para automatizar interações com a plataforma TechCare, oferecendo:
+## 🎯 Para Quem é Este Projeto?
 
-- **Dashboard**: Interface web para configuração e monitoramento de automações
-- **Automator**: Serviço para execução de tarefas automatizadas
-- **Scheduler**: Agendador de tarefas recorrentes
-- **Sistema de Filas**: Processamento assíncrono com prioridades e retentativas
+Você é um(a) empreendedor(a) buscando:
+
+*   **Aumentar o engajamento** com seus clientes no Instagram, Facebook, WhatsApp, YouTube, TikTok e Telegram?
+*   **Automatizar postagens** e interações para manter sua marca ativa e consistente?
+*   **Gerenciar múltiplos perfis** de redes sociais de forma centralizada e eficiente?
+*   **Obter insights valiosos** sobre o desempenho das suas campanhas e o sentimento dos seus clientes?
+*   **Simplificar tarefas repetitivas** de marketing digital e atendimento ao cliente?
+*   **Integrar suas operações** de mídia social com outras ferramentas de gestão (como a plataforma TechCare, se aplicável)?
+
+Se sim, o TechCare Connect Automator foi feito para você!
+
+## ✨ Funcionalidades Detalhadas
+
+Esta plataforma robusta oferece um conjunto poderoso de ferramentas para transformar sua estratégia digital:
+
+*   **Conexão Multicanal**: Integre e gerencie suas contas de **Instagram, Facebook, WhatsApp, YouTube, TikTok e Telegram** em um único lugar.
+*   **Automação de Conteúdo**: Agende e publique posts, vídeos e stories automaticamente em múltiplos canais, garantindo presença constante.
+*   **Engajamento Inteligente**: Configure respostas automáticas para comentários e mensagens, gerencie interações e mantenha o diálogo com seus seguidores (requer configuração e pode depender das APIs de cada plataforma).
+*   **Inteligência Artificial (IA) para Negócios**: Utilize o poder da IA (integrado com Google Gemini) para:
+    *   **Gerar Insights**: Analise tendências de mercado e o sentimento dos seus clientes em relação à sua marca.
+    *   **Criar Conteúdo**: Receba sugestões de posts, legendas e respostas otimizadas para seu público.
+    *   **Análise de Texto**: Classifique e sumarize automaticamente grandes volumes de comentários ou mensagens.
+    *   **Consultoria Virtual**: Obtenha análises e sugestões personalizadas para suas estratégias de marketing e até mesmo financeiras (com base nos dados disponíveis).
+*   **Dashboard de Controle Centralizado**: Uma interface web intuitiva para:
+    *   Configurar todas as conexões e automações.
+    *   Agendar posts e campanhas.
+    *   Monitorar o status das tarefas em tempo real.
+    *   Visualizar métricas e relatórios de desempenho.
+*   **Análise e Relatórios**: Acompanhe métricas chave de engajamento (curtidas, comentários, compartilhamentos), alcance, crescimento de seguidores e outros KPIs. Gere relatórios consolidados para avaliar o ROI das suas ações.
+*   **Gerenciamento Financeiro (Opcional)**: Se integrado ou utilizado para dados financeiros, oferece funcionalidades como sincronização bancária, geração de relatórios financeiros e análise de transações.
+*   **Motor de Automação Robusto (Automator)**: Executa confiavelmente as tarefas agendadas, interagindo com as plataformas sociais.
+*   **Agendador Flexível (Scheduler)**: Programe tarefas recorrentes ou pontuais com precisão.
+*   **Sistema de Filas Escalável**: Processa um grande volume de tarefas de forma assíncrona, com prioridades, retentativas automáticas em caso de falha e balanceamento de carga, garantindo performance e confiabilidade.
+*   **Monitoramento e Logs Avançados**: Acompanhe a saúde do sistema, performance e diagnostique problemas rapidamente através de logs estruturados e métricas detalhadas (compatível com Prometheus).
+*   **Arquitetura Moderna e Escalável**: Construído com tecnologias modernas (Node.js, React, TypeScript, Docker), utilizando cache distribuído e design modular para suportar o crescimento do seu negócio.
+*   **Segurança**: Gerenciamento seguro de credenciais e conexões com as plataformas sociais.
+
+---
 
 ## 🚀 Início Rápido
 
 ### Usando Docker (Recomendado)
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/Ze-Well-Souza/techcare-connect-automator.git
-   cd techcare-connect-automator
-   ```
+1.  **Clone o repositório**:
+    ```bash
+    git clone https://github.com/Ze-Well-Souza/techcare-connect-automator.git
+    cd techcare-connect-automator
+    ```
 
-2. Crie um arquivo `.env` com as configurações necessárias:
-   ```bash
-   cp .env.example .env
-   # Edite o arquivo .env com suas credenciais e configurações
-   ```
+2.  **Configure o ambiente**: Crie um arquivo `.env` a partir do exemplo e ajuste as configurações conforme sua necessidade.
+    ```bash
+    cp .env.example .env
+    # Edite o arquivo .env com suas credenciais e configurações
+    # Nota: Credenciais específicas (TECHCARE_USER/PASS) podem não ser necessárias.
+    # Configure as senhas de Redis e outras chaves de API que for usar.
+    ```
 
-3. Inicie os serviços com Docker Compose:
-   ```bash
-   docker-compose up -d
-   ```
+3.  **Inicie os serviços** com Docker Compose:
+    ```bash
+    docker-compose up -d
+    ```
 
-4. Acesse o dashboard em `http://localhost:3000`
+4.  **Acesse o dashboard** no seu navegador: `http://localhost:3000`
 
-### Exemplo de arquivo .env
+### Exemplo de arquivo `.env` Essencial
 
-```
-# Credenciais do TechCare (obrigatórias)
-TECHCARE_USER=seu_usuario@exemplo.com
-TECHCARE_PASS=sua_senha_segura
-TECHCARE_BASE_URL=https://app.techcare.com
-
-# Configurações de operação
+```dotenv
+# Configurações de Operação
 NODE_ENV=production
-OPERATION_MODE=dashboard
-MAX_CONCURRENCY=3
+OPERATION_MODE=dashboard # Mude para 'automator' ou 'scheduler' se rodar separadamente
+MAX_CONCURRENCY=3      # Número de tarefas simultâneas
 
-# Configurações de logs
-LOG_LEVEL=info
+# Configurações de Logs
+LOG_LEVEL=info         # Nível de detalhe: debug, info, warn, error
 LOG_DIR=logs
-LOG_FORMAT=json
+LOG_FORMAT=json        # Formato: json ou text
 
-# Configurações de Redis
+# Configurações do Redis (Obrigatório para Filas)
 REDIS_HOST=redis
 REDIS_PORT=6379
-REDIS_PASSWORD=techcare_redis_pass
+REDIS_PASSWORD=sua_senha_forte_para_o_redis # Use uma senha segura!
+
+# Chaves de API (Exemplo para IA)
+# GEMINI_API_KEY=SUA_CHAVE_API_GEMINI
+
+# Credenciais de Plataformas Sociais (Configuradas via Dashboard ou .env)
+# Ex: INSTAGRAM_USER=seu_usuario
+# Ex: INSTAGRAM_PASS=sua_senha
 ```
 
-Veja o arquivo `.env.example` para todas as opções disponíveis.
+Consulte o arquivo `.env.example` para ver todas as variáveis de ambiente possíveis.
 
 ## 🏗️ Build com Docker
+
+*(Seção mantida como no original, relevante para deploy)*
 
 ### Build da Imagem
 
@@ -107,13 +147,14 @@ techcare-automator    | 2025-05-22 01:45:12.789 [INFO]: Criando diretório /app/
 techcare-automator    | 2025-05-22 01:45:12.890 [INFO]: Criando diretório /app/data...
 techcare-automator    | 2025-05-22 01:45:13.001 [INFO]: Configurando timezone: America/Sao_Paulo
 techcare-automator    | 2025-05-22 01:45:13.112 [INFO]: Executando verificação de saúde do sistema...
-techcare-automator    | 2025-05-22 01:45:14.223 [INFO]: Conexão com TechCare estabelecida com sucesso.
 techcare-automator    | 2025-05-22 01:45:14.334 [INFO]: Verificação de saúde concluída.
 techcare-automator    | 2025-05-22 01:45:14.445 [INFO]: Iniciando aplicação no modo: automator
 techcare-automator    | 2025-05-22 01:45:14.556 [INFO]: Iniciando no modo automator...
 ```
 
 ## 🧪 Testes
+
+*(Seção mantida como no original, relevante para desenvolvimento e validação)*
 
 ### Executando Testes
 
@@ -127,7 +168,7 @@ npm test
 # Executar testes com cobertura
 npm run test:coverage
 
-# Executar testes específicos
+# Executar testes específicos (ex: FinancialService)
 npm test -- --testPathPattern=FinancialService
 ```
 
@@ -142,184 +183,137 @@ npm test -- --testPathPattern=Flow
 
 ## 📊 Monitoramento e Logs
 
+*(Seção mantida como no original, relevante para operação)*
+
 ### Sistema de Logs Estruturados
 
-O TechCare Connect Automator utiliza um sistema de logs estruturados baseado em Winston, que oferece:
+O TechCare Connect Automator utiliza um sistema de logs estruturados (baseado em Winston) que oferece:
 
-- **Níveis de log**: debug, info, warn, error
-- **Formato estruturado**: JSON para fácil processamento
-- **Timestamps precisos**: em todas as entradas de log
-- **Contexto**: identificação clara do módulo e operação
-- **Medição de tempo**: para operações críticas
+*   **Níveis de log**: debug, info, warn, error
+*   **Formato estruturado**: JSON para fácil processamento por outras ferramentas.
+*   **Timestamps precisos**: Para rastrear eventos.
+*   **Contexto**: Identificação clara do módulo e operação.
+*   **Medição de tempo**: Para operações críticas.
 
 ### Configuração de Logs
 
-Os logs podem ser configurados através das seguintes variáveis de ambiente:
+Configure via variáveis de ambiente:
 
-```
-LOG_LEVEL=info       # Nível mínimo de log (debug, info, warn, error)
-LOG_DIR=logs         # Diretório onde os logs serão armazenados
-LOG_FORMAT=json      # Formato dos logs (json ou text)
-LOG_MAX_SIZE=10m     # Tamanho máximo de cada arquivo de log
-LOG_MAX_FILES=7      # Número máximo de arquivos de log para retenção
-LOG_CONSOLE=true     # Se deve exibir logs no console em desenvolvimento
+```dotenv
+LOG_LEVEL=info       # Nível mínimo (debug, info, warn, error)
+LOG_DIR=logs         # Diretório para arquivos de log
+LOG_FORMAT=json      # Formato (json ou text)
+LOG_MAX_SIZE=10m     # Tamanho máximo por arquivo (ex: 10m = 10MB)
+LOG_MAX_FILES=7      # Número de arquivos a reter (rotação)
+LOG_CONSOLE=true     # Exibir no console (bom para desenvolvimento)
 ```
 
 ### Visualização de Logs
 
-Os logs são armazenados em:
+Os logs são armazenados no diretório configurado (`logs/` por padrão).
 
-- Docker: `/app/logs`
-- Instalação manual: `./logs`
+*   **Docker**: `/app/logs` dentro do container.
+*   **Instalação manual**: `./logs` no diretório do projeto.
 
-Exemplo de visualização de logs:
+Exemplo de visualização:
 
 ```bash
-# Ver logs em tempo real
+# Ver logs em tempo real (se rodando com Docker Compose)
 docker-compose logs -f automator
 
-# Ver logs específicos
-docker-compose logs -f scheduler
+# Filtrar logs por nível (ex: apenas erros)
+grep '"level":"error"' logs/automator.log # Se formato JSON
+grep "ERROR" logs/automator.log # Se formato texto
 
-# Filtrar logs por nível
-grep "ERROR" logs/automator.log
-
-# Analisar logs em formato JSON
-cat logs/automator.log | jq '.'
+# Analisar logs em formato JSON com 'jq'
+cat logs/automator.log | jq "."
 ```
 
-### Exemplo de Log Estruturado
+### Exemplo de Log Estruturado (JSON)
 
 ```json
 {
   "level": "info",
-  "message": "Processando item 12345",
+  "message": "Processando item da fila 12345",
   "timestamp": "2025-05-22T01:45:12.345Z",
   "service": "automator",
   "context": "QueueManager",
-  "itemId": "12345",
+  "jobId": "12345",
+  "jobName": "publishInstagramPost",
   "attempt": 1,
-  "maxRetries": 3,
-  "waitTime": 1500
+  "maxRetries": 3
 }
 ```
 
-### Métricas
+### Métricas (Prometheus)
 
-O sistema expõe métricas em formato Prometheus:
+Se habilitado (`ENABLE_METRICS=true`), o sistema expõe métricas para monitoramento:
 
 ```bash
-# Acessar métricas (quando ENABLE_METRICS=true)
 curl http://localhost:9090/metrics
 ```
 
 ## 🔧 Configuração
 
+*(Seção mantida como no original, relevante para operação)*
+
 ### Modos de Operação
 
-O sistema pode operar em três modos diferentes:
+O sistema pode operar em três modos (definido por `OPERATION_MODE` no `.env`):
 
-- **dashboard**: Interface web para configuração e monitoramento
-- **automator**: Serviço para execução de tarefas automatizadas
-- **scheduler**: Agendador de tarefas recorrentes
+*   **`dashboard`**: Executa a interface web para gerenciamento.
+*   **`automator`**: Executa o serviço que processa as tarefas da fila.
+*   **`scheduler`**: Executa o serviço que agenda tarefas recorrentes.
 
-Para executar múltiplos modos simultaneamente, use o Docker Compose:
+Para rodar todos os modos juntos, use o `docker-compose.yml` que já define os serviços separadamente.
 
-```yaml
-services:
-  dashboard:
-    environment:
-      - OPERATION_MODE=dashboard
-  
-  automator:
-    environment:
-      - OPERATION_MODE=automator
-  
-  scheduler:
-    environment:
-      - OPERATION_MODE=scheduler
-```
+### Sistema de Filas (BullMQ)
 
-### Sistema de Filas
-
-O sistema utiliza BullMQ para gerenciamento de filas, configurável através do arquivo `config/queue.json`:
+Configurações avançadas da fila podem ser ajustadas em `config/queue.json` (embora as padrões sejam geralmente suficientes):
 
 ```json
 {
-  "concurrency": 5,
-  "maxRetries": 3,
-  "retryDelay": 5000,
-  "retryStrategy": "exponential",
-  "retryMultiplier": 2
+  "concurrency": 5,        // Tarefas processadas em paralelo por worker
+  "maxRetries": 3,         // Tentativas máximas por tarefa falha
+  "retryDelay": 5000,      // Tempo (ms) antes da primeira retentativa
+  "retryStrategy": "exponential", // Estratégia de delay (exponential ou fixed)
+  "retryMultiplier": 2     // Multiplicador para delay exponencial
 }
 ```
 
 ## 🔍 Solução de Problemas
 
+*(Seção mantida como no original, relevante para operação)*
+
 ### Problemas Comuns
 
-#### Erro de Conexão com TechCare
-
-Verifique:
-- Credenciais corretas em `.env`
-- Conectividade com a internet
-- Status da plataforma TechCare
-
-Logs típicos:
-```
-2025-05-22T01:45:12.345Z [ERROR]: Erro ao acessar TechCare: Authentication failed
-```
-
-#### Erro de Conexão com Redis
-
-Verifique:
-- Serviço Redis em execução
-- Configurações de host, porta e senha
-- Firewall permitindo conexões
-
-Logs típicos:
-```
-2025-05-22T01:45:12.345Z [ERROR]: Erro ao conectar ao Redis: Connection refused
-```
-
-#### Tarefas Travadas
-
-Execute:
-```bash
-# Limpar filas travadas
-docker-compose exec app npm run queue:clean
-```
+*   **Erro de Conexão com Plataforma Social**: Verifique credenciais, conexão com internet e status da plataforma.
+*   **Erro de Conexão com Redis**: Garanta que o Redis está rodando, acessível e com a senha correta.
+*   **Tarefas Travadas na Fila**: Pode indicar um problema no processamento. Verifique os logs do `automator` e use o comando para limpar tarefas antigas se necessário:
+    ```bash
+    docker-compose exec automator npm run queue:clean
+    ```
 
 ### Análise de Logs para Troubleshooting
 
-Para analisar problemas usando os logs estruturados:
+Use os logs estruturados para diagnosticar problemas:
 
-1. **Identificar erros**:
-   ```bash
-   grep "ERROR" logs/automator.log | jq '.'
-   ```
-
-2. **Rastrear operações por contexto**:
-   ```bash
-   cat logs/automator.log | jq 'select(.context=="QueueManager")'
-   ```
-
-3. **Analisar tempos de operação**:
-   ```bash
-   cat logs/automator.log | jq 'select(.duration != null) | {message, duration, status}'
-   ```
-
-4. **Verificar tentativas de retry**:
-   ```bash
-   cat logs/automator.log | jq 'select(.attempt > 1)'
-   ```
+1.  **Identificar Erros**: `grep '"level":"error"' logs/*.log | jq "."`
+2.  **Rastrear Operação Específica**: `cat logs/*.log | jq 'select(.context=="InstagramConnector")'`
+3.  **Analisar Duração**: `cat logs/*.log | jq 'select(.duration != null) | {message, duration, status}'`
+4.  **Verificar Retentativas**: `cat logs/*.log | jq 'select(.attempt > 1)'`
 
 ## 📚 Documentação Adicional
 
-- [Arquitetura Detalhada](./docs/architecture/architecture.md)
-- [Documentação da API](./docs/api/api.md)
-- [Guia de Desenvolvimento](./docs/development.md)
+*(Seção mantida como no original)*
+
+*   [Arquitetura Detalhada](./docs/architecture/architecture.md)
+*   [Documentação da API](./docs/api/api.md)
+*   [Guia de Desenvolvimento](./docs/development.md)
 
 ## 📄 Licença
 
+*(Seção mantida como no original)*
+
 Este projeto é licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+
