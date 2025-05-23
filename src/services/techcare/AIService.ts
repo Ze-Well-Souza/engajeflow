@@ -1,5 +1,42 @@
 
 /**
+ * Tipos para resultados da IA
+ */
+export interface SentimentAnalysisResult {
+  sentiment: 'positive' | 'negative' | 'neutral';
+  score: number;
+  confidence: number;
+  keyPhrases: string[];
+}
+
+export interface TextClassificationResult {
+  category: string;
+  confidence: number;
+  subcategories?: string[];
+}
+
+export interface AIGeneratedResponse {
+  text: string;
+  variations: string[];
+  reasoning?: string;
+}
+
+export interface TextSummaryResult {
+  summary: string;
+  keyPoints: string[];
+  originalLength: number;
+  summaryLength: number;
+}
+
+export interface AIInsight {
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  metrics: Record<string, any>;
+  recommendations: string[];
+}
+
+/**
  * Serviço para gerenciar operações de IA no TechCare Connect
  */
 class AIService {
@@ -47,9 +84,9 @@ class AIService {
   /**
    * Analisa o sentimento de um texto
    */
-  public async analyzeSentiment(text: string): Promise<any> {
+  public async analyzeSentiment(text: string): Promise<{ success: boolean; data?: SentimentAnalysisResult; error?: string }> {
     if (!this.isConfigured()) {
-      throw new Error("Serviço de IA não configurado");
+      return { success: false, error: "Serviço de IA não configurado" };
     }
 
     try {
@@ -60,7 +97,7 @@ class AIService {
       
       // Análise simulada baseada em palavras-chave
       const lowercaseText = text.toLowerCase();
-      let sentiment = 'neutral';
+      let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
       let score = 0;
       
       const negativeWords = ['problema', 'erro', 'falha', 'péssimo', 'ruim', 'horrível', 'insatisfeito', 'urgência', 'frustrado'];
@@ -72,37 +109,35 @@ class AIService {
       
       if (negativeCount > positiveCount) {
         sentiment = 'negative';
-        score = -0.3 - (negativeCount * 0.1);  // Score negativo baseado na quantidade de palavras negativas
+        score = -0.3 - (negativeCount * 0.1);
       } else if (positiveCount > negativeCount) {
         sentiment = 'positive';
-        score = 0.3 + (positiveCount * 0.1);  // Score positivo baseado na quantidade de palavras positivas
+        score = 0.3 + (positiveCount * 0.1);
       }
       
       // Limitar o score entre -1 e 1
       score = Math.max(-1, Math.min(1, score));
       
-      return {
+      const result: SentimentAnalysisResult = {
         sentiment,
         score,
         confidence: 0.85,
-        analysis: {
-          urgency: sentiment === 'negative' ? 'high' : 'low',
-          emotionalTone: sentiment === 'negative' ? 'frustration' : (sentiment === 'positive' ? 'satisfaction' : 'neutral'),
-          keyPhrases: text.split('.').slice(0, 2).map(s => s.trim()).filter(s => s.length > 0)
-        }
+        keyPhrases: text.split('.').slice(0, 2).map(s => s.trim()).filter(s => s.length > 0)
       };
+
+      return { success: true, data: result };
     } catch (error) {
       console.error("Erro ao analisar sentimento:", error);
-      throw new Error("Falha na análise de sentimento");
+      return { success: false, error: "Falha na análise de sentimento" };
     }
   }
 
   /**
    * Classifica um ticket baseado no texto
    */
-  public async classifyTicket(text: string): Promise<any> {
+  public async classifyTicket(text: string): Promise<{ success: boolean; data?: TextClassificationResult; error?: string }> {
     if (!this.isConfigured()) {
-      throw new Error("Serviço de IA não configurado");
+      return { success: false, error: "Serviço de IA não configurado" };
     }
 
     try {
@@ -115,12 +150,11 @@ class AIService {
       const lowercaseText = text.toLowerCase();
       
       const categoryKeywords = {
-        'login': ['login', 'senha', 'acessar', 'acesso', 'conta', 'autenticação'],
-        'payment': ['pagamento', 'cobrança', 'pagar', 'fatura', 'boleto', 'cartão'],
-        'technical': ['erro', 'bug', 'travando', 'falha', 'problema técnico', 'não funciona'],
-        'feature': ['funcionalidade', 'recurso', 'implementar', 'adicionar', 'nova função'],
-        'account': ['minha conta', 'perfil', 'cadastro', 'dados', 'informações'],
-        'other': []
+        'suporte_tecnico': ['login', 'senha', 'acessar', 'acesso', 'conta', 'autenticação', 'erro', 'bug', 'falha'],
+        'cobranca': ['pagamento', 'cobrança', 'pagar', 'fatura', 'boleto', 'cartão'],
+        'elogio': ['bom', 'ótimo', 'excelente', 'parabéns', 'agradeço'],
+        'reclamacao': ['problema', 'insatisfeito', 'ruim', 'péssimo', 'reclamação'],
+        'duvida': ['como', 'dúvida', 'pergunta', 'informação']
       };
       
       // Contar ocorrências de palavras-chave por categoria
@@ -132,40 +166,39 @@ class AIService {
       // Ordenar por número de ocorrências
       categoryMatches.sort((a, b) => b.matches - a.matches);
       
-      // Categoria principal e secundária
-      const primaryCategory = categoryMatches[0].matches > 0 ? categoryMatches[0].category : 'other';
-      const secondaryCategory = categoryMatches[1]?.matches > 0 ? categoryMatches[1].category : null;
+      // Categoria principal
+      const primaryCategory = categoryMatches[0].matches > 0 ? categoryMatches[0].category : 'duvida';
       
-      // Determinar prioridade baseada em palavras de urgência
-      const urgencyKeywords = ['urgente', 'urgência', 'imediato', 'agora', 'crítico', 'emergência'];
-      const hasUrgency = urgencyKeywords.some(keyword => lowercaseText.includes(keyword));
-      
-      return {
+      const result: TextClassificationResult = {
         category: primaryCategory,
-        secondaryCategory,
-        priority: hasUrgency ? 'high' : 'medium',
         confidence: 0.82,
-        tags: [
-          primaryCategory,
-          ...(secondaryCategory ? [secondaryCategory] : []),
-          ...(hasUrgency ? ['urgent'] : [])
-        ]
+        subcategories: categoryMatches.filter(c => c.matches > 0 && c.category !== primaryCategory).map(c => c.category)
       };
+
+      return { success: true, data: result };
     } catch (error) {
       console.error("Erro ao classificar ticket:", error);
-      throw new Error("Falha na classificação do ticket");
+      return { success: false, error: "Falha na classificação do ticket" };
     }
+  }
+
+  /**
+   * Alias para classifyTicket (compatibilidade)
+   */
+  public async classifyText(text: string): Promise<{ success: boolean; data?: TextClassificationResult; error?: string }> {
+    return this.classifyTicket(text);
   }
 
   /**
    * Gera uma resposta baseada no contexto
    */
-  public async generateResponse(context: string): Promise<any> {
+  public async generateResponse(prompt: string, options?: { context?: string }): Promise<{ success: boolean; data?: AIGeneratedResponse; error?: string }> {
     if (!this.isConfigured()) {
-      throw new Error("Serviço de IA não configurado");
+      return { success: false, error: "Serviço de IA não configurado" };
     }
 
     try {
+      const context = options?.context || '';
       console.log(`Gerando resposta para: "${context.substring(0, 50)}..."`);
       
       // Simular resposta para demonstração
@@ -177,20 +210,20 @@ class AIService {
       // Templates de resposta por tipo de problema
       const responseTemplates = {
         login: [
-          "Entendo sua dificuldade para acessar a conta. Por favor, tente redefinir sua senha através da opção 'Esqueci minha senha' na tela de login. Se o problema persistir, verifique se o e-mail está correto e se a mensagem não foi para a pasta de spam.",
-          "Lamento pelo inconveniente com o acesso à sua conta. Uma solução simples seria limpar os cookies do navegador e tentar novamente. Também recomendo verificar se seu e-mail de cadastro está correto."
+          "Entendo sua dificuldade para acessar a conta. Por favor, tente redefinir sua senha através da opção 'Esqueci minha senha' na tela de login.",
+          "Lamento pelo inconveniente com o acesso à sua conta. Uma solução simples seria limpar os cookies do navegador e tentar novamente."
         ],
         payment: [
-          "Compreendo sua preocupação com o pagamento. Poderia me informar o número da fatura e a data de vencimento para que eu possa verificar o status em nosso sistema?",
-          "Em relação ao seu problema de pagamento, posso ajudar verificando os detalhes da transação. Por favor, confirme o método de pagamento utilizado e quando a tentativa foi realizada."
+          "Compreendo sua preocupação com o pagamento. Poderia me informar o número da fatura para que eu possa verificar o status?",
+          "Em relação ao seu problema de pagamento, posso ajudar verificando os detalhes da transação."
         ],
         technical: [
-          "Sinto muito pelo problema técnico que está enfrentando. Para ajudar na resolução, poderia me informar qual sistema operacional e navegador está utilizando? Também seria útil saber se o erro começou após alguma atualização recente.",
-          "Entendo sua frustração com esse problema técnico. Vamos tentar algumas soluções: primeiro, tente limpar o cache do navegador; segundo, verifique se está usando a versão mais recente do nosso aplicativo; por último, reinicie o dispositivo."
+          "Sinto muito pelo problema técnico. Para ajudar na resolução, poderia me informar qual navegador está utilizando?",
+          "Entendo sua frustração com esse problema técnico. Vamos tentar algumas soluções: primeiro, tente limpar o cache do navegador."
         ],
         general: [
-          "Obrigado por entrar em contato conosco. Estou à disposição para ajudar com sua solicitação. Poderia fornecer mais detalhes sobre o que precisa para que eu possa oferecer a melhor solução?",
-          "Agradeço seu contato. Nossa equipe está comprometida em resolver sua questão o mais rápido possível. Para um atendimento mais eficiente, poderia compartilhar mais informações sobre sua necessidade?"
+          "Obrigado por entrar em contato conosco. Estou à disposição para ajudar com sua solicitação.",
+          "Agradeço seu contato. Nossa equipe está comprometida em resolver sua questão o mais rápido possível."
         ]
       };
       
@@ -209,26 +242,25 @@ class AIService {
       const templates = responseTemplates[responseType as keyof typeof responseTemplates];
       const responseText = templates[Math.floor(Math.random() * templates.length)];
       
-      return {
-        responseText,
-        alternativeResponses: templates.filter(t => t !== responseText),
-        context: {
-          detectedIntent: responseType,
-          confidence: 0.78
-        }
+      const result: AIGeneratedResponse = {
+        text: responseText,
+        variations: templates,
+        reasoning: `Resposta gerada baseada no contexto detectado: ${responseType}`
       };
+
+      return { success: true, data: result };
     } catch (error) {
       console.error("Erro ao gerar resposta:", error);
-      throw new Error("Falha na geração de resposta");
+      return { success: false, error: "Falha na geração de resposta" };
     }
   }
 
   /**
    * Sumariza um texto ou conversa
    */
-  public async summarizeText(text: string): Promise<any> {
+  public async summarizeText(text: string, maxLength?: number): Promise<{ success: boolean; data?: TextSummaryResult; error?: string }> {
     if (!this.isConfigured()) {
-      throw new Error("Serviço de IA não configurado");
+      return { success: false, error: "Serviço de IA não configurado" };
     }
 
     try {
@@ -256,37 +288,39 @@ class AIService {
       // Construir sumário
       const summary = `O cliente relatou problemas para acessar sua conta, não recebendo e-mails de confirmação para redefinição de senha. ${
         solutionPhrases.length > 0 ? 
-        'Foi oferecida uma solução alternativa com um link de acesso temporário enviado para um e-mail secundário.' :
+        'Foi oferecida uma solução alternativa com um link de acesso temporário.' :
         'O atendente está trabalhando para resolver o problema.'
       } ${
         wasResolved ? 
-        'O problema foi resolvido com sucesso e o cliente conseguiu acessar sua conta.' :
+        'O problema foi resolvido com sucesso.' :
         'O caso ainda está em andamento.'
       }`;
       
-      return {
+      const result: TextSummaryResult = {
         summary,
         keyPoints: [
           "Problema de acesso à conta",
-          "Falha no recebimento de e-mails de redefinição de senha",
-          ...(solutionPhrases.length > 0 ? ["Link de acesso temporário fornecido"] : []),
-          ...(wasResolved ? ["Cliente conseguiu acessar a conta"] : [])
+          "Falha no recebimento de e-mails",
+          ...(solutionPhrases.length > 0 ? ["Link temporário fornecido"] : []),
+          ...(wasResolved ? ["Cliente conseguiu acessar"] : [])
         ],
-        sentiment: wasResolved ? "positive" : "neutral",
-        resolved: wasResolved
+        originalLength: text.length,
+        summaryLength: summary.length
       };
+
+      return { success: true, data: result };
     } catch (error) {
       console.error("Erro ao sumarizar texto:", error);
-      throw new Error("Falha na sumarização de texto");
+      return { success: false, error: "Falha na sumarização de texto" };
     }
   }
 
   /**
    * Gera insights baseados em dados do dashboard
    */
-  public async generateInsights(data: any): Promise<any> {
+  public async generateInsights(data: any): Promise<{ success: boolean; data?: AIInsight[]; error?: string }> {
     if (!this.isConfigured()) {
-      throw new Error("Serviço de IA não configurado");
+      return { success: false, error: "Serviço de IA não configurado" };
     }
 
     try {
@@ -296,47 +330,41 @@ class AIService {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Insights simulados
-      return {
-        insights: [
-          {
-            title: "Aumento de problemas de login",
-            description: "Detectamos um aumento de 32% em tickets relacionados a problemas de login na última semana, possivelmente relacionado à recente atualização de segurança.",
-            priority: "high",
-            recommendation: "Revisar as alterações de segurança implementadas na última atualização e considerar enviar um comunicado aos usuários."
+      const insights: AIInsight[] = [
+        {
+          title: "Aumento de problemas de login",
+          description: "Detectamos um aumento de 32% em tickets relacionados a problemas de login na última semana.",
+          priority: "high",
+          metrics: {
+            increase_percentage: 32,
+            total_tickets: 45,
+            trend: "up"
           },
-          {
-            title: "Horário de pico de atendimento",
-            description: "O volume de tickets é consistentemente mais alto entre 14h e 16h, especialmente às segundas-feiras.",
-            priority: "medium",
-            recommendation: "Considere reforçar a equipe de atendimento durante esse período para melhorar os tempos de resposta."
-          },
-          {
-            title: "Feedback positivo sobre nova funcionalidade",
-            description: "A recente implementação da funcionalidade de agendamento está recebendo 87% de feedback positivo.",
-            priority: "low",
-            recommendation: "Use este caso de sucesso como modelo para futuras implementações de funcionalidades."
-          }
-        ],
-        trends: {
-          increasing: ["problemas de login", "usuários mobile"],
-          decreasing: ["tempo médio de resolução", "tickets reabertos"]
+          recommendations: [
+            "Revisar as alterações de segurança implementadas",
+            "Enviar comunicado aos usuários sobre mudanças"
+          ]
         },
-        performanceMetrics: {
-          resolutionTime: {
-            current: "5h 23min",
-            trend: "improving",
-            changePercentage: -12
+        {
+          title: "Feedback positivo sobre nova funcionalidade",
+          description: "A funcionalidade de agendamento está recebendo 87% de feedback positivo.",
+          priority: "low",
+          metrics: {
+            satisfaction_rate: 87,
+            total_feedback: 150,
+            trend: "stable"
           },
-          customerSatisfaction: {
-            current: "4.2/5",
-            trend: "stable",
-            changePercentage: 2
-          }
+          recommendations: [
+            "Usar como modelo para futuras implementações",
+            "Documentar práticas de sucesso"
+          ]
         }
-      };
+      ];
+
+      return { success: true, data: insights };
     } catch (error) {
       console.error("Erro ao gerar insights:", error);
-      throw new Error("Falha na geração de insights");
+      return { success: false, error: "Falha na geração de insights" };
     }
   }
 }
