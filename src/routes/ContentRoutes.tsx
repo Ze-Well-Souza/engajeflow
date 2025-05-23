@@ -4,12 +4,16 @@ import { Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Content Pages
-import ContentAssistantPage from "@/pages/content/ContentAssistantPage";
+import ContentPage from "@/pages/ContentPage";
+import SocialMediaPage from "@/pages/SocialMediaPage";
+import RifaOnlinePage from "@/pages/RifaOnlinePage";
 
-const ContentRoutes: React.FC = (props) => {
+const ContentRoutes: React.FC = () => {
   return (
     <>
-      <Route path="/content/assistant" element={<DashboardLayout><ContentAssistantPage /></DashboardLayout>} />
+      <Route path="/content" element={<DashboardLayout><ContentPage /></DashboardLayout>} />
+      <Route path="/content/social" element={<DashboardLayout><SocialMediaPage /></DashboardLayout>} />
+      <Route path="/content/rifa" element={<DashboardLayout><RifaOnlinePage /></DashboardLayout>} />
     </>
   );
 };

@@ -16,6 +16,7 @@ import AutomationRoutes from "./routes/AutomationRoutes";
 import ReportsRoutes from "./routes/ReportsRoutes";
 import AuthRoutes from "./routes/AuthRoutes";
 import MiscRoutes from "./routes/MiscRoutes";
+import SocialRoutes from "./routes/SocialRoutes";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         {ReportsRoutes({})}
         {AuthRoutes({})}
         {MiscRoutes({})}
+        {SocialRoutes({})}
       </Routes>
     </Router>
   );
