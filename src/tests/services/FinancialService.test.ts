@@ -25,8 +25,8 @@ describe('FinancialService', () => {
   
   beforeEach(() => {
     vi.resetAllMocks();
-    // Configurando o mock para aceitar o argumento esperado
-    mockAuthIsAuthenticated.mockImplementation((requiresToken = true) => true);
+    // Configurando o mock para aceitar qualquer número de argumentos
+    mockAuthIsAuthenticated.mockImplementation((...args) => true);
   });
 
   afterEach(() => {
