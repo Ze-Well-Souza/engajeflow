@@ -46,8 +46,8 @@ describe('FinancialService', () => {
 
   it('should generate financial report', async () => {
     const period = { 
-      start: new Date('2025-01-01'), 
-      end: new Date('2025-01-31') 
+      startDate: new Date('2025-01-01'), 
+      endDate: new Date('2025-01-31') 
     };
     
     const result = await FinancialService.generateFinancialReport(period);
