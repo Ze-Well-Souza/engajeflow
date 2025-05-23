@@ -8,7 +8,15 @@ export const productionConfig = {
   cache: {
     defaultTTL: 600000, // 10 minutos
     maxSize: 5000,
-    cleanupInterval: 300000 // 5 minutos
+    cleanupInterval: 300000, // 5 minutos
+    enableCompression: true,
+    enableRedisCache: true,
+    redisOptions: {
+      tls: true,
+      connectTimeout: 5000,
+      maxRetriesPerRequest: 3,
+      enableOfflineQueue: true
+    }
   },
 
   // Logging
@@ -18,7 +26,13 @@ export const productionConfig = {
     enableFile: true,
     maxFileSize: '50MB',
     maxFiles: 30,
-    enableRemote: true
+    enableRemote: true,
+    remoteOptions: {
+      batchSize: 50,
+      flushInterval: 5000,
+      retryCount: 3,
+      retryDelay: 1000
+    }
   },
 
   // Rate Limiting
@@ -27,6 +41,8 @@ export const productionConfig = {
     max: 1000, // máximo 1000 requests por window
     standardHeaders: true,
     legacyHeaders: false,
+    skipSuccessfulRequests: false,
+    trustProxy: true
   },
 
   // CORS
@@ -35,7 +51,9 @@ export const productionConfig = {
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+    maxAge: 86400 // 24 horas
   },
 
   // Security Headers
@@ -45,11 +63,14 @@ export const productionConfig = {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:"],
-        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        scriptSrc: ["'self'", "'sha256-I7LI4JDnbtmJVLu+dxFY0nwhAVYaSYCZDrZlV6GpVgQ='"],
         connectSrc: ["'self'", "https://api.openai.com", "https://*.supabase.co"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
         upgradeInsecureRequests: []
       }
     },
@@ -60,7 +81,9 @@ export const productionConfig = {
     },
     noSniff: true,
     frameOptions: 'DENY',
-    xssProtection: true
+    xssProtection: true,
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    permissionsPolicy: "camera=(), microphone=(), geolocation=(), interest-cohort=()"
   },
 
   // Database
@@ -70,7 +93,11 @@ export const productionConfig = {
     idleTimeout: 300000,
     enableSSL: true,
     enableRLS: true,
-    enableAuditLogs: true
+    enableAuditLogs: true,
+    statementTimeout: 30000,
+    queryLogging: false,
+    retryAttempts: 3,
+    retryDelay: 1000
   },
 
   // Monitoring
@@ -82,8 +109,13 @@ export const productionConfig = {
       errorRate: 5, // 5%
       responseTime: 2000, // 2 segundos
       memoryUsage: 85, // 85%
-      diskUsage: 90 // 90%
-    }
+      diskUsage: 90, // 90%
+      cpuUsage: 80, // 80%
+      activeConcurrentConnections: 1000
+    },
+    enableAlerts: true,
+    alertChannels: ['email', 'webhook'],
+    alertCooldown: 300000 // 5 minutos
   },
 
   // AI Services
@@ -92,7 +124,11 @@ export const productionConfig = {
     cacheTTL: 3600000, // 1 hora
     maxRetries: 3,
     timeout: 30000,
-    rateLimitPerMinute: 60
+    rateLimitPerMinute: 60,
+    enableBatchProcessing: true,
+    fallbackProviders: ['openai', 'anthropic', 'vertexai'],
+    costOptimization: true,
+    contentFiltering: true
   },
 
   // File Upload
@@ -100,7 +136,53 @@ export const productionConfig = {
     maxFileSize: 10485760, // 10MB
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'],
     enableVirusScanning: true,
-    quarantineDirectory: '/tmp/quarantine'
+    quarantineDirectory: '/tmp/quarantine',
+    storageProvider: 'supabase',
+    cdnIntegration: true,
+    imageProcessing: {
+      enableResizing: true,
+      defaultQuality: 80,
+      maxWidth: 2000,
+      maxHeight: 2000
+    }
+  },
+
+  // Backup Strategy
+  backup: {
+    enabled: true,
+    frequency: 'daily',
+    retentionDays: 30,
+    compressionEnabled: true,
+    encryptionEnabled: true,
+    storageProvider: 's3',
+    autoRestore: {
+      enabled: false,
+      onFailureOnly: true
+    }
+  },
+
+  // Deployment
+  deployment: {
+    strategy: 'blue-green',
+    maxRolloutPercent: 20,
+    healthCheckPath: '/api/health',
+    healthCheckTimeout: 5000,
+    healthCheckInterval: 30000,
+    automaticRollback: true,
+    rollbackThreshold: 10, // % de erros para rollback
+    warmupPeriod: 30000
+  },
+
+  // Autoscaling
+  autoscaling: {
+    enabled: true,
+    minInstances: 2,
+    maxInstances: 10,
+    cpuThreshold: 70,
+    memoryThreshold: 80,
+    scaleUpCooldown: 180, // segundos
+    scaleDownCooldown: 300, // segundos
+    targetResponseTime: 500 // ms
   }
 };
 
