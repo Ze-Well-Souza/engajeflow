@@ -1,47 +1,20 @@
 
-/**
- * Sistema de logs avançado para o TechCare Connect Automator
- */
-
-type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-
 interface LogEntry {
   timestamp: string;
-  level: LogLevel;
+  level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
   context?: any;
-}
-
-interface LogOperation {
-  id: string;
-  operation: string;
-  startTime: Date;
-  end: (status: string, context?: any) => void;
+  userId?: string;
+  module?: string;
 }
 
 class Logger {
   private static instance: Logger;
-  private logHistory: LogEntry[] = [];
-  private readonly MAX_HISTORY = 1000;
-  private readonly LOG_LEVELS: Record<LogLevel, number> = {
-    debug: 0,
-    info: 1,
-    warn: 2,
-    error: 3,
-    fatal: 4
-  };
+  private logs: LogEntry[] = [];
+  private maxLogs = 1000;
 
-  private minLevel: LogLevel = 'info';
+  private constructor() {}
 
-  private constructor() {
-    // Inicializar configurações de log
-    this.setLevel((typeof process !== 'undefined' && process.env.LOG_LEVEL as LogLevel) || 'info');
-    this.info('Logger inicializado');
-  }
-
-  /**
-   * Obtém a instância singleton do Logger
-   */
   public static getInstance(): Logger {
     if (!Logger.instance) {
       Logger.instance = new Logger();
@@ -49,141 +22,83 @@ class Logger {
     return Logger.instance;
   }
 
-  /**
-   * Define o nível mínimo de log
-   */
-  public setLevel(level: LogLevel): void {
-    this.minLevel = level;
-    this.debug(`Nível de log definido para: ${level}`);
-  }
-
-  /**
-   * Registra uma mensagem de log
-   */
-  private log(level: LogLevel, message: string, context?: any): void {
-    if (this.LOG_LEVELS[level] < this.LOG_LEVELS[this.minLevel]) {
-      return; // Não registrar se o nível for menor que o mínimo
-    }
-
-    const timestamp = new Date().toISOString();
+  private log(level: LogEntry['level'], message: string, context?: any): void {
     const entry: LogEntry = {
-      timestamp,
+      timestamp: new Date().toISOString(),
       level,
       message,
-      context
+      context,
+      userId: this.getCurrentUserId(),
+      module: this.extractModule(message)
     };
 
-    // Adicionar ao histórico
-    this.logHistory.unshift(entry);
-    if (this.logHistory.length > this.MAX_HISTORY) {
-      this.logHistory.pop();
+    this.logs.push(entry);
+    
+    // Manter apenas os logs mais recentes
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
     }
 
-    // Exibir no console
-    const formattedContext = context ? `, ${JSON.stringify(context)}` : '';
-    console[level !== 'fatal' ? level : 'error'](`${timestamp} ${level}: ${message}${formattedContext}`);
+    // Log no console para desenvolvimento
+    if (process.env.NODE_ENV !== 'production') {
+      console[level](
+        `[${entry.timestamp}] [${level.toUpperCase()}] ${message}`,
+        context ? context : ''
+      );
+    }
+
+    // Em produção, enviar logs para serviço de monitoramento
+    if (process.env.NODE_ENV === 'production' && level === 'error') {
+      this.sendToMonitoring(entry);
+    }
   }
 
-  /**
-   * Log de nível DEBUG
-   */
+  private getCurrentUserId(): string | undefined {
+    // Implementar lógica para obter ID do usuário atual
+    return 'demo-user';
+  }
+
+  private extractModule(message: string): string | undefined {
+    const match = message.match(/\[(\w+)\]/);
+    return match ? match[1] : undefined;
+  }
+
+  private async sendToMonitoring(entry: LogEntry): Promise<void> {
+    try {
+      // Implementar envio para serviço de monitoramento (ex: Sentry, DataDog)
+      console.error('PRODUCTION ERROR:', entry);
+    } catch (error) {
+      console.error('Failed to send log to monitoring service:', error);
+    }
+  }
+
   public debug(message: string, context?: any): void {
     this.log('debug', message, context);
   }
 
-  /**
-   * Log de nível INFO
-   */
   public info(message: string, context?: any): void {
     this.log('info', message, context);
   }
 
-  /**
-   * Log de nível WARN
-   */
   public warn(message: string, context?: any): void {
     this.log('warn', message, context);
   }
 
-  /**
-   * Log de nível ERROR
-   */
   public error(message: string, context?: any): void {
     this.log('error', message, context);
   }
 
-  /**
-   * Log de nível FATAL (crítico)
-   */
-  public fatal(message: string, context?: any): void {
-    this.log('fatal', message, context);
+  public getLogs(level?: LogEntry['level'], limit?: number): LogEntry[] {
+    let filteredLogs = level ? this.logs.filter(log => log.level === level) : this.logs;
+    return limit ? filteredLogs.slice(-limit) : filteredLogs;
   }
 
-  /**
-   * Inicia uma operação de log
-   */
-  public startOperation(operation: string, context?: any): LogOperation {
-    const operationId = Math.random().toString(36).substr(2, 9);
-    const startTime = new Date();
-    this.info(`Iniciando operação: ${operation}`, { operationId, ...context });
-    
-    return {
-      id: operationId,
-      operation,
-      startTime,
-      end: (status: string, endContext?: any) => {
-        const duration = Date.now() - startTime.getTime();
-        this.info(`Finalizando operação: ${operation}`, { 
-          operationId, 
-          status, 
-          duration: `${duration}ms`,
-          ...endContext 
-        });
-      }
-    };
+  public clearLogs(): void {
+    this.logs = [];
   }
 
-  /**
-   * Adiciona contexto ao logger
-   */
-  public withContext(context: any): Logger {
-    // Retorna uma nova instância com contexto
-    const logger = Object.create(Logger.prototype);
-    logger.logHistory = this.logHistory;
-    logger.MAX_HISTORY = this.MAX_HISTORY;
-    logger.LOG_LEVELS = this.LOG_LEVELS;
-    logger.minLevel = this.minLevel;
-    logger.defaultContext = context;
-    return logger;
-  }
-
-  /**
-   * Obtém o histórico de logs
-   */
-  public getHistory(level?: LogLevel): LogEntry[] {
-    if (!level) {
-      return [...this.logHistory];
-    }
-    
-    return this.logHistory.filter(entry => 
-      this.LOG_LEVELS[entry.level] >= this.LOG_LEVELS[level]
-    );
-  }
-
-  /**
-   * Limpa o histórico de logs
-   */
-  public clearHistory(): void {
-    this.logHistory = [];
-    this.info('Histórico de logs limpo');
-  }
-
-  /**
-   * Exporta logs para JSON
-   */
-  public exportLogs(level?: LogLevel): string {
-    const logs = level ? this.getHistory(level) : this.logHistory;
-    return JSON.stringify(logs, null, 2);
+  public exportLogs(): string {
+    return JSON.stringify(this.logs, null, 2);
   }
 }
 
