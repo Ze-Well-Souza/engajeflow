@@ -5,12 +5,12 @@ import { LocalizationProvider, useLocalization } from '@/contexts/LocalizationCo
 
 // Componente de teste para acessar o contexto
 const TestComponent = () => {
-  const { locale, setLocale, t, formatCurrency, availableLocales } = useLocalization();
+  const { locale, setLocale, t, formatCurrency, localeOptions } = useLocalization();
   
   return (
     <div>
       <div data-testid="current-locale">{locale}</div>
-      <div data-testid="available-locales">{availableLocales.join(',')}</div>
+      <div data-testid="available-locales">{localeOptions.map(opt => opt.value).join(',')}</div>
       <div data-testid="translated-text">{t('common.welcome')}</div>
       <div data-testid="formatted-currency">{formatCurrency(1234.56)}</div>
       
@@ -19,8 +19,8 @@ const TestComponent = () => {
         value={locale}
         onChange={(e) => setLocale(e.target.value as 'pt' | 'en')}
       >
-        {availableLocales.map(loc => (
-          <option key={loc} value={loc}>{loc}</option>
+        {localeOptions.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
     </div>
@@ -65,7 +65,7 @@ describe('LocalizationContext', () => {
     
     fireEvent.change(localeSelector, { target: { value: 'en' } });
     expect(screen.getByTestId('current-locale')).toHaveTextContent('en');
-    expect(localStorage.getItem('locale')).toBe('en');
+    expect(localStorage.getItem('userLocale')).toBe('en');
   });
   
   it('formata corretamente valores de moeda com base no idioma', () => {

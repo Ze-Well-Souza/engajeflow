@@ -14,7 +14,9 @@ vi.mock('../../services/techcare/AuthService', () => ({
 // Mock de NavigationService
 vi.mock('../../services/techcare/NavigationService', () => ({
   default: {
-    navigateToUrl: vi.fn().mockResolvedValue()
+    navigateToUrl: vi.fn().mockResolvedValue(),
+    openBrowser: vi.fn(),
+    closeBrowser: vi.fn()
   }
 }));
 
@@ -42,7 +44,10 @@ describe('FinancialService', () => {
   });
 
   it('should generate financial report', async () => {
-    const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
+    const period = { 
+      startDate: new Date('2025-01-01'), 
+      endDate: new Date('2025-01-31') 
+    };
     
     const result = await FinancialService.generateFinancialReport(period);
     
@@ -54,7 +59,10 @@ describe('FinancialService', () => {
   });
 
   it('should get transaction history', async () => {
-    const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
+    const period = { 
+      start: new Date('2025-01-01'), 
+      end: new Date('2025-01-31') 
+    };
     
     const result = await FinancialService.fetchTransactions(period);
     
@@ -67,5 +75,30 @@ describe('FinancialService', () => {
     
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
+  });
+
+  it('should fetch account balance', async () => {
+    const result = await FinancialService.fetchAccountBalance('acc-001');
+    
+    expect(result).toBeDefined();
+    expect(typeof result).toBe('number');
+  });
+
+  it('should create budget', async () => {
+    const budgetData = {
+      name: 'Test Budget',
+      amount: 1000,
+      spent: 0,
+      period: 'monthly' as const,
+      category: 'Food',
+      startDate: new Date(),
+      isActive: true
+    };
+    
+    const result = await FinancialService.createBudget(budgetData);
+    
+    expect(result).toBeDefined();
+    expect(result.id).toBeDefined();
+    expect(result.name).toBe('Test Budget');
   });
 });
