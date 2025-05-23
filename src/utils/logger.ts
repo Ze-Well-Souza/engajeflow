@@ -12,6 +12,13 @@ interface LogEntry {
   context?: any;
 }
 
+interface LogOperation {
+  id: string;
+  operation: string;
+  startTime: Date;
+  end: (status: string, context?: any) => void;
+}
+
 class Logger {
   private static instance: Logger;
   private logHistory: LogEntry[] = [];
@@ -115,10 +122,25 @@ class Logger {
   /**
    * Inicia uma operação de log
    */
-  public startOperation(operation: string, context?: any): string {
+  public startOperation(operation: string, context?: any): LogOperation {
     const operationId = Math.random().toString(36).substr(2, 9);
+    const startTime = new Date();
     this.info(`Iniciando operação: ${operation}`, { operationId, ...context });
-    return operationId;
+    
+    return {
+      id: operationId,
+      operation,
+      startTime,
+      end: (status: string, endContext?: any) => {
+        const duration = Date.now() - startTime.getTime();
+        this.info(`Finalizando operação: ${operation}`, { 
+          operationId, 
+          status, 
+          duration: `${duration}ms`,
+          ...endContext 
+        });
+      }
+    };
   }
 
   /**
