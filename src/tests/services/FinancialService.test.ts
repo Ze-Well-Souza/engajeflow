@@ -25,7 +25,7 @@ describe('FinancialService', () => {
   
   beforeEach(() => {
     vi.resetAllMocks();
-    // Aqui estamos corrigindo a chamada para o mock, passando o argumento esperado (true)
+    // Configurando o mock para aceitar o argumento esperado
     mockAuthIsAuthenticated.mockImplementation((requiresToken = true) => true);
   });
 
@@ -46,8 +46,8 @@ describe('FinancialService', () => {
 
   it('should generate financial report', async () => {
     const period = { 
-      startDate: new Date('2025-01-01'), 
-      endDate: new Date('2025-01-31') 
+      start: new Date('2025-01-01'), 
+      end: new Date('2025-01-31') 
     };
     
     const result = await FinancialService.generateFinancialReport(period);
