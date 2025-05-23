@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { SocialAccount, SocialAuthService } from '@/services/social/SocialAuthService';
+import SocialAuthService, { SocialAccount } from '@/services/social/SocialAuthService';
 import { toast } from 'sonner';
 
 interface UseSocialAuthResult {
@@ -22,7 +22,7 @@ export const useSocialAuth = (): UseSocialAuthResult => {
   // Função para carregar contas
   const loadAccounts = useCallback(() => {
     try {
-      const allAccounts = SocialAuthService.getAccountsByPlatform();
+      const allAccounts = SocialAuthService.getConnectedAccounts();
       setAccounts(allAccounts);
       setError(null);
     } catch (err) {
@@ -42,7 +42,7 @@ export const useSocialAuth = (): UseSocialAuthResult => {
   useEffect(() => {
     const checkExpiredTokens = () => {
       accounts.forEach(account => {
-        if (account.tokenExpiry && new Date(account.tokenExpiry) < new Date()) {
+        if (account.expiresAt && new Date(account.expiresAt) < new Date()) {
           toast.warning(`O token da conta ${account.platform} expirou. Renove para continuar usando.`);
         }
       });
@@ -58,7 +58,7 @@ export const useSocialAuth = (): UseSocialAuthResult => {
     setIsLoading(true);
     try {
       // Obter URL de autorização
-      const authUrl = SocialAuthService.getAuthorizationUrl(platform);
+      const authUrl = SocialAuthService.getAuthorizationUrl?.(platform) || '';
       
       // Simular o processo OAuth (em produção, isso redirecionaria para a URL de autenticação)
       console.log(`Em um ambiente de produção, o usuário seria redirecionado para: ${authUrl}`);
@@ -67,7 +67,7 @@ export const useSocialAuth = (): UseSocialAuthResult => {
       const mockCode = `mock_auth_code_${Date.now()}`;
       
       // Processar código de autorização
-      const account = await SocialAuthService.handleAuthCallback(platform, mockCode);
+      const account = await SocialAuthService.handleAuthCallback?.(platform, mockCode) || await SocialAuthService.connectAccount(platform);
       
       setAccounts(prev => [...prev, account]);
       toast.success(`Conta ${platform} conectada com sucesso!`);
@@ -132,9 +132,9 @@ export const useSocialAuth = (): UseSocialAuthResult => {
   
   // Verificar se token está expirado
   const isTokenExpired = (account: SocialAccount): boolean => {
-    if (!account.tokenExpiry) return false;
+    if (!account.expiresAt) return false;
     
-    const expiryDate = new Date(account.tokenExpiry);
+    const expiryDate = new Date(account.expiresAt);
     return expiryDate < new Date();
   };
   

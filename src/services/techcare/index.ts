@@ -1,76 +1,92 @@
 
-/**
- * Exportação unificada dos serviços do TechCare Connect Automator
- */
+// Importação de serviços principais do TechCare
+import AIService from './AIService';
+import NotificationService from './NotificationService';
+import AnalyticsService from './AnalyticsService';
+import FinancialService from './FinancialService';
+import NavigationService from './NavigationService'; // Importado corretamente como default
+import IntegrationService from './IntegrationService';
 
-import AuthService from './AuthService';
-import NavigationService from './NavigationService';
-import ScrapingService from './ScrapingService';
-import logger from '../../utils/logger';
-import { getEnvVariable } from '../../utils/environment';
-
-// Re-exportar todos os serviços
-export {
-  AuthService,
-  NavigationService,
-  ScrapingService
-};
-
-// Interface de configuração centralizada
-export interface TechCareConfig {
-  username?: string;
-  password?: string;
+// Configurações comuns para serviços
+export interface ServiceConfig {
+  apiKey?: string;
   baseUrl?: string;
+  debug?: boolean;
+  timeout?: number;
 }
 
-/**
- * Configura todos os serviços do TechCare Connect Automator de uma vez
- * Se não forem fornecidos parâmetros, usa variáveis de ambiente
- */
-export function configureTechCareServices(config?: TechCareConfig): void {
-  const baseUrl = config?.baseUrl || getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com') as string;
-  
-  // Configurar serviço de navegação
-  NavigationService.configure(baseUrl);
-  
-  logger.info('[TechCare] Todos os serviços configurados com sucesso', { baseUrl });
+// Interface para registro global de serviços
+export interface ServiceRegistry {
+  [key: string]: any;
 }
 
-/**
- * Inicializa uma nova sessão automatizada
- */
-export async function initializeSession(config?: TechCareConfig): Promise<boolean> {
-  try {
-    // Configurar todos os serviços se uma configuração for fornecida
-    if (config) {
-      configureTechCareServices(config);
-    } else {
-      configureTechCareServices({
-        baseUrl: getEnvVariable('TECHCARE_BASE_URL', 'https://app.techcare.com') as string
+// Classe de inicialização dos serviços TechCare
+class TechCareServices {
+  // Registro de serviços
+  private registry: ServiceRegistry = {};
+  
+  // Inicialização padrão
+  constructor() {
+    // Registrar serviços principais
+    this.register('ai', AIService);
+    this.register('notifications', NotificationService);
+    this.register('analytics', AnalyticsService);
+    this.register('financial', FinancialService);
+    this.register('navigation', NavigationService);
+    this.register('integration', IntegrationService);
+  }
+  
+  // Inicializar todos os serviços com configuração padrão
+  initialize(config: ServiceConfig): void {
+    console.info('[TechCare] Inicializando serviços com configuração:', config);
+    
+    // Configurar serviços que suportam configuração
+    if (AIService.configure) {
+      AIService.configure({
+        apiKey: config.apiKey,
+        useGemini: true
       });
     }
     
-    // Realizar login
-    const loginResult = await AuthService.login();
-    
-    if (!loginResult.success) {
-      logger.error('[TechCare] Falha ao inicializar sessão:', loginResult.error);
-      return false;
+    if (NavigationService.configureNavigation) {
+      NavigationService.configureNavigation({
+        baseUrl: config.baseUrl,
+        timeout: config.timeout || 30000
+      });
     }
     
-    // Navegar para a página inicial
-    const navResult = await NavigationService.navigateTo('/dashboard');
-    
-    if (!navResult.success) {
-      logger.error('[TechCare] Falha ao navegar para dashboard:', navResult.error);
-      return false;
+    // Inicializar analíticas
+    if (config.debug) {
+      AnalyticsService.enableDebugMode();
     }
     
-    logger.info('[TechCare] Sessão inicializada com sucesso');
-    return true;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    logger.error('[TechCare] Erro ao inicializar sessão:', errorMessage);
-    return false;
+    console.info('[TechCare] Serviços inicializados com sucesso');
+  }
+  
+  // Registrar serviço no registro central
+  register(name: string, service: any): void {
+    this.registry[name] = service;
+  }
+  
+  // Obter serviço do registro
+  getService(name: string): any {
+    return this.registry[name] || null;
+  }
+  
+  // Navegação simplificada
+  navigateTo(path: string, options?: any): void {
+    const navService = this.getService('navigation');
+    if (navService && navService.navigateToUrl) {
+      navService.navigateToUrl(path, options);
+    }
+  }
+  
+  // Utilitário para obter serviço tipado
+  get<T>(name: string): T | null {
+    return this.getService(name) as T;
   }
 }
+
+// Exportar instância singleton
+const techCareServices = new TechCareServices();
+export default techCareServices;

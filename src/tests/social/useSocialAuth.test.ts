@@ -2,24 +2,22 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { useSocialAuth } from '../../hooks/useSocialAuth';
-import { SocialAuthService } from '../../services/social/SocialAuthService';
+import SocialAuthService from '../../services/social/SocialAuthService';
 import { toast } from 'sonner';
 
 // Mock do SocialAuthService
 vi.mock('../../services/social/SocialAuthService', () => {
   const mockService = {
-    getAccountsByPlatform: vi.fn(),
+    getConnectedAccounts: vi.fn(),
     handleAuthCallback: vi.fn(),
     disconnectAccount: vi.fn(),
     refreshToken: vi.fn(),
-    getAuthorizationUrl: vi.fn()
+    getAuthorizationUrl: vi.fn(),
+    connectAccount: vi.fn()
   };
   
   return {
-    SocialAuthService: {
-      ...mockService,
-      default: mockService
-    }
+    default: mockService
   };
 });
 
@@ -40,7 +38,9 @@ describe('useSocialAuth', () => {
       username: 'user1',
       displayName: 'Instagram User',
       isConnected: true,
-      tokenExpiry: new Date(Date.now() + 1000000) // Não expirado
+      isActive: true,
+      accessToken: 'token1',
+      expiresAt: new Date(Date.now() + 1000000).toISOString() // Não expirado
     },
     {
       id: '2',
@@ -48,7 +48,9 @@ describe('useSocialAuth', () => {
       username: 'user2',
       displayName: 'Facebook User',
       isConnected: true,
-      tokenExpiry: new Date(Date.now() - 1000000) // Expirado
+      isActive: true,
+      accessToken: 'token2',
+      expiresAt: new Date(Date.now() - 1000000).toISOString() // Expirado
     }
   ];
   
@@ -56,11 +58,12 @@ describe('useSocialAuth', () => {
     vi.clearAllMocks();
     
     // Configurar mocks padrão
-    (SocialAuthService.getAccountsByPlatform as any).mockReturnValue(mockAccounts);
+    (SocialAuthService.getConnectedAccounts as any).mockResolvedValue(mockAccounts);
     (SocialAuthService.disconnectAccount as any).mockResolvedValue(true);
     (SocialAuthService.refreshToken as any).mockResolvedValue(true);
     (SocialAuthService.handleAuthCallback as any).mockResolvedValue(mockAccounts[0]);
     (SocialAuthService.getAuthorizationUrl as any).mockReturnValue('https://mock-auth-url.com');
+    (SocialAuthService.connectAccount as any).mockResolvedValue(mockAccounts[0]);
   });
   
   it('deve inicializar com as contas do serviço', () => {
@@ -69,7 +72,7 @@ describe('useSocialAuth', () => {
     expect(result.current.accounts).toEqual(mockAccounts);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(SocialAuthService.getAccountsByPlatform).toHaveBeenCalled();
+    expect(SocialAuthService.getConnectedAccounts).toHaveBeenCalled();
   });
   
   it('deve conectar uma nova conta', async () => {
@@ -118,14 +121,13 @@ describe('useSocialAuth', () => {
   it('deve filtrar contas por plataforma', () => {
     const { result } = renderHook(() => useSocialAuth());
     
-    (SocialAuthService.getAccountsByPlatform as any).mockReturnValueOnce([mockAccounts[0]]);
-    
+    // Utilizando o método do hook para filtragem
     expect(result.current.getAccountsByPlatform('instagram').length).toBe(1);
-    expect(SocialAuthService.getAccountsByPlatform).toHaveBeenCalledWith('instagram');
   });
   
   it('deve lidar com erros ao conectar conta', async () => {
     (SocialAuthService.handleAuthCallback as any).mockRejectedValueOnce(new Error('Erro de conexão'));
+    (SocialAuthService.connectAccount as any).mockRejectedValueOnce(new Error('Erro de conexão'));
     
     const { result } = renderHook(() => useSocialAuth());
     

@@ -1,622 +1,416 @@
-/**
- * Integração do logger estruturado com o FinancialService
- * Substitui todos os console.log por logs estruturados com níveis e contexto
- */
+import { toast } from "sonner";
 
-import { NavigationService } from './NavigationService';
-import { ScrapingService } from './ScrapingService';
-import logger from '../../utils/logger';
+// Modificado para usar importações default corretamente
+import NavigationService from "./NavigationService";
+import ScrapingService from "./ScrapingService";
 
-// Usar o logger padrão
-const financialLogger = logger;
-
-/**
- * Interface para período financeiro
- */
-export interface FinancialPeriod {
-  startDate: string;
-  endDate: string;
-}
-
-/**
- * Interface para resumo financeiro
- */
-export interface FinancialSummary {
-  totalRevenue: number;
-  totalExpenses: number;
-  netProfit: number;
-  pendingPayments: number;
-}
-
-/**
- * Interface para transação financeira
- */
 export interface Transaction {
   id: string;
-  date: string;
-  amount: number;
-  type: string;
+  date: Date;
   description: string;
-}
-
-/**
- * Interface para pagamento pendente
- */
-export interface PendingPayment {
-  id: string;
-  dueDate: string;
   amount: number;
-  client: string;
-  status: string;
+  category: string;
+  type: "income" | "expense";
+  accountId: string;
+  tags?: string[];
+  status: "pending" | "completed" | "failed";
+  metadata?: Record<string, any>;
 }
 
-/**
- * Serviço para gerenciamento de operações financeiras no TechCare
- */
-class FinancialServiceImpl {
-  private static instance: FinancialServiceImpl;
+export interface FinancialAccount {
+  id: string;
+  name: string;
+  type: "checking" | "savings" | "investment" | "credit";
+  balance: number;
+  currency: string;
+  institution: string;
+  accountNumber?: string;
+  lastSync?: Date;
+  isActive: boolean;
+}
+
+export interface FinancialReport {
+  id: string;
+  title: string;
+  dateRange: {
+    start: Date;
+    end: Date;
+  };
+  summary: {
+    totalIncome: number;
+    totalExpenses: number;
+    netCashflow: number;
+  };
+  categories: Array<{
+    name: string;
+    amount: number;
+    percentage: number;
+  }>;
+  generatedAt: Date;
+}
+
+export interface Budget {
+  id: string;
+  name: string;
+  amount: number;
+  spent: number;
+  period: "weekly" | "monthly" | "yearly";
+  category: string;
+  startDate: Date;
+  endDate?: Date;
+  isActive: boolean;
+}
+
+export class FinancialServiceImpl {
+  private accounts: FinancialAccount[] = [];
+  private transactions: Transaction[] = [];
+  private budgets: Budget[] = [];
+  private reports: FinancialReport[] = [];
   
-  private constructor() {
-    financialLogger.info('FinancialService inicializado');
-  }
-  
-  /**
-   * Obtém a instância singleton do serviço
-   */
-  public static getInstance(): FinancialServiceImpl {
-    if (!FinancialServiceImpl.instance) {
-      FinancialServiceImpl.instance = new FinancialServiceImpl();
-    }
-    return FinancialServiceImpl.instance;
+  // Adicionando instâncias dos serviços que estão sendo usados
+  private navigationService = NavigationService;
+  private scrapingService = ScrapingService;
+
+  constructor() {
+    // Inicializar com dados de exemplo
+    this.initializeMockData();
   }
 
-  /**
-   * Obtém resumo financeiro para um período específico
-   * @param period Período para obter o resumo
-   * @returns Resumo financeiro
-   */
-  public async getFinancialSummary(period: FinancialPeriod): Promise<FinancialSummary> {
-    const operation = logger.startOperation('getFinancialSummary');
-    
-    try {
-      financialLogger.info('Obtendo resumo financeiro', { period });
-      
-      // Navegar para a seção financeira
-      await this.navigationService.goToFinancial();
-      
-      // Extrair dados financeiros
-      const summary = await this.scrapingService.extractFinancialData(period);
-      
-      financialLogger.info('Resumo financeiro obtido com sucesso', {
-        period,
-        revenue: summary.totalRevenue,
-        expenses: summary.totalExpenses,
-        profit: summary.netProfit
-      });
-      
-      operation.end('success', { period });
-      return summary;
-    } catch (error) {
-      financialLogger.error('Erro ao obter resumo financeiro', error);
-      operation.end('failure', { period, error: error.message });
-      
-      if (error.message.includes('navegação')) {
-        throw new Error('Erro ao acessar dados financeiros');
-      } else {
-        throw new Error('Erro ao extrair dados financeiros');
+  private initializeMockData() {
+    // Contas
+    this.accounts = [
+      {
+        id: "acc-001",
+        name: "Conta Corrente Principal",
+        type: "checking",
+        balance: 5432.10,
+        currency: "BRL",
+        institution: "Banco TechCare",
+        accountNumber: "12345-6",
+        lastSync: new Date(),
+        isActive: true
+      },
+      {
+        id: "acc-002",
+        name: "Poupança",
+        type: "savings",
+        balance: 12500.00,
+        currency: "BRL",
+        institution: "Banco TechCare",
+        accountNumber: "12345-7",
+        lastSync: new Date(),
+        isActive: true
       }
-    }
-  }
+    ];
 
-  /**
-   * Gera relatório financeiro para um período específico
-   * @param period Período para o relatório
-   * @param format Formato do relatório (pdf, xlsx, csv)
-   * @returns ID do relatório gerado
-   */
-  public async generateFinancialReport(
-    period: FinancialPeriod,
-    format: 'pdf' | 'xlsx' | 'csv' = 'pdf'
-  ): Promise<{ reportId: string; format: string }> {
-    const operation = logger.startOperation('generateFinancialReport');
-    
-    try {
-      financialLogger.info('Gerando relatório financeiro', { period, format });
-      
-      // Navegar para a seção financeira
-      await this.navigationService.goToFinancial();
-      
-      // Navegar para a seção de relatórios
-      await this.navigationService.goToReports();
-      
-      // Preencher formulário de relatório
-      const reportId = await this.submitReportForm(period, format);
-      
-      financialLogger.info('Relatório financeiro gerado com sucesso', {
-        period,
-        format,
-        reportId
-      });
-      
-      operation.end('success', { period, format, reportId });
-      return { reportId, format };
-    } catch (error) {
-      financialLogger.error('Erro ao gerar relatório financeiro', error);
-      operation.end('failure', { period, format, error: error.message });
-      
-      if (error.message.includes('navegação')) {
-        throw new Error('Erro ao acessar seção de relatórios');
-      } else {
-        throw new Error('Erro ao gerar relatório financeiro');
+    // Transações de exemplo
+    const today = new Date();
+    this.transactions = [
+      {
+        id: "tx-001",
+        date: new Date(today.setDate(today.getDate() - 1)),
+        description: "Supermercado TechCare",
+        amount: -275.50,
+        category: "Alimentação",
+        type: "expense",
+        accountId: "acc-001",
+        tags: ["essencial"],
+        status: "completed"
+      },
+      {
+        id: "tx-002",
+        date: new Date(today.setDate(today.getDate() - 3)),
+        description: "Salário",
+        amount: 4500.00,
+        category: "Salário",
+        type: "income",
+        accountId: "acc-001",
+        status: "completed"
+      },
+      {
+        id: "tx-003",
+        date: new Date(today.setDate(today.getDate() - 7)),
+        description: "Restaurante Bom Sabor",
+        amount: -120.00,
+        category: "Alimentação",
+        type: "expense",
+        accountId: "acc-001",
+        tags: ["lazer"],
+        status: "completed"
+      },
+      {
+        id: "tx-004",
+        date: new Date(today.setDate(today.getDate() - 10)),
+        description: "Investimento CDB",
+        amount: 1000.00,
+        category: "Investimentos",
+        type: "income",
+        accountId: "acc-002",
+        status: "completed"
+      },
+      {
+        id: "tx-005",
+        date: new Date(today.setDate(today.getDate() - 14)),
+        description: "Aluguel Apartamento",
+        amount: -1500.00,
+        category: "Moradia",
+        type: "expense",
+        accountId: "acc-001",
+        status: "completed"
       }
+    ];
+
+    // Orçamentos de exemplo
+    this.budgets = [
+      {
+        id: "bud-001",
+        name: "Alimentação Mensal",
+        amount: 1000.00,
+        spent: 450.00,
+        period: "monthly",
+        category: "Alimentação",
+        startDate: new Date(today.getFullYear(), today.getMonth(), 1),
+        isActive: true
+      },
+      {
+        id: "bud-002",
+        name: "Transporte Semanal",
+        amount: 200.00,
+        spent: 120.00,
+        period: "weekly",
+        category: "Transporte",
+        startDate: new Date(today.setDate(today.getDate() - today.getDay())),
+        isActive: true
+      }
+    ];
+
+    // Relatórios de exemplo
+    this.reports = [
+      {
+        id: "rep-001",
+        title: "Relatório Financeiro Mensal",
+        dateRange: {
+          start: new Date(today.getFullYear(), today.getMonth(), 1),
+          end: new Date(today.getFullYear(), today.getMonth() + 1, 0)
+        },
+        summary: {
+          totalIncome: 4500.00,
+          totalExpenses: 3200.00,
+          netCashflow: 1300.00
+        },
+        categories: [
+          { name: "Alimentação", amount: 800.00, percentage: 25 },
+          { name: "Transporte", amount: 500.00, percentage: 15.6 },
+          { name: "Moradia", amount: 1200.00, percentage: 37.5 },
+          { name: "Entretenimento", amount: 400.00, percentage: 12.5 },
+          { name: "Outros", amount: 300.00, percentage: 9.4 }
+        ],
+        generatedAt: new Date()
+      }
+    ];
+  }
+
+  async syncBankAccounts(): Promise<boolean> {
+    try {
+      // Simulação de sincronização com navegação web automatizada
+      this.navigationService.openBrowser();
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      this.navigationService.navigateToUrl("https://banco.exemplo.com.br");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Restante do processo...
+      toast.success("Contas bancárias sincronizadas com sucesso");
+      return true;
+    } catch (error) {
+      console.error("Erro ao sincronizar contas:", error);
+      toast.error("Falha ao sincronizar contas bancárias");
+      return false;
     }
   }
 
-  /**
-   * Obtém histórico de transações para um período específico
-   * @param period Período para obter transações
-   * @param type Tipo de transação (opcional)
-   * @returns Lista de transações
-   */
-  public async getTransactionHistory(
-    period: FinancialPeriod,
-    type?: string
+  async importTransactionsFromCSV(fileContent: string): Promise<number> {
+    try {
+      // Simulação de processamento de CSV
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const numImported = Math.floor(Math.random() * 15) + 5;
+      toast.success(`${numImported} transações importadas com sucesso`);
+      return numImported;
+    } catch (error) {
+      console.error("Erro ao importar transações:", error);
+      toast.error("Falha ao importar transações");
+      return 0;
+    }
+  }
+
+  async fetchTransactions(
+    dateRange?: { start: Date; end: Date },
+    categories?: string[],
+    accountIds?: string[]
   ): Promise<Transaction[]> {
-    const operation = logger.startOperation('getTransactionHistory');
+    // Simulação de busca de transações com filtros
+    await new Promise(resolve => setTimeout(resolve, 800));
     
-    try {
-      financialLogger.info('Obtendo histórico de transações', { period, type });
-      
-      // Navegar para a seção financeira
-      await this.navigationService.goToFinancial();
-      
-      // Extrair transações
-      const transactions = await this.extractTransactions(period);
-      
-      // Filtrar por tipo se especificado
-      const filteredTransactions = type
-        ? transactions.filter(t => t.type === type)
-        : transactions;
-      
-      financialLogger.info('Histórico de transações obtido com sucesso', {
-        period,
-        type,
-        count: filteredTransactions.length
-      });
-      
-      operation.end('success', { period, type, count: filteredTransactions.length });
-      return filteredTransactions;
-    } catch (error) {
-      financialLogger.error('Erro ao obter histórico de transações', error);
-      operation.end('failure', { period, type, error: error.message });
-      throw new Error('Erro ao obter histórico de transações');
-    }
-  }
-
-  /**
-   * Obtém pagamentos pendentes
-   * @returns Lista de pagamentos pendentes
-   */
-  public async getPendingPayments(): Promise<PendingPayment[]> {
-    const operation = logger.startOperation('getPendingPayments');
+    let filtered = [...this.transactions];
     
-    try {
-      financialLogger.info('Obtendo pagamentos pendentes');
-      
-      // Navegar para a seção financeira
-      await this.navigationService.goToFinancial();
-      
-      // Extrair pagamentos pendentes
-      const pendingPayments = await this.extractPendingPayments();
-      
-      financialLogger.info('Pagamentos pendentes obtidos com sucesso', {
-        count: pendingPayments.length
-      });
-      
-      operation.end('success', { count: pendingPayments.length });
-      return pendingPayments;
-    } catch (error) {
-      financialLogger.error('Erro ao obter pagamentos pendentes', error);
-      operation.end('failure', { error: error.message });
-      throw new Error('Erro ao obter pagamentos pendentes');
+    if (dateRange) {
+      filtered = filtered.filter(
+        t => t.date >= dateRange.start && t.date <= dateRange.end
+      );
     }
+    
+    if (categories && categories.length > 0) {
+      filtered = filtered.filter(t => categories.includes(t.category));
+    }
+    
+    if (accountIds && accountIds.length > 0) {
+      filtered = filtered.filter(t => accountIds.includes(t.accountId));
+    }
+    
+    return filtered;
   }
 
-  /**
-   * Preenche formulário de relatório
-   * @param period Período para o relatório
-   * @param format Formato do relatório
-   * @returns ID do relatório gerado
-   * @private
-   */
-  private async submitReportForm(
-    period: FinancialPeriod,
-    format: string
-  ): Promise<string> {
-    try {
-      financialLogger.debug('Preenchendo formulário de relatório', { period, format });
-      
-      // Simulação de preenchimento de formulário
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Gerar ID de relatório aleatório
-      const reportId = `report-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      
-      financialLogger.debug('Formulário de relatório preenchido com sucesso', { reportId });
-      return reportId;
-    } catch (error) {
-      financialLogger.error('Erro ao preencher formulário de relatório', error);
-      throw new Error('Erro ao preencher formulário de relatório');
+  async generateFinancialReport(
+    options: {
+      startDate: Date;
+      endDate: Date;
+      includeCategories?: boolean;
+      includeTags?: boolean;
     }
-  }
-
-  /**
-   * Extrai transações para um período específico
-   * @param period Período para extrair transações
-   * @returns Lista de transações
-   * @private
-   */
-  private async extractTransactions(period: FinancialPeriod): Promise<Transaction[]> {
+  ): Promise<FinancialReport> {
     try {
-      financialLogger.debug('Extraindo transações', { period });
+      // Simulação de geração de relatório
+      this.navigationService.openBrowser();
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulação de extração de transações
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Processar dados...
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Gerar transações de exemplo
-      const transactions: Transaction[] = [
-        {
-          id: `tx-${Date.now()}-1`,
-          date: period.startDate,
-          amount: 1000,
-          type: 'income',
-          description: 'Pagamento de cliente'
+      // Fechar navegador
+      this.navigationService.closeBrowser();
+      
+      // Criar relatório
+      const report: FinancialReport = {
+        id: `report-${Date.now()}`,
+        title: `Relatório Financeiro ${options.startDate.toLocaleDateString()} - ${options.endDate.toLocaleDateString()}`,
+        dateRange: {
+          start: options.startDate,
+          end: options.endDate
         },
-        {
-          id: `tx-${Date.now()}-2`,
-          date: period.endDate,
-          amount: -500,
-          type: 'expense',
-          description: 'Despesa operacional'
-        }
-      ];
+        summary: {
+          totalIncome: 4500.00,
+          totalExpenses: 3200.00,
+          netCashflow: 1300.00
+        },
+        categories: [
+          { name: "Alimentação", amount: 800.00, percentage: 25 },
+          { name: "Transporte", amount: 500.00, percentage: 15.6 },
+          { name: "Moradia", amount: 1200.00, percentage: 37.5 },
+          { name: "Entretenimento", amount: 400.00, percentage: 12.5 },
+          { name: "Outros", amount: 300.00, percentage: 9.4 }
+        ],
+        generatedAt: new Date()
+      };
       
-      financialLogger.debug('Transações extraídas com sucesso', {
-        period,
-        count: transactions.length
-      });
+      this.reports.push(report);
+      toast.success("Relatório financeiro gerado com sucesso");
       
-      return transactions;
+      return report;
     } catch (error) {
-      financialLogger.error('Erro ao extrair transações', error);
-      throw new Error('Erro ao extrair transações');
+      console.error("Erro ao gerar relatório:", error);
+      toast.error("Falha ao gerar relatório financeiro");
+      throw error;
     }
   }
 
-  /**
-   * Extrai pagamentos pendentes
-   * @returns Lista de pagamentos pendentes
-   * @private
-   */
-  private async extractPendingPayments(): Promise<PendingPayment[]> {
+  async fetchAccountBalance(accountId: string): Promise<number> {
     try {
-      financialLogger.debug('Extraindo pagamentos pendentes');
+      // Simulação de obtenção de saldo atualizado
+      this.navigationService.openBrowser();
+      await new Promise(resolve => setTimeout(resolve, 1200));
       
-      // Simulação de extração de pagamentos pendentes
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const account = this.accounts.find(acc => acc.id === accountId);
       
-      // Gerar pagamentos pendentes de exemplo
-      const pendingPayments: PendingPayment[] = [
-        {
-          id: `pay-${Date.now()}-1`,
-          dueDate: '2023-06-15',
-          amount: 1500,
-          client: 'Cliente A',
-          status: 'pending'
-        },
-        {
-          id: `pay-${Date.now()}-2`,
-          dueDate: '2023-06-20',
-          amount: 2000,
-          client: 'Cliente B',
-          status: 'pending'
-        }
-      ];
-      
-      financialLogger.debug('Pagamentos pendentes extraídos com sucesso', {
-        count: pendingPayments.length
-      });
-      
-      return pendingPayments;
-    } catch (error) {
-      financialLogger.error('Erro ao extrair pagamentos pendentes', error);
-      throw new Error('Erro ao extrair pagamentos pendentes');
-    }
-  }
-  
-  /**
-   * Obtém fluxo de caixa para um período específico
-   * @param startDate Data inicial
-   * @param endDate Data final
-   * @returns Dados de fluxo de caixa
-   */
-  public async getCashFlow(startDate: Date, endDate: Date) {
-    try {
-      financialLogger.info('Obtendo fluxo de caixa', { startDate, endDate });
-      
-      // Simulação de obtenção de fluxo de caixa
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      return {
-        success: true,
-        data: {
-          period: {
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString()
-          },
-          summary: {
-            totalRevenue: 15000,
-            totalExpenses: 8500,
-            netProfit: 6500,
-            pendingPayments: 3500
-          },
-          transactions: [
-            {
-              date: new Date(startDate.getTime() + 86400000).toISOString(),
-              description: 'Pagamento de cliente',
-              amount: 3500,
-              type: 'income'
-            },
-            {
-              date: new Date(startDate.getTime() + 172800000).toISOString(),
-              description: 'Despesas operacionais',
-              amount: -1200,
-              type: 'expense'
-            }
-          ]
-        }
-      };
-    } catch (error) {
-      financialLogger.error('Erro ao obter fluxo de caixa', error);
-      return {
-        success: false,
-        error: 'Falha ao obter dados de fluxo de caixa'
-      };
-    }
-  }
-  
-  /**
-   * Obtém contas a receber
-   * @param status Status das contas (opcional)
-   * @returns Lista de contas a receber
-   */
-  public async getAccountsReceivable(status?: string) {
-    try {
-      // Verificar autenticação
-      if (!this.isAuthenticated()) {
-        return {
-          success: false,
-          error: 'Não autenticado. Faça login para acessar dados financeiros.'
-        };
+      if (!account) {
+        throw new Error("Conta não encontrada");
       }
       
-      financialLogger.info('Obtendo contas a receber', { status });
+      // Atualizar saldo
+      account.balance = Math.round(account.balance * (1 + (Math.random() * 0.02 - 0.01)) * 100) / 100;
+      account.lastSync = new Date();
       
-      // Simulação de obtenção de contas a receber
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const accounts = [
-        {
-          id: 'AR001',
-          client: 'Empresa ABC',
-          amount: 2500,
-          dueDate: '2025-06-15',
-          status: 'open'
-        },
-        {
-          id: 'AR002',
-          client: 'Empresa XYZ',
-          amount: 1800,
-          dueDate: '2025-06-20',
-          status: 'open'
-        },
-        {
-          id: 'AR003',
-          client: 'Empresa 123',
-          amount: 3200,
-          dueDate: '2025-05-30',
-          status: 'paid'
-        }
-      ];
-      
-      // Filtrar por status se especificado
-      const filteredAccounts = status 
-        ? accounts.filter(a => a.status === status)
-        : accounts;
-      
-      return {
-        success: true,
-        data: filteredAccounts
-      };
+      return account.balance;
     } catch (error) {
-      financialLogger.error('Erro ao obter contas a receber', error);
-      return {
-        success: false,
-        error: 'Falha ao obter contas a receber'
-      };
+      console.error("Erro ao buscar saldo:", error);
+      throw error;
     }
   }
-  
-  /**
-   * Obtém contas a pagar
-   * @returns Lista de contas a pagar
-   */
-  public async getAccountsPayable() {
+
+  async createBudget(budget: Omit<Budget, "id">): Promise<Budget> {
     try {
-      financialLogger.info('Obtendo contas a pagar');
-      
-      // Simulação de obtenção de contas a pagar
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      return {
-        success: true,
-        data: [
-          {
-            id: 'AP001',
-            supplier: 'Fornecedor ABC',
-            amount: 1200,
-            dueDate: '2025-06-10',
-            status: 'pending'
-          },
-          {
-            id: 'AP002',
-            supplier: 'Fornecedor XYZ',
-            amount: 850,
-            dueDate: '2025-06-15',
-            status: 'pending'
-          }
-        ]
+      const newBudget: Budget = {
+        ...budget,
+        id: `budget-${Date.now()}`,
+        spent: 0
       };
+      
+      this.budgets.push(newBudget);
+      toast.success("Orçamento criado com sucesso");
+      
+      return newBudget;
     } catch (error) {
-      financialLogger.error('Erro ao obter contas a pagar', error);
-      return {
-        success: false,
-        error: 'Falha ao obter contas a pagar'
-      };
+      console.error("Erro ao criar orçamento:", error);
+      toast.error("Falha ao criar orçamento");
+      throw error;
     }
   }
-  
-  /**
-   * Obtém relatório financeiro
-   * @param type Tipo de relatório
-   * @param period Período do relatório
-   * @returns Dados do relatório
-   */
-  public async getFinancialReport(type: string, period: string) {
-    try {
-      financialLogger.info('Obtendo relatório financeiro', { type, period });
-      
-      // Simulação de obtenção de relatório
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      return {
-        success: true,
-        data: {
-          title: `Relatório Financeiro - ${type.toUpperCase()}`,
-          period: period,
-          generatedAt: new Date().toISOString(),
-          data: {
-            summary: {
-              totalRevenue: 25000,
-              totalExpenses: 15000,
-              netProfit: 10000
-            },
-            details: [
-              { category: 'Vendas', amount: 25000 },
-              { category: 'Custos Operacionais', amount: -8000 },
-              { category: 'Despesas Administrativas', amount: -4000 },
-              { category: 'Marketing', amount: -3000 }
-            ]
-          }
-        }
-      };
-    } catch (error) {
-      financialLogger.error('Erro ao obter relatório financeiro', error);
-      return {
-        success: false,
-        error: 'Falha ao obter relatório financeiro'
-      };
-    }
+
+  getFinancialAccounts(): FinancialAccount[] {
+    return this.accounts;
   }
-  
-  /**
-   * Registra um pagamento
-   * @param invoiceId ID da fatura
-   * @param amount Valor do pagamento
-   * @param method Método de pagamento
-   * @returns Confirmação do pagamento
-   */
-  public async registerPayment(invoiceId: string, amount: number, method: string) {
-    try {
-      financialLogger.info('Registrando pagamento', { invoiceId, amount, method });
-      
-      // Simulação de registro de pagamento
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const receiptId = `REC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      
-      return {
-        success: true,
-        data: {
-          invoiceId,
-          amountPaid: amount,
-          method,
-          receiptId,
-          timestamp: new Date().toISOString()
-        }
-      };
-    } catch (error) {
-      financialLogger.error('Erro ao registrar pagamento', error);
-      return {
-        success: false,
-        error: 'Falha ao registrar pagamento'
-      };
-    }
+
+  getTransactions(): Transaction[] {
+    return this.transactions;
   }
-  
-  /**
-   * Exporta dados financeiros
-   * @param type Tipo de dados a exportar
-   * @param period Período dos dados
-   * @param format Formato de exportação
-   * @returns URL para download do arquivo exportado
-   */
-  public async exportFinancialData(type: string, period: string, format: string = 'csv') {
-    try {
-      financialLogger.info('Exportando dados financeiros', { type, period, format });
-      
-      // Simulação de exportação de dados
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      const fileName = `${type}-${period}-${Date.now()}.${format}`;
-      const url = `https://downloads.techcare.com/exports/${fileName}`;
-      
-      return {
-        success: true,
-        data: {
-          type,
-          period,
-          format,
-          fileName,
-          url,
-          expiresAt: new Date(Date.now() + 86400000).toISOString() // Expira em 24h
-        }
-      };
-    } catch (error) {
-      financialLogger.error('Erro ao exportar dados financeiros', error);
-      return {
-        success: false,
-        error: 'Falha ao exportar dados financeiros'
-      };
-    }
+
+  getBudgets(): Budget[] {
+    return this.budgets;
   }
-  
-  /**
-   * Verifica se o usuário está autenticado
-   * @private
-   */
-  private isAuthenticated(): boolean {
-    // Importar AuthService para verificar autenticação
-    try {
-      // Usando import dinâmico para permitir que o mock funcione corretamente
-      const AuthService = (window as any).AuthServiceMock || require('./AuthService').default;
-      return AuthService.isAuthenticated();
-    } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
+
+  getReports(): FinancialReport[] {
+    return this.reports;
+  }
+
+  updateAccount(accountId: string, updates: Partial<FinancialAccount>): FinancialAccount | undefined {
+    const accountIndex = this.accounts.findIndex(acc => acc.id === accountId);
+    if (accountIndex === -1) {
+      console.warn(`Conta com ID ${accountId} não encontrada`);
+      return undefined;
+    }
+
+    this.accounts[accountIndex] = {
+      ...this.accounts[accountIndex],
+      ...updates
+    };
+
+    toast.success(`Conta ${this.accounts[accountIndex].name} atualizada com sucesso`);
+    return this.accounts[accountIndex];
+  }
+
+  deleteAccount(accountId: string): boolean {
+    const initialLength = this.accounts.length;
+    this.accounts = this.accounts.filter(acc => acc.id !== accountId);
+
+    if (this.accounts.length < initialLength) {
+      toast.success("Conta removida com sucesso");
+      return true;
+    } else {
+      toast.error("Falha ao remover conta");
       return false;
     }
   }
 }
 
-// Exportar instância singleton
-export default FinancialServiceImpl.getInstance();
+const FinancialService = new FinancialServiceImpl();
+export default FinancialService;
