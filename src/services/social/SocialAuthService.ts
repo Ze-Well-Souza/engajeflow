@@ -17,6 +17,23 @@ export interface SocialAccount {
 }
 
 class SocialAuthService {
+  // Métodos para gerenciar tokens no localStorage
+  storeToken(provider: string, token: string): void {
+    localStorage.setItem(`auth_token_${provider}`, token);
+  }
+
+  getToken(provider: string): string | null {
+    return localStorage.getItem(`auth_token_${provider}`);
+  }
+
+  hasToken(provider: string): boolean {
+    return localStorage.getItem(`auth_token_${provider}`) !== null;
+  }
+
+  removeToken(provider: string): void {
+    localStorage.removeItem(`auth_token_${provider}`);
+  }
+
   async connectAccount(platform: string): Promise<SocialAccount> {
     // Simulação de conexão de conta
     await new Promise(resolve => setTimeout(resolve, 1000));

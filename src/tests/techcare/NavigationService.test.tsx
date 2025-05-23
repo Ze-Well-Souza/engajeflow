@@ -45,9 +45,9 @@ describe('NavigationService', () => {
   it('deve navegar para uma URL com sucesso', async () => {
     NavigationService.openBrowser();
     
-    const result = await NavigationService.navigateToUrl('/dashboard');
+    await NavigationService.navigateToUrl('/dashboard');
     
-    expect(result.success).toBe(true);
+    expect(NavigationService.getCurrentUrl()).toContain('/dashboard');
   });
 
   it('deve fechar o navegador', () => {

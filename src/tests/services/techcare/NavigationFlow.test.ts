@@ -32,25 +32,8 @@ vi.mock('puppeteer', async () => {
 });
 
 describe('NavigationService - Fluxo com Puppeteer mockado', () => {
-  let mockPage: any;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    mockPage = {
-      goto: vi.fn().mockResolvedValue({}),
-      waitForSelector: vi.fn().mockResolvedValue({}),
-      click: vi.fn().mockResolvedValue({}),
-      type: vi.fn().mockResolvedValue({}),
-      evaluate: vi.fn().mockResolvedValue({}),
-      $: vi.fn().mockResolvedValue({}),
-      $$: vi.fn().mockResolvedValue([]),
-      $eval: vi.fn().mockResolvedValue({}),
-      $$eval: vi.fn().mockResolvedValue([]),
-      waitForNavigation: vi.fn().mockResolvedValue({}),
-      url: vi.fn().mockReturnValue('https://app.techcare.com/dashboard'),
-      close: vi.fn().mockResolvedValue({})
-    };
   });
 
   describe('basic functionality', () => {
@@ -95,7 +78,7 @@ describe('NavigationService - Fluxo com Puppeteer mockado', () => {
       const result = await NavigationService.executeScript('return document.title');
       
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
     });
   });
 

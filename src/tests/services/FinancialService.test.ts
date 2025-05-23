@@ -36,15 +36,9 @@ describe('FinancialService', () => {
     expect(instance1).toBe(instance2);
   });
 
-  it('should get financial summary successfully when authenticated', async () => {
-    const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
-    
-    const result = await FinancialService.getFinancialSummary(period);
-    
-    expect(result).toBeDefined();
-    expect(result.totalRevenue).toBeDefined();
-    expect(result.totalExpenses).toBeDefined();
-    expect(result.netProfit).toBeDefined();
+  it('should sync bank accounts successfully when authenticated', async () => {
+    const result = await FinancialService.syncBankAccounts();
+    expect(result).toBe(true);
   });
 
   it('should generate financial report', async () => {
@@ -54,20 +48,22 @@ describe('FinancialService', () => {
     
     expect(result).toBeDefined();
     expect(result.summary).toBeDefined();
-    expect(result.data).toBeDefined();
+    expect(result.summary.totalIncome).toBeDefined();
+    expect(result.summary.totalExpenses).toBeDefined();
+    expect(result.summary.netCashflow).toBeDefined();
   });
 
   it('should get transaction history', async () => {
     const period = { startDate: new Date('2025-01-01'), endDate: new Date('2025-01-31') };
     
-    const result = await FinancialService.getTransactions(period);
+    const result = await FinancialService.fetchTransactions(period);
     
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
   });
 
-  it('should get pending payments', async () => {
-    const result = await FinancialService.getPendingPayments();
+  it('should get financial accounts', () => {
+    const result = FinancialService.getFinancialAccounts();
     
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
