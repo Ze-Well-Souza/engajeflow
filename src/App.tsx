@@ -1,6 +1,5 @@
-
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useRoutes } from "react-router-dom";
 
 // Routes imports
 import MainRoutes from "./routes/MainRoutes";
@@ -18,28 +17,39 @@ import AuthRoutes from "./routes/AuthRoutes";
 import MiscRoutes from "./routes/MiscRoutes";
 import SocialRoutes from "./routes/SocialRoutes";
 
+// Componente que renderiza todas as rotas
+const AppRoutes = () => {
+  // Combinamos todas as rotas em um único array
+  const routes = [
+    {
+      path: "/",
+      element: <Navigate to="/landing" replace />
+    },
+    ...AuthRoutes(),
+    ...MainRoutes({}),
+    ...AdminRoutes({}),
+    ...SystemRoutes({}),
+    ...AIRoutes({}),
+    ...GatewayRoutes({}),
+    ...StoreRoutes({}),
+    ...DeveloperRoutes({}),
+    ...LandingRoutes({}),
+    ...ContentRoutes({}),
+    ...AutomationRoutes({}),
+    ...ReportsRoutes({}),
+    ...MiscRoutes({}),
+    ...SocialRoutes({})
+  ];
+
+  // Usamos o hook useRoutes para renderizar as rotas
+  const routeElements = useRoutes(routes);
+  return routeElements;
+};
+
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/landing" replace />} />
-        
-        {/* Renderizamos os componentes de rota */}
-        {MainRoutes({})}
-        {AdminRoutes({})}
-        {SystemRoutes({})}
-        {AIRoutes({})}
-        {GatewayRoutes({})}
-        {StoreRoutes({})}
-        {DeveloperRoutes({})}
-        {LandingRoutes({})}
-        {ContentRoutes({})}
-        {AutomationRoutes({})}
-        {ReportsRoutes({})}
-        {AuthRoutes({})}
-        {MiscRoutes({})}
-        {SocialRoutes({})}
-      </Routes>
+      <AppRoutes />
     </Router>
   );
 }

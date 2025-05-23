@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Route } from "react-router-dom";
+import { RouteObject } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Admin Pages
@@ -12,18 +11,37 @@ import PermissionsPage from "@/pages/admin/PermissionsPage";
 import ModuleManagerPage from "@/pages/admin/ModuleManagerPage";
 import OrganizacoesPage from "@/pages/admin/OrganizacoesPage";
 
-const AdminRoutes: React.FC = () => {
-  return (
-    <>
-      <Route path="/admin/dashboard" element={<DashboardLayout><AdminDashboardPage /></DashboardLayout>} />
-      <Route path="/admin/logs" element={<DashboardLayout><ActivityLogsPage /></DashboardLayout>} />
-      <Route path="/admin/clients" element={<DashboardLayout><ClientsPage /></DashboardLayout>} />
-      <Route path="/admin/automation" element={<DashboardLayout><AutomationConfigPage /></DashboardLayout>} />
-      <Route path="/admin/permissions" element={<DashboardLayout><PermissionsPage /></DashboardLayout>} />
-      <Route path="/admin/modules" element={<DashboardLayout><ModuleManagerPage /></DashboardLayout>} />
-      <Route path="/admin/organizacoes" element={<DashboardLayout><OrganizacoesPage /></DashboardLayout>} />
-    </>
-  );
+const AdminRoutes = (): RouteObject[] => {
+  return [
+    {
+      path: "/admin/dashboard",
+      element: <DashboardLayout><AdminDashboardPage /></DashboardLayout>
+    },
+    {
+      path: "/admin/logs",
+      element: <DashboardLayout><ActivityLogsPage /></DashboardLayout>
+    },
+    {
+      path: "/admin/clients",
+      element: <DashboardLayout><ClientsPage /></DashboardLayout>
+    },
+    {
+      path: "/admin/automation",
+      element: <DashboardLayout><AutomationConfigPage /></DashboardLayout>
+    },
+    {
+      path: "/admin/permissions",
+      element: <DashboardLayout><PermissionsPage /></DashboardLayout>
+    },
+    {
+      path: "/admin/modules",
+      element: <DashboardLayout><ModuleManagerPage /></DashboardLayout>
+    },
+    {
+      path: "/admin/organizacoes",
+      element: <DashboardLayout><OrganizacoesPage /></DashboardLayout>
+    }
+  ];
 };
 
 export default AdminRoutes;
