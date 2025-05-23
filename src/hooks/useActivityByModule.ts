@@ -8,8 +8,19 @@ export interface ModuleActivity {
   count: number;
 }
 
-export const useActivityByModule = (period: 'week' | 'month' = 'week') => {
+export interface ActivityByModuleResult {
+  activities: ModuleActivity[];
+  modules: ModuleActivity[];  // Alias para compatibilidade
+  total: number;
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+  refreshActivityData: () => Promise<void>; // Alias para compatibilidade
+}
+
+export const useActivityByModule = (period: 'week' | 'month' = 'week'): ActivityByModuleResult => {
   const [activities, setActivities] = useState<ModuleActivity[]>([]);
+  const [total, setTotal] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -23,6 +34,7 @@ export const useActivityByModule = (period: 'week' | 'month' = 'week') => {
       
       if (!profile) {
         setActivities([]);
+        setTotal(0);
         return;
       }
       
@@ -68,8 +80,14 @@ export const useActivityByModule = (period: 'week' | 'month' = 'week') => {
           { module: 'settings', count: 2 }
         ];
         setActivities(mockData);
+        // Calcular total
+        const totalCount = mockData.reduce((sum, item) => sum + item.count, 0);
+        setTotal(totalCount);
       } else {
         setActivities(moduleActivities);
+        // Calcular total
+        const totalCount = moduleActivities.reduce((sum, item) => sum + item.count, 0);
+        setTotal(totalCount);
       }
       
     } catch (err) {
@@ -84,6 +102,9 @@ export const useActivityByModule = (period: 'week' | 'month' = 'week') => {
         { module: 'settings', count: 2 }
       ];
       setActivities(mockData);
+      // Calcular total
+      const totalCount = mockData.reduce((sum, item) => sum + item.count, 0);
+      setTotal(totalCount);
     } finally {
       setIsLoading(false);
     }
@@ -95,8 +116,13 @@ export const useActivityByModule = (period: 'week' | 'month' = 'week') => {
   
   return {
     activities,
+    modules: activities, // Alias para compatibilidade
+    total,
     isLoading,
     error,
-    refresh: fetchActivityByModule
+    refresh: fetchActivityByModule,
+    refreshActivityData: fetchActivityByModule // Alias para compatibilidade
   };
 };
+
+export default useActivityByModule;

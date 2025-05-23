@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAutomationStatusDistribution } from "@/hooks/useAutomationStatusDistribution";
@@ -31,7 +32,7 @@ export const AutomationStatusChart: React.FC = () => {
     cancelled,
     total,
     isLoading,
-    refreshDistribution
+    refresh
   } = useAutomationStatusDistribution();
 
   // Preparar dados para o gráfico

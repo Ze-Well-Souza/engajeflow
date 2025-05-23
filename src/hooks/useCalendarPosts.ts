@@ -1,36 +1,33 @@
 
-import { useState, useEffect, useMemo } from 'react';
-import { startOfDay, isSameDay } from 'date-fns';
-import { ScheduledPost } from './useScheduledPosts';
+import { useState, useCallback, useMemo } from 'react';
+import { ScheduledPost } from '@/hooks/useScheduledPosts';
 
 export const useCalendarPosts = (posts: ScheduledPost[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  
-  // Obter postagens para a data selecionada
-  const selectedDatePosts = useMemo(() => {
-    if (!selectedDate) return [];
+
+  // Função para agrupar posts por data
+  const getPostsByDate = useCallback((date: Date | undefined) => {
+    if (!date) return [];
+    
     return posts.filter(post => {
       const postDate = new Date(post.scheduled_for);
-      return isSameDay(postDate, selectedDate);
-    });
-  }, [posts, selectedDate]);
-  
-  // Obter todas as datas que possuem postagens
-  const datesWithPosts = useMemo(() => {
-    return posts.map(post => {
-      const date = new Date(post.scheduled_for);
-      return startOfDay(date);
+      return (
+        postDate.getDate() === date.getDate() &&
+        postDate.getMonth() === date.getMonth() &&
+        postDate.getFullYear() === date.getFullYear()
+      );
     });
   }, [posts]);
 
-  // Função para obter postagens por data específica
-  const getPostsByDate = (date: Date) => {
-    return posts.filter(post => {
-      const postDate = new Date(post.scheduled_for);
-      return isSameDay(postDate, date);
-    });
-  };
-  
+  // Posts correspondentes à data selecionada
+  const selectedDatePosts = useMemo(() => 
+    getPostsByDate(selectedDate), [getPostsByDate, selectedDate]);
+
+  // Datas que possuem posts agendados
+  const datesWithPosts = useMemo(() => 
+    posts.map(post => new Date(post.scheduled_for)),
+    [posts]);
+
   return {
     selectedDate,
     setSelectedDate,
@@ -39,3 +36,5 @@ export const useCalendarPosts = (posts: ScheduledPost[]) => {
     getPostsByDate
   };
 };
+
+export default useCalendarPosts;

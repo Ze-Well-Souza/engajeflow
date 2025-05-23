@@ -16,6 +16,7 @@ interface LocalizationContextType {
   t: (key: string) => string;
   localeOptions: LocaleOption[];
   changeLocale: (locale: SupportedLocale) => void;
+  formatCurrency: (value: number) => string;
 }
 
 // Dados de localização
@@ -98,6 +99,14 @@ export const LocalizationProvider = ({ children }: { children: ReactNode }) => {
     return translations[locale][key] || key;
   };
 
+  // Função para formatar moeda
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: locale === 'pt-BR' ? 'BRL' : locale === 'en-US' ? 'USD' : 'EUR'
+    }).format(value);
+  };
+
   // Função para mudar o idioma
   const changeLocale = (newLocale: SupportedLocale) => {
     setLocale(newLocale);
@@ -116,7 +125,8 @@ export const LocalizationProvider = ({ children }: { children: ReactNode }) => {
       setLocale,
       t,
       localeOptions,
-      changeLocale
+      changeLocale,
+      formatCurrency
     }}>
       {children}
     </LocalizationContext.Provider>

@@ -9,8 +9,30 @@ export interface StatusDistribution {
   percentage: number;
 }
 
-export const useAutomationStatusDistribution = () => {
+export interface AutomationStatusResult {
+  distribution: StatusDistribution[];
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
+  cancelled: number;
+  total: number;
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+  refreshDistribution: () => Promise<void>;
+}
+
+export const useAutomationStatusDistribution = (): AutomationStatusResult => {
   const [distribution, setDistribution] = useState<StatusDistribution[]>([]);
+  const [statusCounts, setStatusCounts] = useState({
+    pending: 0,
+    processing: 0,
+    completed: 0,
+    failed: 0,
+    cancelled: 0,
+    total: 0
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -24,6 +46,14 @@ export const useAutomationStatusDistribution = () => {
       
       if (!profile) {
         setDistribution([]);
+        setStatusCounts({
+          pending: 0,
+          processing: 0,
+          completed: 0,
+          failed: 0,
+          cancelled: 0,
+          total: 0
+        });
         return;
       }
       
@@ -72,6 +102,26 @@ export const useAutomationStatusDistribution = () => {
         }));
         
         setDistribution(statuses);
+        
+        // Atualizar contadores individuais
+        const counts = {
+          pending: 0,
+          processing: 0,
+          completed: 0,
+          failed: 0,
+          cancelled: 0,
+          total
+        };
+        
+        statuses.forEach(item => {
+          if (item.status === 'pending') counts.pending = item.count;
+          else if (item.status === 'processing') counts.processing = item.count;
+          else if (item.status === 'completed') counts.completed = item.count;
+          else if (item.status === 'failed') counts.failed = item.count;
+          else if (item.status === 'cancelled') counts.cancelled = item.count;
+        });
+        
+        setStatusCounts(counts);
       } else {
         // Dados simulados para demonstração
         const mockData = [
@@ -81,6 +131,15 @@ export const useAutomationStatusDistribution = () => {
           { status: 'failed', count: 2, percentage: 10 },
         ];
         setDistribution(mockData);
+        
+        setStatusCounts({
+          pending: 5,
+          processing: 3,
+          completed: 10,
+          failed: 2,
+          cancelled: 0,
+          total: 20
+        });
       }
       
     } catch (err) {
@@ -95,6 +154,15 @@ export const useAutomationStatusDistribution = () => {
         { status: 'failed', count: 2, percentage: 10 },
       ];
       setDistribution(mockData);
+      
+      setStatusCounts({
+        pending: 5,
+        processing: 3,
+        completed: 10,
+        failed: 2,
+        cancelled: 0,
+        total: 20
+      });
     } finally {
       setIsLoading(false);
     }
@@ -106,8 +174,12 @@ export const useAutomationStatusDistribution = () => {
   
   return {
     distribution,
+    ...statusCounts,
     isLoading,
     error,
-    refresh: fetchStatusDistribution
+    refresh: fetchStatusDistribution,
+    refreshDistribution: fetchStatusDistribution
   };
 };
+
+export default useAutomationStatusDistribution;

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,7 +6,7 @@ import { DashboardStats } from "./DashboardStats";
 import { AutomationStatusChart } from "./AutomationStatusChart";
 import { ActivityModuleChart } from "./ActivityModuleChart";
 import { RecentAutomationsTable } from "./RecentAutomationsTable";
-import { ScheduledPostsTable } from "./ScheduledPostsTable";
+import ScheduledPostsTable from "./ScheduledPostsTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Calendar, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

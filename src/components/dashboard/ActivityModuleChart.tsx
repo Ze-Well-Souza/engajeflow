@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivityByModule } from "@/hooks/useActivityByModule";
@@ -6,14 +7,14 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export const ActivityModuleChart: React.FC = () => {
   const { 
-    modules,
+    activities,
     total,
     isLoading,
-    refreshActivityData
-  } = useActivityByModule(30); // Últimos 30 dias
+    refresh
+  } = useActivityByModule('month'); // Usando 'month' em vez de número 30
 
   // Preparar dados para o gráfico
-  const chartData = modules
+  const chartData = activities
     .filter(module => module.count > 0) // Filtrar módulos sem atividade
     .slice(0, 6); // Limitar aos 6 módulos mais ativos
 
@@ -62,7 +63,7 @@ export const ActivityModuleChart: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" />
                 <YAxis 
-                  dataKey="name" 
+                  dataKey="module" 
                   type="category" 
                   width={100}
                   tick={{ fontSize: 12 }}

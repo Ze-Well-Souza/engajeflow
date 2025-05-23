@@ -33,7 +33,7 @@ interface LocaleSwitcherProps {
 }
 
 const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ variant = "icon" }) => {
-  const { locale, setLocale, availableLocales } = useLocalization();
+  const { locale, setLocale, localeOptions } = useLocalization();
 
   return (
     <DropdownMenu>
@@ -57,14 +57,14 @@ const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ variant = "icon" }) => 
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {availableLocales.map((localeCode) => (
+        {localeOptions.map((option) => (
           <DropdownMenuItem
-            key={localeCode}
-            onClick={() => setLocale(localeCode)}
-            className={locale === localeCode ? "bg-accent" : ""}
+            key={option.value}
+            onClick={() => setLocale(option.value)}
+            className={locale === option.value ? "bg-accent" : ""}
           >
-            <span className="mr-2">{localeFlags[localeCode]}</span>
-            {localeNames[localeCode]}
+            <span className="mr-2">{option.flag}</span>
+            {option.label}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
