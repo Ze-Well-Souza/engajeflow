@@ -1,416 +1,278 @@
-import { toast } from "sonner";
 
-// Modificado para usar importações default corretamente
-import NavigationService from "./NavigationService";
-import ScrapingService from "./ScrapingService";
+import NavigationService from './NavigationService';
+import AuthService from './AuthService';
 
-export interface Transaction {
-  id: string;
-  date: Date;
-  description: string;
-  amount: number;
-  category: string;
-  type: "income" | "expense";
-  accountId: string;
-  tags?: string[];
-  status: "pending" | "completed" | "failed";
-  metadata?: Record<string, any>;
-}
+/**
+ * Serviço para gerenciar operações financeiras no TechCare Connect
+ */
+class FinancialService {
+  private static instance: FinancialService;
 
-export interface FinancialAccount {
-  id: string;
-  name: string;
-  type: "checking" | "savings" | "investment" | "credit";
-  balance: number;
-  currency: string;
-  institution: string;
-  accountNumber?: string;
-  lastSync?: Date;
-  isActive: boolean;
-}
+  // Construtor privado para padrão Singleton
+  private constructor() {}
 
-export interface FinancialReport {
-  id: string;
-  title: string;
-  dateRange: {
-    start: Date;
-    end: Date;
-  };
-  summary: {
-    totalIncome: number;
-    totalExpenses: number;
-    netCashflow: number;
-  };
-  categories: Array<{
-    name: string;
-    amount: number;
-    percentage: number;
-  }>;
-  generatedAt: Date;
-}
-
-export interface Budget {
-  id: string;
-  name: string;
-  amount: number;
-  spent: number;
-  period: "weekly" | "monthly" | "yearly";
-  category: string;
-  startDate: Date;
-  endDate?: Date;
-  isActive: boolean;
-}
-
-export class FinancialServiceImpl {
-  private accounts: FinancialAccount[] = [];
-  private transactions: Transaction[] = [];
-  private budgets: Budget[] = [];
-  private reports: FinancialReport[] = [];
-  
-  // Adicionando instâncias dos serviços que estão sendo usados
-  private navigationService = NavigationService;
-  private scrapingService = ScrapingService;
-
-  constructor() {
-    // Inicializar com dados de exemplo
-    this.initializeMockData();
+  /**
+   * Obtém a instância única do serviço (Padrão Singleton)
+   */
+  public static getInstance(): FinancialService {
+    if (!FinancialService.instance) {
+      FinancialService.instance = new FinancialService();
+    }
+    return FinancialService.instance;
   }
 
-  private initializeMockData() {
-    // Contas
-    this.accounts = [
-      {
-        id: "acc-001",
-        name: "Conta Corrente Principal",
-        type: "checking",
-        balance: 5432.10,
-        currency: "BRL",
-        institution: "Banco TechCare",
-        accountNumber: "12345-6",
-        lastSync: new Date(),
-        isActive: true
-      },
-      {
-        id: "acc-002",
-        name: "Poupança",
-        type: "savings",
-        balance: 12500.00,
-        currency: "BRL",
-        institution: "Banco TechCare",
-        accountNumber: "12345-7",
-        lastSync: new Date(),
-        isActive: true
-      }
-    ];
-
-    // Transações de exemplo
-    const today = new Date();
-    this.transactions = [
-      {
-        id: "tx-001",
-        date: new Date(today.setDate(today.getDate() - 1)),
-        description: "Supermercado TechCare",
-        amount: -275.50,
-        category: "Alimentação",
-        type: "expense",
-        accountId: "acc-001",
-        tags: ["essencial"],
-        status: "completed"
-      },
-      {
-        id: "tx-002",
-        date: new Date(today.setDate(today.getDate() - 3)),
-        description: "Salário",
-        amount: 4500.00,
-        category: "Salário",
-        type: "income",
-        accountId: "acc-001",
-        status: "completed"
-      },
-      {
-        id: "tx-003",
-        date: new Date(today.setDate(today.getDate() - 7)),
-        description: "Restaurante Bom Sabor",
-        amount: -120.00,
-        category: "Alimentação",
-        type: "expense",
-        accountId: "acc-001",
-        tags: ["lazer"],
-        status: "completed"
-      },
-      {
-        id: "tx-004",
-        date: new Date(today.setDate(today.getDate() - 10)),
-        description: "Investimento CDB",
-        amount: 1000.00,
-        category: "Investimentos",
-        type: "income",
-        accountId: "acc-002",
-        status: "completed"
-      },
-      {
-        id: "tx-005",
-        date: new Date(today.setDate(today.getDate() - 14)),
-        description: "Aluguel Apartamento",
-        amount: -1500.00,
-        category: "Moradia",
-        type: "expense",
-        accountId: "acc-001",
-        status: "completed"
-      }
-    ];
-
-    // Orçamentos de exemplo
-    this.budgets = [
-      {
-        id: "bud-001",
-        name: "Alimentação Mensal",
-        amount: 1000.00,
-        spent: 450.00,
-        period: "monthly",
-        category: "Alimentação",
-        startDate: new Date(today.getFullYear(), today.getMonth(), 1),
-        isActive: true
-      },
-      {
-        id: "bud-002",
-        name: "Transporte Semanal",
-        amount: 200.00,
-        spent: 120.00,
-        period: "weekly",
-        category: "Transporte",
-        startDate: new Date(today.setDate(today.getDate() - today.getDay())),
-        isActive: true
-      }
-    ];
-
-    // Relatórios de exemplo
-    this.reports = [
-      {
-        id: "rep-001",
-        title: "Relatório Financeiro Mensal",
-        dateRange: {
-          start: new Date(today.getFullYear(), today.getMonth(), 1),
-          end: new Date(today.getFullYear(), today.getMonth() + 1, 0)
-        },
-        summary: {
-          totalIncome: 4500.00,
-          totalExpenses: 3200.00,
-          netCashflow: 1300.00
-        },
-        categories: [
-          { name: "Alimentação", amount: 800.00, percentage: 25 },
-          { name: "Transporte", amount: 500.00, percentage: 15.6 },
-          { name: "Moradia", amount: 1200.00, percentage: 37.5 },
-          { name: "Entretenimento", amount: 400.00, percentage: 12.5 },
-          { name: "Outros", amount: 300.00, percentage: 9.4 }
-        ],
-        generatedAt: new Date()
-      }
-    ];
-  }
-
-  async syncBankAccounts(): Promise<boolean> {
+  /**
+   * Sincroniza contas bancárias com o sistema
+   */
+  public async syncBankAccounts(): Promise<boolean> {
     try {
-      // Simulação de sincronização com navegação web automatizada
-      this.navigationService.openBrowser();
+      // Verificar se o usuário está autenticado
+      if (!AuthService.isAuthenticated()) {
+        console.error("Usuário não autenticado para sincronizar contas bancárias");
+        return false;
+      }
+
+      // Simulação de sincronização de contas bancárias
+      console.log("Sincronizando contas bancárias...");
+      
+      // Simular uma operação assíncrona
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      this.navigationService.navigateToUrl("https://banco.exemplo.com.br");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Restante do processo...
-      toast.success("Contas bancárias sincronizadas com sucesso");
+      console.log("Contas bancárias sincronizadas com sucesso");
       return true;
     } catch (error) {
-      console.error("Erro ao sincronizar contas:", error);
-      toast.error("Falha ao sincronizar contas bancárias");
+      console.error("Erro ao sincronizar contas bancárias:", error);
       return false;
     }
   }
 
-  async importTransactionsFromCSV(fileContent: string): Promise<number> {
+  /**
+   * Gera relatório financeiro para o período especificado
+   */
+  public async generateFinancialReport(period: { startDate: Date, endDate: Date }): Promise<any> {
     try {
-      // Simulação de processamento de CSV
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const numImported = Math.floor(Math.random() * 15) + 5;
-      toast.success(`${numImported} transações importadas com sucesso`);
-      return numImported;
-    } catch (error) {
-      console.error("Erro ao importar transações:", error);
-      toast.error("Falha ao importar transações");
-      return 0;
-    }
-  }
+      // Verificar se o usuário está autenticado
+      if (!AuthService.isAuthenticated()) {
+        throw new Error("Usuário não autenticado para gerar relatório financeiro");
+      }
 
-  async fetchTransactions(
-    dateRange?: { start: Date; end: Date },
-    categories?: string[],
-    accountIds?: string[]
-  ): Promise<Transaction[]> {
-    // Simulação de busca de transações com filtros
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    let filtered = [...this.transactions];
-    
-    if (dateRange) {
-      filtered = filtered.filter(
-        t => t.date >= dateRange.start && t.date <= dateRange.end
-      );
-    }
-    
-    if (categories && categories.length > 0) {
-      filtered = filtered.filter(t => categories.includes(t.category));
-    }
-    
-    if (accountIds && accountIds.length > 0) {
-      filtered = filtered.filter(t => accountIds.includes(t.accountId));
-    }
-    
-    return filtered;
-  }
-
-  async generateFinancialReport(
-    options: {
-      startDate: Date;
-      endDate: Date;
-      includeCategories?: boolean;
-      includeTags?: boolean;
-    }
-  ): Promise<FinancialReport> {
-    try {
-      // Simulação de geração de relatório
-      this.navigationService.openBrowser();
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log(`Gerando relatório financeiro de ${period.startDate.toLocaleDateString()} a ${period.endDate.toLocaleDateString()}`);
       
-      // Processar dados...
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simular uma operação assíncrona
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Fechar navegador
-      this.navigationService.closeBrowser();
-      
-      // Criar relatório
-      const report: FinancialReport = {
-        id: `report-${Date.now()}`,
-        title: `Relatório Financeiro ${options.startDate.toLocaleDateString()} - ${options.endDate.toLocaleDateString()}`,
-        dateRange: {
-          start: options.startDate,
-          end: options.endDate
+      // Dados simulados para demonstração
+      const report = {
+        period: {
+          start: period.startDate,
+          end: period.endDate
         },
         summary: {
-          totalIncome: 4500.00,
-          totalExpenses: 3200.00,
-          netCashflow: 1300.00
+          totalIncome: 12500.75,
+          totalExpenses: 8750.25,
+          netCashflow: 3750.50
         },
-        categories: [
-          { name: "Alimentação", amount: 800.00, percentage: 25 },
-          { name: "Transporte", amount: 500.00, percentage: 15.6 },
-          { name: "Moradia", amount: 1200.00, percentage: 37.5 },
-          { name: "Entretenimento", amount: 400.00, percentage: 12.5 },
-          { name: "Outros", amount: 300.00, percentage: 9.4 }
+        incomeByCategory: [
+          { category: "Vendas", amount: 9500.00 },
+          { category: "Serviços", amount: 2800.75 },
+          { category: "Outros", amount: 200.00 }
         ],
-        generatedAt: new Date()
+        expensesByCategory: [
+          { category: "Fornecedores", amount: 4200.50 },
+          { category: "Salários", amount: 3000.00 },
+          { category: "Aluguel", amount: 1200.00 },
+          { category: "Utilidades", amount: 349.75 }
+        ],
+        transactions: [
+          // Simular transações
+          { id: "tx1", date: new Date(period.startDate.getTime() + 86400000), description: "Venda #12345", amount: 500.00, type: "income" },
+          { id: "tx2", date: new Date(period.startDate.getTime() + 172800000), description: "Pagamento Fornecedor ABC", amount: -350.25, type: "expense" }
+          // ... mais transações seriam incluídas aqui
+        ]
       };
       
-      this.reports.push(report);
-      toast.success("Relatório financeiro gerado com sucesso");
-      
+      console.log("Relatório financeiro gerado com sucesso");
       return report;
     } catch (error) {
-      console.error("Erro ao gerar relatório:", error);
-      toast.error("Falha ao gerar relatório financeiro");
+      console.error("Erro ao gerar relatório financeiro:", error);
       throw error;
     }
   }
 
-  async fetchAccountBalance(accountId: string): Promise<number> {
+  /**
+   * Busca transações para um período especificado
+   */
+  public async fetchTransactions(period: { start: Date, end: Date }): Promise<any[]> {
     try {
-      // Simulação de obtenção de saldo atualizado
-      this.navigationService.openBrowser();
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      // Verificar se o usuário está autenticado
+      if (!AuthService.isAuthenticated()) {
+        throw new Error("Usuário não autenticado para buscar transações");
+      }
+
+      console.log(`Buscando transações de ${period.start.toLocaleDateString()} a ${period.end.toLocaleDateString()}`);
       
-      const account = this.accounts.find(acc => acc.id === accountId);
+      // Simular uma operação assíncrona
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (!account) {
-        throw new Error("Conta não encontrada");
+      // Dados simulados para demonstração
+      const transactions = [];
+      const daySpan = (period.end.getTime() - period.start.getTime()) / (1000 * 3600 * 24);
+      
+      // Gerar dados simulados para o período
+      for (let i = 0; i < daySpan; i++) {
+        const currentDate = new Date(period.start.getTime() + i * 86400000);
+        
+        // Adicionar 0-3 transações por dia
+        const transactionsForDay = Math.floor(Math.random() * 4);
+        for (let j = 0; j < transactionsForDay; j++) {
+          const isIncome = Math.random() > 0.4;
+          const amount = isIncome ? 
+            Math.round(Math.random() * 1000 * 100) / 100 : 
+            -Math.round(Math.random() * 500 * 100) / 100;
+          
+          transactions.push({
+            id: `tx-${i}-${j}`,
+            date: currentDate,
+            description: isIncome ? 
+              `Venda #${Math.floor(Math.random() * 10000)}` : 
+              `Despesa #${Math.floor(Math.random() * 10000)}`,
+            amount: amount,
+            type: isIncome ? "income" : "expense",
+            category: isIncome ? "Vendas" : "Despesas Gerais"
+          });
+        }
       }
       
-      // Atualizar saldo
-      account.balance = Math.round(account.balance * (1 + (Math.random() * 0.02 - 0.01)) * 100) / 100;
-      account.lastSync = new Date();
+      console.log(`${transactions.length} transações encontradas`);
+      return transactions;
+    } catch (error) {
+      console.error("Erro ao buscar transações:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Retorna as contas financeiras disponíveis
+   */
+  public getFinancialAccounts(): any[] {
+    try {
+      // Verificar se o usuário está autenticado
+      if (!AuthService.isAuthenticated()) {
+        throw new Error("Usuário não autenticado para acessar contas financeiras");
+      }
       
+      // Dados simulados para demonstração
+      const accounts = [
+        {
+          id: "acc-001",
+          name: "Conta Corrente Principal",
+          type: "checking",
+          institution: "Banco ABC",
+          balance: 15420.78,
+          currency: "BRL",
+          lastSync: new Date(Date.now() - 86400000) // ontem
+        },
+        {
+          id: "acc-002",
+          name: "Poupança",
+          type: "savings",
+          institution: "Banco ABC",
+          balance: 45750.00,
+          currency: "BRL",
+          lastSync: new Date(Date.now() - 86400000) // ontem
+        },
+        {
+          id: "acc-003",
+          name: "Cartão de Crédito",
+          type: "creditCard",
+          institution: "Banco XYZ",
+          balance: -2340.50,
+          limit: 10000.00,
+          currency: "BRL",
+          lastSync: new Date(Date.now() - 86400000 * 2) // dois dias atrás
+        }
+      ];
+      
+      return accounts;
+    } catch (error) {
+      console.error("Erro ao obter contas financeiras:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca o saldo de uma conta específica
+   */
+  public async fetchAccountBalance(accountId: string): Promise<number> {
+    try {
+      // Verificar se o usuário está autenticado
+      if (!AuthService.isAuthenticated()) {
+        throw new Error("Usuário não autenticado para buscar saldo da conta");
+      }
+      
+      console.log(`Buscando saldo da conta ${accountId}`);
+      
+      // Simular uma operação assíncrona
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Buscar a conta nas contas simuladas
+      const accounts = this.getFinancialAccounts();
+      const account = accounts.find(acc => acc.id === accountId);
+      
+      if (!account) {
+        throw new Error(`Conta ${accountId} não encontrada`);
+      }
+      
+      console.log(`Saldo da conta ${accountId}: ${account.balance}`);
       return account.balance;
     } catch (error) {
-      console.error("Erro ao buscar saldo:", error);
+      console.error(`Erro ao buscar saldo da conta ${accountId}:`, error);
       throw error;
     }
   }
 
-  async createBudget(budget: Omit<Budget, "id">): Promise<Budget> {
+  /**
+   * Cria um orçamento para uma categoria específica
+   */
+  public async createBudget(budgetData: {
+    name: string;
+    amount: number;
+    spent: number;
+    period: 'monthly' | 'yearly' | 'custom';
+    category: string;
+    startDate: Date;
+    isActive: boolean;
+  }): Promise<any> {
     try {
-      const newBudget: Budget = {
-        ...budget,
-        id: `budget-${Date.now()}`,
-        spent: 0
+      // Verificar se o usuário está autenticado
+      if (!AuthService.isAuthenticated()) {
+        throw new Error("Usuário não autenticado para criar orçamento");
+      }
+      
+      console.log(`Criando orçamento: ${budgetData.name}`);
+      
+      // Simular uma operação assíncrona
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Gerar ID único para o novo orçamento
+      const budgetId = `budget-${Date.now().toString(36)}`;
+      
+      // Criar objeto do orçamento com os dados fornecidos
+      const budget = {
+        id: budgetId,
+        ...budgetData,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
-      this.budgets.push(newBudget);
-      toast.success("Orçamento criado com sucesso");
-      
-      return newBudget;
+      console.log(`Orçamento ${budgetId} criado com sucesso`);
+      return budget;
     } catch (error) {
       console.error("Erro ao criar orçamento:", error);
-      toast.error("Falha ao criar orçamento");
       throw error;
-    }
-  }
-
-  getFinancialAccounts(): FinancialAccount[] {
-    return this.accounts;
-  }
-
-  getTransactions(): Transaction[] {
-    return this.transactions;
-  }
-
-  getBudgets(): Budget[] {
-    return this.budgets;
-  }
-
-  getReports(): FinancialReport[] {
-    return this.reports;
-  }
-
-  updateAccount(accountId: string, updates: Partial<FinancialAccount>): FinancialAccount | undefined {
-    const accountIndex = this.accounts.findIndex(acc => acc.id === accountId);
-    if (accountIndex === -1) {
-      console.warn(`Conta com ID ${accountId} não encontrada`);
-      return undefined;
-    }
-
-    this.accounts[accountIndex] = {
-      ...this.accounts[accountIndex],
-      ...updates
-    };
-
-    toast.success(`Conta ${this.accounts[accountIndex].name} atualizada com sucesso`);
-    return this.accounts[accountIndex];
-  }
-
-  deleteAccount(accountId: string): boolean {
-    const initialLength = this.accounts.length;
-    this.accounts = this.accounts.filter(acc => acc.id !== accountId);
-
-    if (this.accounts.length < initialLength) {
-      toast.success("Conta removida com sucesso");
-      return true;
-    } else {
-      toast.error("Falha ao remover conta");
-      return false;
     }
   }
 }
 
-const FinancialService = new FinancialServiceImpl();
-export default FinancialService;
+// Exportar singleton
+export default FinancialService.getInstance();

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Settings, Key, Zap } from "lucide-react";
+import { AlertCircle, Settings, Key, Zap, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 import SentimentAnalysisWidget from "@/components/techcare/ai/SentimentAnalysisWidget";
 import TicketClassifierWidget from "@/components/techcare/ai/TicketClassifierWidget";
@@ -15,7 +17,6 @@ import ResponseGeneratorWidget from "@/components/techcare/ai/ResponseGeneratorW
 import TextSummarizerWidget from "@/components/techcare/ai/TextSummarizerWidget";
 import InsightsWidget from "@/components/techcare/ai/InsightsWidget";
 import AIService from '@/services/techcare/AIService';
-import { Badge } from "@/components/ui/badge";
 
 const TechCareAIPage: React.FC = () => {
   const [sampleText, setSampleText] = useState<string>(
@@ -27,6 +28,7 @@ const TechCareAIPage: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>("");
   const [isApiConfigured, setIsApiConfigured] = useState<boolean>(false);
   const [useGemini, setUseGemini] = useState<boolean>(true);
+  const [isConfiguring, setIsConfiguring] = useState<boolean>(false);
   
   const handleConfigureAPI = () => {
     if (!apiKey.trim()) {
@@ -35,11 +37,17 @@ const TechCareAIPage: React.FC = () => {
     }
     
     try {
+      setIsConfiguring(true);
+      
       AIService.configure({ apiKey, useGemini });
       setIsApiConfigured(true);
+      
       toast.success(`API de IA configurada com sucesso ${useGemini ? '(usando Gemini)' : ''}`);
     } catch (error) {
       toast.error("Erro ao configurar API de IA");
+      console.error("Erro de configuração:", error);
+    } finally {
+      setIsConfiguring(false);
     }
   };
   
@@ -52,9 +60,9 @@ const TechCareAIPage: React.FC = () => {
     <div className="container mx-auto py-8">
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold">TechCare AI - Módulos de Inteligência Artificial</h1>
-        {useGemini && (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-            <Zap className="h-3 w-3 mr-1" />
+        {isApiConfigured && useGemini && (
+          <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 flex items-center gap-1">
+            <Zap className="h-3 w-3" />
             Powered by Gemini
           </Badge>
         )}
@@ -64,14 +72,24 @@ const TechCareAIPage: React.FC = () => {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
-              <div className="p-2 rounded-full bg-amber-500/20">
-                <Key className="h-5 w-5 text-amber-500" />
+              <div className="p-3 rounded-full bg-amber-500/20 text-amber-500">
+                <Key className="h-6 w-6" />
               </div>
-              <div className="space-y-2 flex-1">
-                <h3 className="text-lg font-medium">Configuração da API de IA</h3>
-                <p className="text-muted-foreground text-sm">
-                  Configure sua chave da API do Google Gemini para utilizar recursos avançados de IA.
-                </p>
+              <div className="space-y-3 flex-1">
+                <div>
+                  <h3 className="text-lg font-medium">Configuração da API de IA</h3>
+                  <p className="text-muted-foreground">
+                    Configure sua chave da API do Google Gemini para utilizar recursos avançados de IA.
+                  </p>
+                </div>
+                
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-center gap-3">
+                  <Shield className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    Sua chave de API não é armazenada fora da sua sessão e é usada apenas para comunicação com a API do Google.
+                  </p>
+                </div>
+                
                 <div className="flex gap-2 mt-4">
                   <div className="flex-1">
                     <Input
@@ -79,31 +97,49 @@ const TechCareAIPage: React.FC = () => {
                       placeholder="Insira sua chave da API do Google Gemini"
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
+                      className="border-amber-200 dark:border-amber-800 focus:ring-amber-500"
                     />
                   </div>
-                  <Button onClick={handleConfigureAPI}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configurar
+                  <Button 
+                    onClick={handleConfigureAPI} 
+                    disabled={isConfiguring}
+                    className="bg-amber-500 hover:bg-amber-600 text-white"
+                  >
+                    {isConfiguring ? (
+                      <>
+                        <span className="animate-spin mr-2">⊙</span>
+                        Configurando...
+                      </>
+                    ) : (
+                      <>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Configurar
+                      </>
+                    )}
                   </Button>
                 </div>
+                
                 <div className="flex items-center space-x-2 mt-2">
-                  <input
-                    type="checkbox"
-                    id="use-gemini"
-                    checked={useGemini}
-                    onChange={(e) => setUseGemini(e.target.checked)}
-                    className="rounded"
-                  />
-                  <label htmlFor="use-gemini" className="text-sm">
-                    Usar Google Gemini (recomendado)
-                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="use-gemini"
+                      checked={useGemini}
+                      onChange={(e) => setUseGemini(e.target.checked)}
+                      className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                    />
+                    <label htmlFor="use-gemini" className="text-sm">
+                      Usar Google Gemini (recomendado)
+                    </label>
+                  </div>
                 </div>
+                
                 <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Configuração da API</AlertTitle>
                   <AlertDescription>
                     Para usar a API do Gemini em produção, configure a chave GOOGLE_API_KEY no painel do Supabase. 
-                    Você pode obter sua chave em: https://aistudio.google.com/app/apikey
+                    Você pode obter sua chave em: <a href="https://aistudio.google.com/app/apikey" target="_blank" className="underline">https://aistudio.google.com/app/apikey</a>
                   </AlertDescription>
                 </Alert>
               </div>
@@ -140,7 +176,11 @@ const TechCareAIPage: React.FC = () => {
                 <h3 className="text-lg font-medium mb-4">Sobre a Análise de Sentimento</h3>
                 <p className="text-muted-foreground mb-4">
                   A análise de sentimento utiliza inteligência artificial para determinar o tom emocional em uma mensagem de texto. 
-                  {useGemini && " Powered by Google Gemini para análises mais precisas e contextuais."}
+                  {useGemini && isApiConfigured && (
+                    <span className="inline-flex items-center ml-1 text-blue-500">
+                      <Zap className="h-3 w-3 mr-1" /> Powered by Google Gemini para análises mais precisas e contextuais.
+                    </span>
+                  )}
                 </p>
                 <h4 className="font-medium mt-4 mb-2">Principais benefícios:</h4>
                 <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
@@ -165,7 +205,11 @@ const TechCareAIPage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   A classificação automática de tickets utiliza IA para categorizar as mensagens recebidas, 
                   facilitando o direcionamento para os departamentos corretos e agilizando o atendimento.
-                  {useGemini && " Otimizado com Google Gemini para maior precisão e cobertura de categorias."}
+                  {useGemini && isApiConfigured && (
+                    <span className="inline-flex items-center ml-1 text-blue-500">
+                      <Zap className="h-3 w-3 mr-1" /> Otimizado com Google Gemini para maior precisão e cobertura de categorias.
+                    </span>
+                  )}
                 </p>
                 <h4 className="font-medium mt-4 mb-2">Principais benefícios:</h4>
                 <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
@@ -207,7 +251,11 @@ const TechCareAIPage: React.FC = () => {
                   <p className="text-muted-foreground mb-4">
                     O gerador de respostas inteligentes utiliza IA para criar respostas contextualizadas 
                     e profissionais para as mensagens recebidas, acelerando o tempo de resposta.
-                    {useGemini && " Aprimorado com Google Gemini para gerar respostas mais humanas e relevantes."}
+                    {useGemini && isApiConfigured && (
+                      <span className="inline-flex items-center ml-1 text-blue-500">
+                        <Zap className="h-3 w-3 mr-1" /> Aprimorado com Google Gemini para gerar respostas mais humanas e relevantes.
+                      </span>
+                    )}
                   </p>
                   <h4 className="font-medium mt-4 mb-2">Principais benefícios:</h4>
                   <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
@@ -251,7 +299,11 @@ const TechCareAIPage: React.FC = () => {
                   <p className="text-muted-foreground mb-4">
                     O sumário automático utiliza IA para condensar conversas longas em resumos concisos,
                     facilitando o acompanhamento de conversas extensas e o handoff entre atendentes.
-                    {useGemini && " Potencializado por Google Gemini para identificar os pontos mais relevantes da conversa."}
+                    {useGemini && isApiConfigured && (
+                      <span className="inline-flex items-center ml-1 text-blue-500">
+                        <Zap className="h-3 w-3 mr-1" /> Potencializado por Google Gemini para identificar os pontos mais relevantes da conversa.
+                      </span>
+                    )}
                   </p>
                   <h4 className="font-medium mt-4 mb-2">Principais benefícios:</h4>
                   <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
@@ -276,7 +328,11 @@ const TechCareAIPage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Os insights inteligentes analisam dados de atendimento e detectam padrões,
                   problemas emergentes e oportunidades de melhoria que poderiam passar despercebidos.
-                  {useGemini && " Análise avançada com Google Gemini para insights mais profundos e recomendações acionáveis."}
+                  {useGemini && isApiConfigured && (
+                    <span className="inline-flex items-center ml-1 text-blue-500">
+                      <Zap className="h-3 w-3 mr-1" /> Análise avançada com Google Gemini para insights mais profundos e recomendações acionáveis.
+                    </span>
+                  )}
                 </p>
                 <h4 className="font-medium mt-4 mb-2">Principais benefícios:</h4>
                 <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
@@ -291,6 +347,23 @@ const TechCareAIPage: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {isApiConfigured && (
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300">
+              <Settings className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-medium text-blue-700 dark:text-blue-300">Configuração API ativa</h3>
+              <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                A API de IA está configurada e ativa{useGemini ? ' usando o Google Gemini' : ''}. 
+                Para alterar suas configurações, atualize a chave GOOGLE_API_KEY no painel do Supabase.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
