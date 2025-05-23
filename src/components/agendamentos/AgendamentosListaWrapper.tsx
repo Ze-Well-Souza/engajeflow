@@ -3,6 +3,7 @@ import React from "react";
 import useScheduledPosts, { PostFilters } from "@/hooks/useScheduledPosts";
 import { useState } from "react";
 import AgendamentosLista from "./AgendamentosLista";
+import { toast } from "sonner";
 
 // Cliente temporário fixo para demonstração
 const DEMO_CLIENT_ID = "00000000-0000-0000-0000-000000000000";
@@ -41,12 +42,23 @@ const AgendamentosListaWrapper: React.FC<AgendamentosListaWrapperProps> = ({
     }));
   };
 
+  // Adaptador para garantir que o tipo de retorno seja Promise<void>
+  const handleDeletePost = async (id: string): Promise<void> => {
+    const result = await deleteScheduledPost(id);
+    
+    if (!result.success) {
+      toast.error(`Erro ao excluir: ${result.error || 'Falha desconhecida'}`);
+    } else {
+      toast.success("Agendamento excluído com sucesso");
+    }
+  };
+
   return (
     <AgendamentosLista 
       posts={posts} 
       isLoading={isLoading} 
       onCreateNew={onCreateNew}
-      onDeletePost={deleteScheduledPost}
+      onDeletePost={handleDeletePost}
       platformFilter={filter.platform}
       statusFilter={filter.status}
       onPlatformFilterChange={handlePlatformFilterChange}

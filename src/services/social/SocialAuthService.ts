@@ -1,211 +1,111 @@
 
+// Implementação do serviço de autenticação social
+
 export interface SocialAccount {
   id: string;
   platform: string;
   username: string;
   displayName: string;
-  profilePictureUrl?: string;
   isConnected: boolean;
-  lastSyncTime?: Date;
-  accessToken?: string;
-  refreshToken?: string;
-  tokenExpiry?: Date;
+  tokenExpiry?: string;
 }
 
-export interface AuthConfig {
-  clientId: string;
-  clientSecret?: string;
-  redirectUri: string;
-  scopes: string[];
-}
-
-export class SocialAuthService {
-  private accounts: Map<string, SocialAccount> = new Map();
-  private authConfig: Record<string, AuthConfig> = {
-    instagram: {
-      clientId: "instagram_client_id",
-      clientSecret: "instagram_client_secret",
-      redirectUri: `${window.location.origin}/auth/callback`,
-      scopes: ["user_profile", "user_media"]
-    },
-    facebook: {
-      clientId: "facebook_client_id",
-      clientSecret: "facebook_client_secret",
-      redirectUri: `${window.location.origin}/auth/callback`,
-      scopes: ["pages_show_list", "pages_read_engagement", "pages_manage_posts"]
-    },
-    twitter: {
-      clientId: "twitter_client_id",
-      clientSecret: "twitter_client_secret",
-      redirectUri: `${window.location.origin}/auth/callback`,
-      scopes: ["tweet.read", "tweet.write", "users.read"]
-    },
-    youtube: {
-      clientId: "youtube_client_id",
-      clientSecret: "youtube_client_secret",
-      redirectUri: `${window.location.origin}/auth/callback`,
-      scopes: ["https://www.googleapis.com/auth/youtube"]
-    }
-  };
-  
-  constructor() {
-    // Carregar contas do localStorage se existirem
-    this.loadAccounts();
-  }
-  
-  private loadAccounts(): void {
-    try {
-      const savedAccounts = localStorage.getItem('socialAccounts');
-      if (savedAccounts) {
-        const parsed = JSON.parse(savedAccounts);
-        Object.keys(parsed).forEach(id => {
-          const account = parsed[id];
-          if (account.lastSyncTime) {
-            account.lastSyncTime = new Date(account.lastSyncTime);
-          }
-          if (account.tokenExpiry) {
-            account.tokenExpiry = new Date(account.tokenExpiry);
-          }
-          this.accounts.set(id, account);
-        });
+class SocialAuthServiceClass {
+  // Método para obter contas por plataforma
+  public getAccountsByPlatform(platform?: string): SocialAccount[] {
+    // Simular contas de redes sociais para demonstração
+    const mockAccounts: SocialAccount[] = [
+      {
+        id: '1',
+        platform: 'instagram',
+        username: 'instagram_user',
+        displayName: 'Instagram User',
+        isConnected: true,
+        tokenExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias no futuro
+      },
+      {
+        id: '2',
+        platform: 'facebook',
+        username: 'facebook_user',
+        displayName: 'Facebook Page',
+        isConnected: true,
+        tokenExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias no futuro
+      },
+      {
+        id: '3',
+        platform: 'twitter',
+        username: 'twitter_user',
+        displayName: 'Twitter Account',
+        isConnected: true,
+        tokenExpiry: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 dia atrás (expirado)
       }
-    } catch (error) {
-      console.error("Erro ao carregar contas salvas:", error);
+    ];
+    
+    // Filtrar por plataforma se especificado
+    if (platform) {
+      return mockAccounts.filter(account => account.platform === platform);
     }
+    
+    return mockAccounts;
   }
-  
-  private saveAccounts(): void {
-    try {
-      const accountsObject: Record<string, SocialAccount> = {};
-      this.accounts.forEach((account, id) => {
-        accountsObject[id] = account;
-      });
-      localStorage.setItem('socialAccounts', JSON.stringify(accountsObject));
-    } catch (error) {
-      console.error("Erro ao salvar contas:", error);
-    }
-  }
-  
+
+  // Método para obter URL de autorização
   public getAuthorizationUrl(platform: string): string {
-    const config = this.authConfig[platform];
-    if (!config) {
-      throw new Error(`Plataforma não suportada: ${platform}`);
-    }
+    // Simulação de URLs de autorização
+    const baseUrl = 'https://api.example.com/oauth';
+    const clientId = 'mock_client_id';
+    const redirectUri = encodeURIComponent('https://app.example.com/callback');
     
-    // Implementação de mock para gerar URLs de autorização
-    switch (platform) {
-      case 'instagram':
-        return `https://api.instagram.com/oauth/authorize?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.redirectUri)}&scope=${encodeURIComponent(config.scopes.join(','))}&response_type=code`;
-      
-      case 'facebook':
-        return `https://www.facebook.com/v11.0/dialog/oauth?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.redirectUri)}&scope=${encodeURIComponent(config.scopes.join(','))}&response_type=code`;
-      
-      case 'twitter':
-        return `https://twitter.com/i/oauth2/authorize?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.redirectUri)}&scope=${encodeURIComponent(config.scopes.join(' '))}&response_type=code&state=state&code_challenge=challenge&code_challenge_method=plain`;
-      
-      case 'youtube':
-        return `https://accounts.google.com/o/oauth2/auth?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.redirectUri)}&scope=${encodeURIComponent(config.scopes.join(' '))}&response_type=code&access_type=offline`;
-      
-      default:
-        throw new Error(`Plataforma não suportada: ${platform}`);
-    }
-  }
-  
-  public async handleAuthCallback(platform: string, code: string): Promise<SocialAccount> {
-    // Simulação do processo de troca de código por tokens
-    console.log(`Trocando código por tokens para plataforma ${platform}`);
-    
-    // Gerar conta simulada
-    const newId = Math.random().toString(36).substring(2, 15);
-    const account: SocialAccount = {
-      id: newId,
-      platform,
-      username: `user_${platform}_${newId.substring(0, 5)}`,
-      displayName: `Conta ${platform.charAt(0).toUpperCase() + platform.slice(1)}`,
-      profilePictureUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 99)}.jpg`,
-      isConnected: true,
-      lastSyncTime: new Date(),
-      accessToken: `mock_access_token_${newId}`,
-      refreshToken: `mock_refresh_token_${newId}`,
-      tokenExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 dias no futuro
+    const urls: Record<string, string> = {
+      instagram: `${baseUrl}/instagram?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=user_profile,user_media`,
+      facebook: `${baseUrl}/facebook?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=pages_show_list,pages_read_engagement`,
+      twitter: `${baseUrl}/twitter?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=tweet.read,tweet.write`,
+      linkedin: `${baseUrl}/linkedin?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=r_liteprofile,r_emailaddress,w_member_social`,
+      tiktok: `${baseUrl}/tiktok?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=user.info.basic,video.upload,video.list`
     };
     
-    this.accounts.set(newId, account);
-    this.saveAccounts();
-    
-    return account;
+    return urls[platform] || `${baseUrl}/unknown?client_id=${clientId}`;
   }
-  
-  public async refreshToken(accountId: string): Promise<boolean> {
-    const account = this.accounts.get(accountId);
-    if (!account || !account.refreshToken) {
-      return false;
-    }
+
+  // Método para processar callback de autorização
+  public async handleAuthCallback(platform: string, code: string): Promise<SocialAccount> {
+    // Simulação de processamento de callback OAuth
+    console.log(`Processando callback para ${platform} com código: ${code}`);
     
-    try {
-      console.log(`Renovando token para ${account.platform}, conta ${account.username}`);
-      
-      // Simulação de renovação
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const updatedAccount: SocialAccount = {
-        ...account,
-        accessToken: `new_access_token_${Math.random().toString(36).substring(7)}`,
-        lastSyncTime: new Date(),
-        tokenExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 dias no futuro
-      };
-      
-      this.accounts.set(accountId, updatedAccount);
-      this.saveAccounts();
-      
-      return true;
-    } catch (error) {
-      console.error("Erro ao renovar token:", error);
-      return false;
-    }
+    // Em ambiente real, aqui faríamos uma chamada para obter os tokens de acesso
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay de API
+    
+    // Retornar conta mock
+    return {
+      id: `${platform}_${Date.now()}`,
+      platform,
+      username: `${platform}_user_${Date.now().toString().substring(8)}`,
+      displayName: `${platform.charAt(0).toUpperCase() + platform.slice(1)} User`,
+      isConnected: true,
+      tokenExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias
+    };
   }
-  
+
+  // Método para desconectar conta
   public async disconnectAccount(accountId: string): Promise<boolean> {
-    const account = this.accounts.get(accountId);
-    if (!account) {
-      return false;
-    }
+    console.log(`Desconectando conta ${accountId}`);
     
-    try {
-      // Simulação de desconexão com API
-      console.log(`Desconectando conta ${account.username} da plataforma ${account.platform}`);
-      
-      this.accounts.delete(accountId);
-      this.saveAccounts();
-      
-      return true;
-    } catch (error) {
-      console.error("Erro ao desconectar conta:", error);
-      return false;
-    }
-  }
-  
-  public getAccountsByPlatform(platform?: string): SocialAccount[] {
-    const accounts: SocialAccount[] = [];
+    // Em ambiente real, aqui revogaríamos os tokens
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simular delay de API
     
-    this.accounts.forEach(account => {
-      if (!platform || account.platform === platform) {
-        accounts.push({ ...account });
-      }
-    });
+    return true;
+  }
+
+  // Método para renovar token
+  public async refreshToken(accountId: string): Promise<boolean> {
+    console.log(`Renovando token para conta ${accountId}`);
     
-    return accounts;
-  }
-  
-  public getAccountById(id: string): SocialAccount | undefined {
-    const account = this.accounts.get(id);
-    return account ? { ...account } : undefined;
-  }
-  
-  public clearAllAccounts(): void {
-    this.accounts.clear();
-    this.saveAccounts();
+    // Em ambiente real, aqui renovaríamos o token usando o refresh token
+    await new Promise(resolve => setTimeout(resolve, 800)); // Simular delay de API
+    
+    return true;
   }
 }
 
-export default new SocialAuthService();
+// Exportar instância do serviço
+export const SocialAuthService = new SocialAuthServiceClass();

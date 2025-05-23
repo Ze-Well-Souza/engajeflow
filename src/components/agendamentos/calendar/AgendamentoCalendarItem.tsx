@@ -61,9 +61,9 @@ const AgendamentoCalendarItem: React.FC<AgendamentoCalendarItemProps> = ({ post,
         {getPlatformIcon(post.platform)}
       </div>
       <div className="flex-1">
-        <div className="font-medium">{post.mediaTitle || "Mídia sem título"}</div>
+        <div className="font-medium">{post.media_title || "Mídia sem título"}</div>
         <div className="text-sm text-muted-foreground">
-          Agendado para às {formatTime(post.scheduledFor)}
+          Agendado para às {formatTime(post.scheduled_for)}
         </div>
       </div>
       <Badge variant="outline" className={`${getStatusColorClass(post.status)}`}>

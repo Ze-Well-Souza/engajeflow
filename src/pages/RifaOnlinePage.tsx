@@ -126,11 +126,11 @@ const RifaOnlinePage: React.FC = () => {
     }
     
     // Atualizar bilhetes
-    const updatedTickets = tickets.map(ticket => {
+    const updatedTickets: RifaTicket[] = tickets.map(ticket => {
       if (selectedTickets.includes(ticket.number)) {
         return {
           ...ticket,
-          status: "reservado",
+          status: "reservado" as const,
           owner: customerName,
           ownerEmail: customerEmail,
           ownerPhone: customerPhone

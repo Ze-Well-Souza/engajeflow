@@ -43,7 +43,7 @@ const DailyPostsList: React.FC<DailyPostsListProps> = ({
       ) : (
         <ul className="space-y-3">
           {posts
-            .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime())
+            .sort((a, b) => new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime())
             .map(post => (
               <AgendamentoCalendarItem 
                 key={post.id} 

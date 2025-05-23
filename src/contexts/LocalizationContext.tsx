@@ -1,93 +1,129 @@
 
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { translations, SupportedLocale, DefaultLocale } from '@/i18n/translations';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type TranslationTree = {
-  [key: string]: string | TranslationTree;
-};
+// Definição de tipos
+type SupportedLocale = 'pt-BR' | 'en-US' | 'es-ES';
+
+interface LocaleOption {
+  value: SupportedLocale;
+  label: string;
+  flag: string;
+}
 
 interface LocalizationContextType {
   locale: SupportedLocale;
   setLocale: (locale: SupportedLocale) => void;
   t: (key: string) => string;
-  formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
-  availableLocales: SupportedLocale[];
+  localeOptions: LocaleOption[];
+  changeLocale: (locale: SupportedLocale) => void;
 }
 
+// Dados de localização
+const localeOptions: LocaleOption[] = [
+  { value: 'pt-BR', label: 'Português', flag: '🇧🇷' },
+  { value: 'en-US', label: 'English', flag: '🇺🇸' },
+  { value: 'es-ES', label: 'Español', flag: '🇪🇸' }
+];
+
+// Dicionários de traduções
+const translations: Record<SupportedLocale, Record<string, string>> = {
+  'pt-BR': {
+    'common.dashboard': 'Painel',
+    'common.settings': 'Configurações',
+    'common.profile': 'Perfil',
+    'common.logout': 'Sair',
+    'common.language': 'Idioma',
+    'common.calendar': 'Calendário',
+    'common.welcome': 'Bem-vindo',
+    'common.close': 'Fechar',
+    'common.save': 'Salvar',
+    'common.cancel': 'Cancelar',
+    'common.loading': 'Carregando...',
+    'common.success': 'Sucesso',
+    'common.error': 'Erro',
+    'common.notifications': 'Notificações',
+  },
+  'en-US': {
+    'common.dashboard': 'Dashboard',
+    'common.settings': 'Settings',
+    'common.profile': 'Profile',
+    'common.logout': 'Logout',
+    'common.language': 'Language',
+    'common.calendar': 'Calendar',
+    'common.welcome': 'Welcome',
+    'common.close': 'Close',
+    'common.save': 'Save',
+    'common.cancel': 'Cancel',
+    'common.loading': 'Loading...',
+    'common.success': 'Success',
+    'common.error': 'Error',
+    'common.notifications': 'Notifications',
+  },
+  'es-ES': {
+    'common.dashboard': 'Panel',
+    'common.settings': 'Configuración',
+    'common.profile': 'Perfil',
+    'common.logout': 'Cerrar sesión',
+    'common.language': 'Idioma',
+    'common.calendar': 'Calendario',
+    'common.welcome': 'Bienvenido',
+    'common.close': 'Cerrar',
+    'common.save': 'Guardar',
+    'common.cancel': 'Cancelar',
+    'common.loading': 'Cargando...',
+    'common.success': 'Éxito',
+    'common.error': 'Error',
+    'common.notifications': 'Notificaciones',
+  },
+};
+
+// Criação do contexto
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined);
 
-interface LocalizationProviderProps {
-  children: ReactNode;
-}
-
-export const LocalizationProvider: React.FC<LocalizationProviderProps> = ({ children }) => {
+// Provider do contexto
+export const LocalizationProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocale] = useState<SupportedLocale>(() => {
-    // Tenta recuperar o idioma salvo no localStorage
-    const savedLocale = localStorage.getItem('locale') as SupportedLocale;
-    if (savedLocale && Object.keys(translations).includes(savedLocale)) {
+    // Tentar recuperar a preferência do usuário do localStorage
+    const savedLocale = localStorage.getItem('userLocale');
+    // Verificar se é uma locale suportada
+    if (savedLocale === 'pt-BR' || savedLocale === 'en-US' || savedLocale === 'es-ES') {
       return savedLocale;
     }
-
-    // Verifica o idioma do navegador
-    const browserLang = navigator.language.split('-')[0] as SupportedLocale;
-    if (browserLang && Object.keys(translations).includes(browserLang)) {
-      return browserLang;
-    }
-
-    // Volta para o idioma padrão
-    return DefaultLocale;
+    // Default para português do Brasil
+    return 'pt-BR';
   });
 
+  // Função para traduzir
+  const t = (key: string): string => {
+    return translations[locale][key] || key;
+  };
+
+  // Função para mudar o idioma
+  const changeLocale = (newLocale: SupportedLocale) => {
+    setLocale(newLocale);
+    localStorage.setItem('userLocale', newLocale);
+    // Você pode adicionar mais lógica aqui, como formatação de datas, etc.
+  };
+
+  // Salvar preferência de idioma no localStorage
   useEffect(() => {
-    // Salva o idioma escolhido no localStorage
-    localStorage.setItem('locale', locale);
+    localStorage.setItem('userLocale', locale);
   }, [locale]);
 
-  const t = (key: string): string => {
-    const keys = key.split('.');
-    let currentObj: TranslationTree = translations[locale];
-    
-    for (const k of keys) {
-      if (currentObj && typeof currentObj === 'object' && k in currentObj) {
-        const value = currentObj[k];
-        currentObj = value as TranslationTree;
-      } else {
-        console.warn(`Translation key not found: ${key}`);
-        return key;
-      }
-    }
-    
-    // Garantir que o valor final é uma string
-    if (typeof currentObj !== 'string') {
-      console.warn(`Translation key "${key}" does not resolve to a string value`);
-      return key;
-    }
-    
-    return currentObj;
-  };
-
-  const formatCurrency = (value: number, options?: Intl.NumberFormatOptions): string => {
-    const defaultOptions: Intl.NumberFormatOptions = {
-      style: 'currency',
-      currency: locale === 'pt' ? 'BRL' : locale === 'en' ? 'USD' : locale === 'es' ? 'EUR' : 'USD',
-      minimumFractionDigits: 2,
-    };
-
-    const mergedOptions = { ...defaultOptions, ...options };
-    
-    return new Intl.NumberFormat(locale, mergedOptions).format(value);
-  };
-
-  // Lista de idiomas disponíveis com base nas chaves do objeto de traduções
-  const availableLocales = Object.keys(translations) as SupportedLocale[];
-
   return (
-    <LocalizationContext.Provider value={{ locale, setLocale, t, formatCurrency, availableLocales }}>
+    <LocalizationContext.Provider value={{ 
+      locale, 
+      setLocale,
+      t,
+      localeOptions,
+      changeLocale
+    }}>
       {children}
     </LocalizationContext.Provider>
   );
 };
 
+// Hook para usar o contexto
 export const useLocalization = (): LocalizationContextType => {
   const context = useContext(LocalizationContext);
   if (context === undefined) {

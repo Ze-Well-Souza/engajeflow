@@ -41,16 +41,14 @@ export const useScheduledPosts = (clientId: string, limit: number = 5, page: num
   
   // Função para carregar contas
   const fetchScheduledPosts = useCallback(async () => {
-    if (!profile) return;
-    
     try {
       setResult(prev => ({ ...prev, isLoading: true, error: null }));
       
       // Determinar se o usuário é admin ou não para filtrar por cliente
-      const isAdmin = profile.is_admin;
-      let clientFilter = {};
+      const isAdmin = profile?.is_admin || false;
+      let clientFilter: { clientIds?: string[] } = {};
       
-      if (!isAdmin) {
+      if (!isAdmin && profile) {
         // Buscar os clientes aos quais o usuário pertence
         const { data: clientMembers } = await supabase
           .from('client_members')
@@ -67,15 +65,17 @@ export const useScheduledPosts = (clientId: string, limit: number = 5, page: num
       const offset = (page - 1) * limit;
       
       // Buscar publicações agendadas
-      const query = supabase
+      let query = supabase
         .from('scheduled_posts')
         .select('id, caption, platform, scheduled_for, status, media_id, client_id, error_message', { count: 'exact' })
         .order('scheduled_for', { ascending: true })
         .range(offset, offset + limit - 1);
         
       // Aplicar filtro de cliente se necessário
-      if (!isAdmin && 'clientIds' in clientFilter) {
-        query.in('client_id', clientFilter.clientIds);
+      if (!isAdmin && 'clientIds' in clientFilter && clientFilter.clientIds && clientFilter.clientIds.length > 0) {
+        query = query.in('client_id', clientFilter.clientIds);
+      } else if (clientId) {
+        query = query.eq('client_id', clientId);
       }
       
       const { data: posts, error, count } = await query;
@@ -138,7 +138,7 @@ export const useScheduledPosts = (clientId: string, limit: number = 5, page: num
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       }));
     }
-  }, [profile, limit, page]);
+  }, [profile, limit, page, clientId]);
   
   useEffect(() => {
     fetchScheduledPosts();

@@ -49,6 +49,10 @@ const AgendamentoItem: React.FC<AgendamentoItemProps> = ({ post, onDeletePost })
     }
   };
 
+  const handleDeletePost = async () => {
+    await onDeletePost(post.id);
+  };
+
   return (
     <div 
       key={post.id} 
@@ -68,10 +72,10 @@ const AgendamentoItem: React.FC<AgendamentoItemProps> = ({ post, onDeletePost })
           {getPlatformIcon(post.platform)}
         </div>
         <div>
-          <h3 className="font-medium">{post.mediaTitle || 'Mídia sem título'}</h3>
+          <h3 className="font-medium">{post.media_title || 'Mídia sem título'}</h3>
           <div className="flex items-center gap-3 text-sm text-gray-400 mt-1">
             <span className="flex items-center">
-              <Calendar className="h-3 w-3 mr-1" /> {formatScheduledDate(post.scheduledFor)}
+              <Calendar className="h-3 w-3 mr-1" /> {formatScheduledDate(post.scheduled_for)}
             </span>
             <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadgeClass(post.status)}`}>
               {post.status === 'pending' ? 'Pendente' : 
@@ -94,7 +98,7 @@ const AgendamentoItem: React.FC<AgendamentoItemProps> = ({ post, onDeletePost })
         )}
         {post.status === 'failed' && (
           <span className="text-xs text-red-400">
-            {post.errorMessage || 'Erro de publicação'}
+            {post.error_message || 'Erro de publicação'}
           </span>
         )}
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Editar" 
@@ -106,7 +110,7 @@ const AgendamentoItem: React.FC<AgendamentoItemProps> = ({ post, onDeletePost })
           size="sm" 
           className="h-8 w-8 p-0" 
           title="Excluir"
-          onClick={() => onDeletePost(post.id)}
+          onClick={handleDeletePost}
         >
           <Trash className="h-4 w-4" />
         </Button>
