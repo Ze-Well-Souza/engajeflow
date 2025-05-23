@@ -23,9 +23,8 @@ vi.mock('../../services/techcare/NavigationService', () => ({
 describe('FinancialService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // Configurando o mock para aceitar qualquer número de argumentos
-    // Importante: isAuthenticated espera pelo menos um argumento
-    vi.mocked(AuthService.isAuthenticated).mockImplementation((token) => true);
+    // Configurando o mock para corresponder à assinatura real
+    vi.mocked(AuthService.isAuthenticated).mockReturnValue(true);
   });
 
   afterEach(() => {
