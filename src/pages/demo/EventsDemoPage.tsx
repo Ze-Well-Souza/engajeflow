@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -122,35 +123,35 @@ const EventsDemoPage: React.FC = () => {
       clients: [
         { 
           id: "1", 
-          name: "Casamento Silva", 
-          date: "15/06/2025",
-          guests: "150 convidados",
-          confirmed: "87 confirmados",
-          status: "Em planejamento"
+          name: "João Silva", 
+          email: "joao.silva@email.com",
+          phone: "(11) 99999-0001",
+          interest: "Casamento para 150 pessoas",
+          lastContact: "15/06/2025"
         },
         { 
           id: "2", 
-          name: "Conferência Tech 2025", 
-          date: "22/07/2025",
-          guests: "500 participantes",
-          confirmed: "312 confirmados",
-          status: "Em planejamento"
+          name: "TechCorp", 
+          email: "eventos@techcorp.com",
+          phone: "(11) 99999-0002",
+          interest: "Conferência anual",
+          lastContact: "22/07/2025"
         },
         { 
           id: "3", 
-          name: "Aniversário 15 Anos - Júlia", 
-          date: "10/08/2025",
-          guests: "200 convidados",
-          confirmed: "145 confirmados",
-          status: "Em planejamento"
+          name: "Maria Santos", 
+          email: "maria.santos@email.com",
+          phone: "(11) 99999-0003",
+          interest: "Aniversário de 15 anos",
+          lastContact: "10/08/2025"
         },
         { 
           id: "4", 
-          name: "Formatura Engenharia", 
-          date: "20/12/2025",
-          guests: "350 convidados",
-          confirmed: "0 confirmados",
-          status: "Convites não enviados"
+          name: "Universidade ABC", 
+          email: "formatura@uniabc.edu",
+          phone: "(11) 99999-0004",
+          interest: "Formatura de Engenharia",
+          lastContact: "20/12/2025"
         }
       ],
       messages: [

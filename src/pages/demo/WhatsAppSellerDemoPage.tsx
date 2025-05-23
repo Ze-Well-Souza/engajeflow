@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ const WhatsAppSellerDemoPage: React.FC = () => {
           type: "Catálogo de Produtos", 
           date: "15/05/2025", 
           platforms: ["WhatsApp", "Telegram", "Instagram"],
-          stats: { views: 1245, responses: 87, conversions: 23 }
+          stats: { likes: 1245, comments: 87, shares: 23 }
         },
         { 
           id: "5", 
@@ -102,7 +103,7 @@ const WhatsAppSellerDemoPage: React.FC = () => {
           type: "Promoção", 
           date: "10/05/2025", 
           platforms: ["WhatsApp", "Telegram"],
-          stats: { views: 980, responses: 112, conversions: 45 }
+          stats: { likes: 980, comments: 112, shares: 45 }
         },
         { 
           id: "6", 
@@ -110,7 +111,7 @@ const WhatsAppSellerDemoPage: React.FC = () => {
           type: "Informativo", 
           date: "05/05/2025", 
           platforms: ["WhatsApp", "Telegram", "Facebook"],
-          stats: { views: 876, responses: 34, conversions: 12 }
+          stats: { likes: 876, comments: 34, shares: 12 }
         }
       ]
     },
@@ -119,35 +120,35 @@ const WhatsAppSellerDemoPage: React.FC = () => {
       clients: [
         { 
           id: "1", 
-          name: "Grupo Moda Feminina", 
-          type: "Grupo",
-          members: 245,
-          engagement: "Alto",
-          lastMessage: "18/05/2025"
+          name: "Ana Oliveira", 
+          email: "ana.oliveira@email.com",
+          phone: "(11) 99876-5432",
+          interest: "Roupas femininas",
+          lastContact: "15/05/2025"
         },
         { 
           id: "2", 
-          name: "Grupo Ofertas Diárias", 
-          type: "Grupo",
-          members: 187,
-          engagement: "Médio",
-          lastMessage: "20/05/2025"
+          name: "Carlos Santos", 
+          email: "carlos.santos@email.com",
+          phone: "(11) 92345-6789",
+          interest: "Acessórios",
+          lastContact: "21/05/2025"
         },
         { 
           id: "3", 
-          name: "Ana Oliveira", 
-          type: "Cliente Individual",
-          phone: "(11) 99876-5432",
-          interest: "Roupas femininas",
-          lastMessage: "15/05/2025"
+          name: "Mariana Costa", 
+          email: "mariana.costa@email.com",
+          phone: "(11) 98765-4321",
+          interest: "Moda feminina",
+          lastContact: "18/05/2025"
         },
         { 
           id: "4", 
-          name: "Carlos Santos", 
-          type: "Cliente Individual",
-          phone: "(11) 92345-6789",
-          interest: "Acessórios",
-          lastMessage: "21/05/2025"
+          name: "João Silva", 
+          email: "joao.silva@email.com",
+          phone: "(11) 91234-5678",
+          interest: "Promoções",
+          lastContact: "20/05/2025"
         }
       ],
       messages: [

@@ -20,9 +20,9 @@ export const useSocialAuth = (): UseSocialAuthResult => {
   const [error, setError] = useState<string | null>(null);
   
   // Função para carregar contas
-  const loadAccounts = useCallback(() => {
+  const loadAccounts = useCallback(async () => {
     try {
-      const allAccounts = SocialAuthService.getConnectedAccounts();
+      const allAccounts = await SocialAuthService.getConnectedAccounts();
       setAccounts(allAccounts);
       setError(null);
     } catch (err) {
@@ -116,7 +116,7 @@ export const useSocialAuth = (): UseSocialAuthResult => {
       
       if (success) {
         // Recarregar contas para obter a atualizada
-        loadAccounts();
+        await loadAccounts();
         toast.success(`Token da conta ${account.platform} renovado com sucesso`);
       } else {
         throw new Error("Falha ao renovar token");

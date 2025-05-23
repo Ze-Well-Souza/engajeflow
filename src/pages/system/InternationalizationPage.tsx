@@ -9,10 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { useLocalization } from "@/contexts/LocalizationContext";
-import { useTranslateMessage } from "@/hooks/useTranslateMessage";
-import LocaleSwitcher from '@/components/LocaleSwitcher';
-import { translations, SupportedLocale } from '@/i18n/translations';
 import { 
   Globe, 
   Languages, 
@@ -34,18 +30,19 @@ import {
 
 const InternationalizationPage: React.FC = () => {
   const { toast } = useToast();
-  const { locale, setLocale, t, formatCurrency, availableLocales } = useLocalization();
-  const { translateMessage, isTranslating } = useTranslateMessage();
   const [isTestingTranslation, setIsTestingTranslation] = useState(false);
   const [textToTranslate, setTextToTranslate] = useState("Olá, este é um teste de tradução automática para demonstração.");
   const [translatedText, setTranslatedText] = useState("");
-  const [targetLocale, setTargetLocale] = useState<SupportedLocale>("en");
+  const [targetLocale, setTargetLocale] = useState("en");
+  
+  const availableLocales = ["pt", "en", "es", "fr", "de"];
   
   const handleTranslateText = async () => {
     setIsTestingTranslation(true);
     try {
-      const result = await translateMessage(textToTranslate, targetLocale);
-      setTranslatedText(result);
+      // Simulação de tradução
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setTranslatedText(`[Traduzido para ${getLanguageName(targetLocale)}] ${textToTranslate}`);
       
       toast({
         title: "Texto traduzido",
@@ -96,7 +93,6 @@ const InternationalizationPage: React.FC = () => {
   };
   
   const getTranslationStatus = (localeCode: string): number => {
-    // Simular percentual de tradução completa
     const percentages: Record<string, number> = {
       pt: 100,
       en: 95,
@@ -124,7 +120,6 @@ const InternationalizationPage: React.FC = () => {
             <Settings className="h-4 w-4 mr-1" />
             Configurações
           </Button>
-          <LocaleSwitcher variant="full" />
         </div>
       </div>
 
@@ -158,7 +153,7 @@ const InternationalizationPage: React.FC = () => {
               </div>
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
-              Principal: {getCurrencyByLocale(locale)}
+              Principal: BRL (R$)
             </div>
           </CardContent>
         </Card>
@@ -175,7 +170,7 @@ const InternationalizationPage: React.FC = () => {
               </div>
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
-              Padrão: {locale === "pt" ? "Brasília (GMT-3)" : "UTC"}
+              Padrão: Brasília (GMT-3)
             </div>
           </CardContent>
         </Card>
@@ -247,9 +242,7 @@ const InternationalizationPage: React.FC = () => {
                 {availableLocales.map((localeCode) => (
                   <div 
                     key={localeCode} 
-                    className={`border rounded-md p-4 ${
-                      localeCode === locale ? 'border-primary bg-primary/5' : ''
-                    }`}
+                    className="border rounded-md p-4"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -279,18 +272,12 @@ const InternationalizationPage: React.FC = () => {
                           <Button variant="ghost" size="sm">
                             <FileEdit className="h-4 w-4" />
                           </Button>
-                          {localeCode === locale ? (
+                          {localeCode === 'pt' ? (
                             <Badge className="bg-primary/10 text-primary">
                               Padrão
                             </Badge>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => {
-                              setLocale(localeCode as SupportedLocale);
-                              toast({
-                                title: "Idioma alterado",
-                                description: `O idioma foi alterado para ${getLanguageName(localeCode)}`
-                              });
-                            }}>
+                            <Button variant="outline" size="sm">
                               Ativar
                             </Button>
                           )}
@@ -328,7 +315,7 @@ const InternationalizationPage: React.FC = () => {
                     <select 
                       className="text-sm bg-transparent border-none"
                       value={targetLocale}
-                      onChange={(e) => setTargetLocale(e.target.value as SupportedLocale)}
+                      onChange={(e) => setTargetLocale(e.target.value)}
                     >
                       {availableLocales.filter(l => l !== 'pt').map(l => (
                         <option key={l} value={l}>{getLanguageName(l)}</option>
@@ -380,7 +367,7 @@ const InternationalizationPage: React.FC = () => {
                   <AlertCircle className="h-4 w-4 text-blue-600" />
                   <AlertTitle className="text-blue-700 dark:text-blue-300">Demonstração de formatação</AlertTitle>
                   <AlertDescription className="text-blue-600 dark:text-blue-400">
-                    Valor exemplo: {formatCurrency(1234.56)}
+                    Valor exemplo: R$ 1.234,56
                   </AlertDescription>
                 </Alert>
                 
@@ -445,7 +432,7 @@ const InternationalizationPage: React.FC = () => {
                 <div>
                   <h3 className="font-medium">Fuso horário atual do sistema</h3>
                   <p className="text-sm text-muted-foreground">
-                    {locale === 'pt' ? 'America/Sao_Paulo (GMT-3)' : 'UTC'}
+                    America/Sao_Paulo (GMT-3)
                   </p>
                 </div>
                 <Button variant="outline">
