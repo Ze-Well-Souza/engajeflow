@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -147,43 +148,6 @@ const ScheduledPostsTable: React.FC<ScheduledPostsTableProps> = ({
       </CardContent>
     </Card>
   );
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
-      case 'published':
-        return 'bg-green-100 text-green-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
-  }
-
-  function getPlatformIcon(platform: string) {
-    switch (platform.toLowerCase()) {
-      case 'instagram':
-        return '📷';
-      case 'facebook':
-        return '📘';
-      case 'youtube':
-        return '📺';
-      case 'twitter':
-        return '🐦';
-      default:
-        return '🌐';
-    }
-  }
-
-  async function handleDelete(postId: string) {
-    const result = await deleteScheduledPost(postId);
-    if (!result.success) {
-      console.error('Erro ao excluir post:', result.error);
-    }
-  }
 };
 
 export default ScheduledPostsTable;
