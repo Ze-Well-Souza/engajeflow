@@ -4,7 +4,7 @@ import { Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Content Pages
-import ContentPage from "@/pages/ContentPage";
+import ContentPage from "@/pages/content/ContentPage";
 import SocialMediaPage from "@/pages/SocialMediaPage";
 import RifaOnlinePage from "@/pages/RifaOnlinePage";
 

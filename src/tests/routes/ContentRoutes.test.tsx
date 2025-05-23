@@ -12,7 +12,7 @@ vi.mock('@/layouts/DashboardLayout', () => ({
   )
 }));
 
-vi.mock('@/pages/ContentPage', () => ({
+vi.mock('@/pages/content/ContentPage', () => ({
   default: () => <div data-testid="content-page">Content Page</div>
 }));
 
