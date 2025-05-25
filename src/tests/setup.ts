@@ -1,6 +1,6 @@
 
 import '@testing-library/jest-dom';
-import { expect, afterEach } from 'vitest';
+import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
@@ -22,10 +22,14 @@ global.ResizeObserver = class ResizeObserver {
 
 // Mock do IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor(cb: any) {}
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {}
   observe() {}
   unobserve() {}
   disconnect() {}
+  get root() { return null; }
+  get rootMargin() { return ''; }
+  get thresholds() { return []; }
+  takeRecords() { return []; }
 };
 
 // Mock do matchMedia

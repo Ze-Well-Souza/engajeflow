@@ -1,14 +1,11 @@
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import SocialRoutes from '../../routes/SocialRoutes';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock dos componentes
-vi.mock('../../pages/SocialMediaPage', () => ({
-  default: () => <div data-testid="social-media-page">Social Media Page</div>
-}));
-
 vi.mock('../../pages/SocialDashboardPage', () => ({
   default: () => <div data-testid="social-dashboard-page">Social Dashboard Page</div>
 }));
@@ -22,12 +19,18 @@ vi.mock('../../layouts/DashboardLayout', () => ({
 describe('SocialRoutes', () => {
   const renderWithRouter = (initialEntries: string[] = ['/social']) => {
     const routes = SocialRoutes();
-    const router = createBrowserRouter(routes, {
+    const router = createMemoryRouter(routes, {
       initialEntries,
     });
     
     return render(<RouterProvider router={router} />);
   };
+
+  it('should render social dashboard page route', () => {
+    const { getByTestId } = renderWithRouter(['/social']);
+    expect(getByTestId('dashboard-layout')).toBeInTheDocument();
+    expect(getByTestId('social-dashboard-page')).toBeInTheDocument();
+  });
 
   it('should return valid route objects', () => {
     const routes = SocialRoutes();

@@ -1,15 +1,13 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FinancialService from '../../../services/techcare/FinancialService';
 import AuthService from '../../../services/techcare/AuthService';
-// Import the classes/modules directly
 import { ReportsService } from '../../../services/techcare/financial/ReportsService';
 import { TransactionsService } from '../../../services/techcare/financial/TransactionsService';
 import { BankSyncService } from '../../../services/techcare/financial/BankSyncService';
-import logger from '../../../utils/logger'; // Assuming logger is default export
+import logger from '../../../utils/logger';
 import MonitoringService from '../../../services/techcare/MonitoringService';
 
-// Mock dependencies using direct imports
+// Mock dependencies
 vi.mock('../../../services/techcare/NavigationService');
 vi.mock('../../../services/techcare/ScrapingService');
 vi.mock('../../../utils/logger', () => ({
@@ -28,12 +26,11 @@ vi.mock('../../../utils/logger', () => ({
 vi.mock('../../../services/techcare/AuthService');
 vi.mock('../../../services/techcare/MonitoringService', () => ({
     default: {
-        monitorOperation: vi.fn((name, fn) => fn()), // Simple mock that executes the function
+        monitorOperation: vi.fn((name, fn) => fn()),
         incrementMetric: vi.fn(),
         observeValue: vi.fn(),
     }
 }));
-// Mock the actual service classes
 vi.mock('../../../services/techcare/financial/ReportsService');
 vi.mock('../../../services/techcare/financial/TransactionsService');
 vi.mock('../../../services/techcare/financial/BankSyncService');
@@ -41,10 +38,8 @@ vi.mock('../../../services/techcare/financial/BankSyncService');
 describe('FinancialService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // Mock AuthService.isAuthenticated to return true for most tests
     vi.mocked(AuthService.isAuthenticated).mockReturnValue(true);
 
-    // Provide default mock implementations using the imported classes
     vi.mocked(ReportsService.generateFinancialReport).mockResolvedValue({
         period: { start: new Date(), end: new Date() },
         summary: { totalIncome: 5000, totalExpenses: 3000, netCashflow: 2000 },
@@ -53,22 +48,18 @@ describe('FinancialService', () => {
         transactions: [],
     });
     vi.mocked(TransactionsService.fetchTransactions).mockResolvedValue([
-        { id: 't1', date: new Date(), description: 'Test Tx', amount: 100, type: 'debit', category: 'Test' }
+        { id: 't1', date: new Date(), description: 'Test Tx', amount: 100, type: 'income', category: 'Test' }
     ]);
     vi.mocked(BankSyncService.fetchAccountBalance).mockResolvedValue(1500.50);
     vi.mocked(BankSyncService.syncBankAccounts).mockResolvedValue(true);
 
-    // Mock getFinancialAccounts directly on FinancialService if it's simple
-    // Ensure FinancialService itself is not mocked if we spy on its methods
     vi.spyOn(FinancialService, 'getFinancialAccounts').mockReturnValue([
         { id: 'acc-001', name: 'Checking', balance: 1500.50, type: 'checking' }
     ]);
-    // Mock createBudget directly on FinancialService
     vi.spyOn(FinancialService, 'createBudget').mockImplementation(async (budgetData) => ({
         ...budgetData,
         id: 'budget-123',
     }));
-
   });
 
   it('should be a singleton', () => {
@@ -225,4 +216,3 @@ describe('FinancialService', () => {
   });
 
 });
-

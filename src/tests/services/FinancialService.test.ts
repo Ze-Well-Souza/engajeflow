@@ -12,34 +12,36 @@ describe('FinancialService', () => {
   });
 
   it('should have required methods', () => {
-    expect(typeof FinancialService.getTransactions).toBe('function');
-    expect(typeof FinancialService.getBalance).toBe('function');
-    expect(typeof FinancialService.generateReport).toBe('function');
+    expect(typeof FinancialService.fetchTransactions).toBe('function');
+    expect(typeof FinancialService.fetchAccountBalance).toBe('function');
+    expect(typeof FinancialService.generateFinancialReport).toBe('function');
   });
 
-  describe('getTransactions', () => {
+  describe('fetchTransactions', () => {
     it('should return transactions with default period', async () => {
-      const transactions = await FinancialService.getTransactions();
+      const period = { start: new Date(), end: new Date() };
+      const transactions = await FinancialService.fetchTransactions(period);
       expect(Array.isArray(transactions)).toBe(true);
     });
 
     it('should accept period parameter', async () => {
-      const transactions = await FinancialService.getTransactions('monthly');
+      const period = { start: new Date('2023-01-01'), end: new Date('2023-01-31') };
+      const transactions = await FinancialService.fetchTransactions(period);
       expect(Array.isArray(transactions)).toBe(true);
     });
   });
 
-  describe('getBalance', () => {
+  describe('fetchAccountBalance', () => {
     it('should return balance data', async () => {
-      const balance = await FinancialService.getBalance();
-      expect(balance).toBeDefined();
-      expect(typeof balance.total).toBe('number');
+      const balance = await FinancialService.fetchAccountBalance('test-account');
+      expect(typeof balance).toBe('number');
     });
   });
 
-  describe('generateReport', () => {
+  describe('generateFinancialReport', () => {
     it('should generate financial report', async () => {
-      const report = await FinancialService.generateReport();
+      const period = { startDate: new Date(), endDate: new Date() };
+      const report = await FinancialService.generateFinancialReport(period);
       expect(report).toBeDefined();
       expect(report.summary).toBeDefined();
     });

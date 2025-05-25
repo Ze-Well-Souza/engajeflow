@@ -12,7 +12,7 @@ describe('ConsultantAIService', () => {
     vi.resetAllMocks();
   });
 
-  describe('analyzeFinancialData', () => {
+  describe('generateFinancialConsulting', () => {
     it('should analyze financial data successfully', async () => {
       const mockResponse = {
         candidates: [{
@@ -37,13 +37,13 @@ describe('ConsultantAIService', () => {
         json: async () => mockResponse,
       } as Response);
 
-      const result = await ConsultantAIService.analyzeFinancialData(
+      const result = await ConsultantAIService.generateFinancialConsulting(
         { revenue: 50000, expenses: 40000 },
-        'test-api-key'
+        'test prompt'
       );
 
       expect(result.success).toBe(true);
-      if ('data' in result) {
+      if (result.success) {
         expect(result.data.summary).toBe('Análise financeira completa');
         expect(result.data.recommendations).toHaveLength(2);
         expect(result.data.projections.profit).toBe(20000);
@@ -53,14 +53,14 @@ describe('ConsultantAIService', () => {
     it('should handle API errors gracefully', async () => {
       mockFetch.mockRejectedValueOnce(new Error('API Error'));
 
-      const result = await ConsultantAIService.analyzeFinancialData(
+      const result = await ConsultantAIService.generateFinancialConsulting(
         { revenue: 50000, expenses: 40000 },
-        'test-api-key'
+        'test prompt'
       );
 
       expect(result.success).toBe(false);
-      if ('error' in result) {
-        expect(result.error).toContain('Erro ao analisar dados financeiros');
+      if (!result.success) {
+        expect(result.error).toContain('Erro ao gerar consultoria financeira');
       }
     });
 
@@ -84,13 +84,13 @@ describe('ConsultantAIService', () => {
         json: async () => mockResponse,
       } as Response);
 
-      const result = await ConsultantAIService.analyzeFinancialData(
+      const result = await ConsultantAIService.generateFinancialConsulting(
         { revenue: 50000, expenses: 40000 },
-        'test-api-key'
+        'test prompt'
       );
 
       expect(result.success).toBe(true);
-      if ('data' in result) {
+      if (result.success) {
         expect(result.data.summary).toBeDefined();
         expect(result.data.recommendations).toBeDefined();
         expect(result.data.projections).toBeDefined();
