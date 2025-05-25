@@ -26,16 +26,20 @@ class EnvironmentConfig {
       return;
     }
 
-    // Procurar todas as chaves que começam com 'env.'
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('env.')) {
-        const envKey = key.substring(4); // Remover 'env.'
-        const value = localStorage.getItem(key);
-        if (value !== null) {
-          this.variables.set(envKey, this.parseValue(value));
+    try {
+      // Procurar todas as chaves que começam com 'env.'
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('env.')) {
+          const envKey = key.substring(4); // Remover 'env.'
+          const value = localStorage.getItem(key);
+          if (value !== null) {
+            this.variables.set(envKey, this.parseValue(value));
+          }
         }
       }
+    } catch (error) {
+      console.warn('Erro ao carregar variáveis do localStorage:', error);
     }
   }
 
@@ -65,16 +69,20 @@ class EnvironmentConfig {
       return this.variables.get(name) as EnvVariableValue;
     }
     
-    // Verificar em process.env para Node.js
+    // Verificar em process.env para Node.js (apenas se disponível)
     if (typeof process !== 'undefined' && process.env && process.env[name]) {
       const value = process.env[name] as string;
       return this.parseValue(value);
     }
     
     // Verificar em import.meta.env para Vite
-    const viteEnv = (import.meta as any).env;
-    if (viteEnv && viteEnv[name]) {
-      return this.parseValue(viteEnv[name]);
+    try {
+      const viteEnv = (import.meta as any).env;
+      if (viteEnv && viteEnv[name]) {
+        return this.parseValue(viteEnv[name]);
+      }
+    } catch (error) {
+      // Ignorar erros de acesso ao import.meta em ambientes que não suportam
     }
     
     // Retornar valor padrão
@@ -90,7 +98,11 @@ class EnvironmentConfig {
     
     // Armazenar no localStorage (apenas valores não-null)
     if (typeof window !== 'undefined' && window.localStorage && value !== null) {
-      localStorage.setItem(`env.${name}`, String(value));
+      try {
+        localStorage.setItem(`env.${name}`, String(value));
+      } catch (error) {
+        console.warn(`Erro ao salvar variável ${name} no localStorage:`, error);
+      }
     }
   }
 
@@ -103,7 +115,11 @@ class EnvironmentConfig {
     
     // Remover do localStorage
     if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.removeItem(`env.${name}`);
+      try {
+        localStorage.removeItem(`env.${name}`);
+      } catch (error) {
+        console.warn(`Erro ao remover variável ${name} do localStorage:`, error);
+      }
     }
   }
 
@@ -154,7 +170,9 @@ export const env = new EnvironmentConfig();
  */
 export function setEnv(name: string, value: EnvVariableValue): void {
   env.set(name, value);
-  toast.success(`Configuração '${name}' atualizada`);
+  if (typeof window !== 'undefined') {
+    toast.success(`Configuração '${name}' atualizada`);
+  }
 }
 
 /**
@@ -162,7 +180,9 @@ export function setEnv(name: string, value: EnvVariableValue): void {
  */
 export function removeEnv(name: string): void {
   env.remove(name);
-  toast.info(`Configuração '${name}' removida`);
+  if (typeof window !== 'undefined') {
+    toast.info(`Configuração '${name}' removida`);
+  }
 }
 
 /**
@@ -171,7 +191,7 @@ export function removeEnv(name: string): void {
 export function validateEnv(): boolean {
   const { valid, missing } = env.validateRequiredVariables();
   
-  if (!valid) {
+  if (!valid && typeof window !== 'undefined') {
     toast.error(`Configurações obrigatórias ausentes: ${missing.join(', ')}`);
   }
   

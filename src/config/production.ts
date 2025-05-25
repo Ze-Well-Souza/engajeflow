@@ -3,6 +3,28 @@
  * Configurações específicas para ambiente de produção
  */
 
+// Helper para obter variáveis de ambiente de forma segura no browser
+const getEnvVar = (key: string, defaultValue: string = ''): string => {
+  // Verificar se estamos no browser
+  if (typeof window !== 'undefined') {
+    // No browser, usar localStorage ou valores padrão
+    const stored = localStorage.getItem(`env.${key}`);
+    if (stored) return stored;
+  }
+  
+  // Se estiver no Node.js (durante build)
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key] || defaultValue;
+  }
+  
+  // Verificar Vite env vars
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+    return (import.meta as any).env[key] || defaultValue;
+  }
+  
+  return defaultValue;
+};
+
 export const productionConfig = {
   // Performance
   cache: {
@@ -47,7 +69,7 @@ export const productionConfig = {
 
   // CORS
   cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com'],
+    origin: getEnvVar('ALLOWED_ORIGINS', 'https://yourdomain.com').split(','),
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
