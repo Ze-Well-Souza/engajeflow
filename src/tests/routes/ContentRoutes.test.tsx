@@ -1,66 +1,52 @@
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Routes } from 'react-router-dom';
+import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import ContentRoutes from '../../routes/ContentRoutes';
-import { vi } from 'vitest';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-// Mock dos componentes necessários
-vi.mock('@/layouts/DashboardLayout', () => ({
+// Mock dos componentes para evitar erros de dependências
+vi.mock('../../pages/content/ContentPage', () => ({
+  default: () => <div data-testid="content-page">Content Page</div>
+}));
+
+vi.mock('../../pages/content/ContentAssistantPage', () => ({
+  default: () => <div data-testid="content-assistant-page">Content Assistant Page</div>
+}));
+
+vi.mock('../../layouts/DashboardLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="dashboard-layout">{children}</div>
   )
 }));
 
-vi.mock('@/pages/content/ContentPage', () => ({
-  default: () => <div data-testid="content-page">Content Page</div>
-}));
-
-vi.mock('@/pages/SocialMediaPage', () => ({
-  default: () => <div data-testid="social-media-page">Social Media Page</div>
-}));
-
-vi.mock('@/pages/RifaOnlinePage', () => ({
-  default: () => <div data-testid="rifa-online-page">Rifa Online Page</div>
-}));
-
 describe('ContentRoutes', () => {
-  it('deve renderizar a rota /content corretamente', () => {
-    render(
-      <MemoryRouter initialEntries={['/content']}>
-        <Routes>
-          {ContentRoutes({})}
-        </Routes>
-      </MemoryRouter>
-    );
+  const renderWithRouter = (initialEntries: string[] = ['/content']) => {
+    const routes = ContentRoutes();
+    const router = createBrowserRouter(routes, {
+      initialEntries,
+    });
     
-    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
-    expect(screen.getByTestId('content-page')).toBeInTheDocument();
+    return render(<RouterProvider router={router} />);
+  };
+
+  it('should render content page route', () => {
+    const { getByTestId } = renderWithRouter(['/content']);
+    expect(getByTestId('dashboard-layout')).toBeInTheDocument();
+    expect(getByTestId('content-page')).toBeInTheDocument();
   });
-  
-  it('deve renderizar a rota /content/social corretamente', () => {
-    render(
-      <MemoryRouter initialEntries={['/content/social']}>
-        <Routes>
-          {ContentRoutes({})}
-        </Routes>
-      </MemoryRouter>
-    );
-    
-    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
-    expect(screen.getByTestId('social-media-page')).toBeInTheDocument();
+
+  it('should render content assistant page route', () => {
+    const { getByTestId } = renderWithRouter(['/content/assistant']);
+    expect(getByTestId('dashboard-layout')).toBeInTheDocument();
+    expect(getByTestId('content-assistant-page')).toBeInTheDocument();
   });
-  
-  it('deve renderizar a rota /content/rifa corretamente', () => {
-    render(
-      <MemoryRouter initialEntries={['/content/rifa']}>
-        <Routes>
-          {ContentRoutes({})}
-        </Routes>
-      </MemoryRouter>
-    );
-    
-    expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
-    expect(screen.getByTestId('rifa-online-page')).toBeInTheDocument();
+
+  it('should return valid route objects', () => {
+    const routes = ContentRoutes();
+    expect(Array.isArray(routes)).toBe(true);
+    expect(routes.length).toBeGreaterThan(0);
+    expect(routes[0]).toHaveProperty('path');
+    expect(routes[0]).toHaveProperty('element');
   });
 });

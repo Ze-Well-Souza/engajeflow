@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +32,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [demoMode] = useState<boolean>(true);
 
   useEffect(() => {
+    console.log('[AuthContext] Inicializando...');
+    
     // Se o modo de demonstração estiver ativado, criamos um usuário fictício
     if (demoMode) {
       const mockUser: UserProfile = {
@@ -42,12 +45,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       setCurrentUser(mockUser);
       setLoading(false);
+      console.log('[AuthContext] Modo demo ativado');
       return;
     }
     
     // Configurar o listener de mudança de estado (apenas quando não estiver em modo demo)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('[AuthContext] Auth state change:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -79,6 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } else {
           setCurrentUser(null);
         }
+        setLoading(false);
       }
     );
 

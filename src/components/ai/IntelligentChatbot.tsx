@@ -9,6 +9,35 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bot, User, Send, Mic, MicOff, Settings } from "lucide-react";
 import { toast } from "sonner";
 
+// Declarações de tipos para Web Speech API
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognitionEvent {
+  results: {
+    [key: number]: {
+      [key: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionType {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: () => void;
+  onend: () => void;
+}
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -42,7 +71,7 @@ const IntelligentChatbot: React.FC<IntelligentChatbotProps> = ({
   const [showSettings, setShowSettings] = useState(!geminiApiKey);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognition = useRef<SpeechRecognition | null>(null);
+  const recognition = useRef<SpeechRecognitionType | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,14 +83,14 @@ const IntelligentChatbot: React.FC<IntelligentChatbotProps> = ({
 
   // Configurar reconhecimento de voz
   useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    if (typeof window !== 'undefined' && (window.webkitSpeechRecognition || window.SpeechRecognition)) {
       const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
       recognition.current = new SpeechRecognition();
       recognition.current.continuous = false;
       recognition.current.interimResults = false;
       recognition.current.lang = 'pt-BR';
 
-      recognition.current.onresult = (event) => {
+      recognition.current.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setInputMessage(transcript);
         setIsListening(false);

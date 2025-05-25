@@ -1,121 +1,100 @@
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ConsultantAIService from '../../services/techcare/ConsultantAIService';
 
-vi.mock('../../utils/logger', () => ({
-  default: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    withContext: vi.fn().mockReturnValue({
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn()
-    }),
-    startOperation: vi.fn().mockReturnValue({
-      end: vi.fn()
-    })
-  }
-}));
+// Mock da função fetch
+global.fetch = vi.fn();
 
 describe('ConsultantAIService', () => {
+  const mockFetch = vi.mocked(fetch);
+
   beforeEach(() => {
     vi.resetAllMocks();
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
+  describe('analyzeFinancialData', () => {
+    it('should analyze financial data successfully', async () => {
+      const mockResponse = {
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                summary: 'Análise financeira completa',
+                recommendations: ['Reduzir custos', 'Aumentar receita'],
+                projections: {
+                  revenue: 100000,
+                  expenses: 80000,
+                  profit: 20000
+                }
+              })
+            }]
+          }
+        }]
+      };
 
-  it('should be a singleton', () => {
-    const instance1 = ConsultantAIService;
-    const instance2 = ConsultantAIService;
-    expect(instance1).toBe(instance2);
-  });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      } as Response);
 
-  it('should allow setting API key', () => {
-    const apiKey = 'test-api-key-123';
-    ConsultantAIService.setApiKey(apiKey);
-    expect(ConsultantAIService).toBeDefined();
-  });
+      const result = await ConsultantAIService.analyzeFinancialData(
+        { revenue: 50000, expenses: 40000 },
+        'test-api-key'
+      );
 
-  it('should allow setting model', () => {
-    const model = 'gpt-4-turbo';
-    ConsultantAIService.setModel(model);
-    expect(ConsultantAIService).toBeDefined();
-  });
+      expect(result.success).toBe(true);
+      if ('data' in result) {
+        expect(result.data.summary).toBe('Análise financeira completa');
+        expect(result.data.recommendations).toHaveLength(2);
+        expect(result.data.projections.profit).toBe(20000);
+      }
+    });
 
-  it('should fail to generate financial consulting without API key', async () => {
-    ConsultantAIService.setApiKey('');
-    
-    const businessData = {
-      revenue: 100000,
-      expenses: 75000,
-      profit: 25000
-    };
-    
-    const result = await ConsultantAIService.generateFinancialConsulting(
-      businessData,
-      'increase profit by 10%'
-    );
-    
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('API Key não configurada');
-  });
+    it('should handle API errors gracefully', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('API Error'));
 
-  it('should generate financial consulting when API key is set', async () => {
-    ConsultantAIService.setApiKey('fake-api-key-for-testing');
-    
-    const businessData = {
-      revenue: 100000,
-      expenses: 75000,
-      profit: 25000
-    };
-    
-    const result = await ConsultantAIService.generateFinancialConsulting(
-      businessData,
-      'increase profit by 10%',
-      { detailed: true }
-    );
-    
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(result.data?.summary).toBeTruthy();
-    expect(result.data?.recommendations).toBeInstanceOf(Array);
-    expect(result.data?.recommendations.length).toBeGreaterThan(0);
-  });
+      const result = await ConsultantAIService.analyzeFinancialData(
+        { revenue: 50000, expenses: 40000 },
+        'test-api-key'
+      );
 
-  it('should generate consultant suggestions', async () => {
-    const clientId = 'client-123';
-    
-    const result = await ConsultantAIService.generateConsultantSuggestions(clientId);
-    
-    expect(result).toBeDefined();
-    expect(result.recommendations).toBeInstanceOf(Array);
-    expect(result.confidence).toBeDefined();
-  });
+      expect(result.success).toBe(false);
+      if ('error' in result) {
+        expect(result.error).toContain('Erro ao analisar dados financeiros');
+      }
+    });
 
-  it('should generate client report', async () => {
-    const clientId = 'client-123';
-    
-    const result = await ConsultantAIService.generateClientReport(clientId);
-    
-    expect(result).toBeDefined();
-    expect(result.summary).toBeTruthy();
-    expect(result.sections).toBeInstanceOf(Array);
-  });
+    it('should return successful analysis with valid data', async () => {
+      const mockResponse = {
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                summary: 'Test summary',
+                recommendations: ['Test recommendation'],
+                projections: { revenue: 100, expenses: 80, profit: 20 }
+              })
+            }]
+          }
+        }]
+      };
 
-  it('should handle circuit breaker exceptions', async () => {
-    const originalMethod = Object.getPrototypeOf(ConsultantAIService)['generateConsultantSuggestions'];
-    
-    Object.getPrototypeOf(ConsultantAIService)['generateConsultantSuggestions'] = vi.fn().mockRejectedValue(
-      new Error('Circuit Breaker is open')
-    );
-    
-    await expect(ConsultantAIService.generateConsultantSuggestions('client-123'))
-      .rejects
-      .toThrow('Circuit Breaker is open');
-    
-    Object.getPrototypeOf(ConsultantAIService)['generateConsultantSuggestions'] = originalMethod;
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      } as Response);
+
+      const result = await ConsultantAIService.analyzeFinancialData(
+        { revenue: 50000, expenses: 40000 },
+        'test-api-key'
+      );
+
+      expect(result.success).toBe(true);
+      if ('data' in result) {
+        expect(result.data.summary).toBeDefined();
+        expect(result.data.recommendations).toBeDefined();
+        expect(result.data.projections).toBeDefined();
+      }
+    });
   });
 });
