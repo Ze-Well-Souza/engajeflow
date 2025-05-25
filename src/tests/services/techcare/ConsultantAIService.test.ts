@@ -1,11 +1,11 @@
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import ConsultantAIService from '../../../services/techcare/ConsultantAIService';
-import logger from '../../../utils/logger'; // Import logger
+import logger from '../../../utils/logger';
 
 // Mock dependencies
 vi.mock('../../../services/techcare/NavigationService');
 vi.mock('../../../services/techcare/ScrapingService');
-// Update logger mock to be consistent and include startOperation
 vi.mock('../../../utils/logger', () => ({
   default: {
     info: vi.fn(),
@@ -18,14 +18,12 @@ vi.mock('../../../utils/logger', () => ({
         error: vi.fn(),
         addData: vi.fn(),
     })),
-    // Add other methods if ConsultantAIService uses them
   }
 }));
 
 describe('ConsultantAIService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // Ensure API key is set for tests that need it, or mock the check
     ConsultantAIService.setApiKey('fake-api-key-for-testing');
   });
 
@@ -42,7 +40,6 @@ describe('ConsultantAIService', () => {
   it('should allow setting API key', () => {
     const apiKey = 'test-api-key-123';
     ConsultantAIService.setApiKey(apiKey);
-    // No direct assertion needed, just ensures the method exists and doesn't throw
     expect(ConsultantAIService).toBeDefined();
   });
 
@@ -53,7 +50,7 @@ describe('ConsultantAIService', () => {
   });
 
   it('should fail to generate financial consulting without API key', async () => {
-    ConsultantAIService.setApiKey(''); // Explicitly unset for this test
+    ConsultantAIService.setApiKey('');
 
     const businessData = {
       revenue: 100000,
@@ -61,45 +58,40 @@ describe('ConsultantAIService', () => {
       profit: 25000
     };
 
-    // Mock the internal call if it relies on external API
-    // For now, assume the internal check works
     const result = await ConsultantAIService.generateFinancialConsulting(
       businessData,
       'increase profit by 10%'
     );
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('API Key não configurada');
-    // Adjust assertion based on actual implementation logging
+    if (!result.success) {
+      expect(result.error).toContain('API Key não configurada');
+    }
     expect(logger.error).toHaveBeenCalledWith('[ConsultantAIService] API Key não configurada.');
   });
 
   it('should generate financial consulting when API key is set', async () => {
-    // API key set in beforeEach
     const businessData = {
       revenue: 100000,
       expenses: 75000,
       profit: 25000
     };
 
-    // Mock the actual API call if it makes one
-    // For now, assume the service returns mock data or the internal logic is tested
     const result = await ConsultantAIService.generateFinancialConsulting(
       businessData,
       'increase profit by 10%',
       { detailed: true }
     );
 
-    // Basic assertions based on the current implementation (likely mock/simulated)
     expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
-    expect(result.data?.summary).toBeTruthy();
-    expect(result.data?.recommendations).toBeInstanceOf(Array);
-    // Check if logger was called appropriately
+    if (result.success) {
+      expect(result.data).toBeDefined();
+      expect(result.data.summary).toBeTruthy();
+      expect(result.data.recommendations).toBeInstanceOf(Array);
+    }
     expect(logger.startOperation).toHaveBeenCalledWith('generateFinancialConsulting');
-    // Verificar se o logger.info foi chamado com qualquer string que contenha a mensagem esperada
     expect(logger.info).toHaveBeenCalled();
-    // Verificar se alguma das chamadas contém a string esperada
+    
     const infoCallArgs = vi.mocked(logger.info).mock.calls;
     const hasSuccessMessage = infoCallArgs.some(args => 
       typeof args[0] === 'string' && args[0].includes('consultoria financeira')
@@ -109,7 +101,6 @@ describe('ConsultantAIService', () => {
 
   it('should generate consultant suggestions', async () => {
     const clientId = 'client-123';
-    // Assume service returns mock data
     const result = await ConsultantAIService.generateConsultantSuggestions(clientId);
 
     expect(result).toBeDefined();
@@ -117,7 +108,6 @@ describe('ConsultantAIService', () => {
     expect(result.confidence).toBeDefined();
     expect(logger.startOperation).toHaveBeenCalledWith('generateConsultantSuggestions');
     
-    // Verificar se alguma das chamadas contém a string esperada
     const infoCallArgs = vi.mocked(logger.info).mock.calls;
     const hasSuccessMessage = infoCallArgs.some(args => 
       typeof args[0] === 'string' && args[0].includes('Sugestões geradas com sucesso')
@@ -127,7 +117,6 @@ describe('ConsultantAIService', () => {
 
   it('should generate client report', async () => {
     const clientId = 'client-123';
-    // Assume service returns mock data
     const result = await ConsultantAIService.generateClientReport(clientId);
 
     expect(result).toBeDefined();
@@ -135,7 +124,6 @@ describe('ConsultantAIService', () => {
     expect(result.sections).toBeInstanceOf(Array);
     expect(logger.startOperation).toHaveBeenCalledWith('generateClientReport');
     
-    // Verificar se alguma das chamadas contém a string esperada
     const infoCallArgs = vi.mocked(logger.info).mock.calls;
     const hasSuccessMessage = infoCallArgs.some(args => 
       typeof args[0] === 'string' && args[0].includes('Relatório gerado com sucesso')
@@ -144,7 +132,6 @@ describe('ConsultantAIService', () => {
   });
 
   it('should analyze client trends', async () => {
-    // Assume service returns mock data
     const result = await ConsultantAIService.analyzeClientTrends();
 
     expect(result).toBeDefined();
@@ -152,7 +139,6 @@ describe('ConsultantAIService', () => {
     expect(result.insights).toBeInstanceOf(Array);
     expect(logger.startOperation).toHaveBeenCalledWith('analyzeClientTrends');
     
-    // Verificar se alguma das chamadas contém a string esperada
     const infoCallArgs = vi.mocked(logger.info).mock.calls;
     const hasSuccessMessage = infoCallArgs.some(args => 
       typeof args[0] === 'string' && args[0].includes('Análise de tendências concluída')
@@ -163,7 +149,6 @@ describe('ConsultantAIService', () => {
   it('should generate response suggestions', async () => {
     const clientId = 'client-123';
     const message = 'Hello, I need help with my project';
-    // Assume service returns mock data
     const result = await ConsultantAIService.generateResponseSuggestions(clientId, message);
 
     expect(result).toBeDefined();
@@ -171,7 +156,6 @@ describe('ConsultantAIService', () => {
     expect(result.length).toBeGreaterThan(0);
     expect(logger.startOperation).toHaveBeenCalledWith('generateResponseSuggestions');
     
-    // Verificar se alguma das chamadas contém a string esperada
     const infoCallArgs = vi.mocked(logger.info).mock.calls;
     const hasSuccessMessage = infoCallArgs.some(args => 
       typeof args[0] === 'string' && args[0].includes('Sugestões de resposta geradas com sucesso')

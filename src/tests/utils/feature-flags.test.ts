@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import featureFlags, { FeatureFlagsConfig } from '../../utils/feature-flags/index';
+import { FeatureFlagsManager, featureFlags } from '../../utils/feature-flags/index';
 
 // Mock para o módulo redis
 vi.mock('redis', () => {
@@ -24,11 +24,9 @@ vi.mock('redis', () => {
 vi.mock('../../utils/logger', () => {
   return {
     default: {
-      withContext: vi.fn().mockReturnValue({
-        info: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn()
-      })
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
     }
   };
 });
@@ -42,37 +40,36 @@ describe('FeatureFlags', () => {
     vi.clearAllMocks();
   });
   
-  describe('Configuração', () => {
-    it('deve configurar feature flags com memória por padrão', () => {
-      const config: FeatureFlagsConfig = {
-        defaultFlags: { testFeature: true }
-      };
-      
-      featureFlags.configure(config);
-      
-      expect(featureFlags).toBeDefined();
+  describe('FeatureFlagsManager', () => {
+    it('should create a new instance', () => {
+      const manager = new FeatureFlagsManager();
+      expect(manager).toBeDefined();
     });
     
-    it('deve configurar feature flags com Redis quando especificado', () => {
-      const config: FeatureFlagsConfig = {
-        useRedis: true,
-        redisUrl: 'redis://localhost:6379',
-        defaultFlags: { testFeature: true }
-      };
+    it('should set and check flags', () => {
+      const manager = new FeatureFlagsManager();
+      manager.setFlag('testFeature', true, 'Test feature description');
       
-      featureFlags.configure(config);
+      expect(manager.isEnabled('testFeature')).toBe(true);
+      expect(manager.isEnabled('nonExistentFeature')).toBe(false);
+    });
+    
+    it('should get all flags', () => {
+      const manager = new FeatureFlagsManager();
+      manager.setFlag('feature1', true, 'Feature 1');
+      manager.setFlag('feature2', false, 'Feature 2');
       
-      expect(featureFlags).toBeDefined();
+      const allFlags = manager.getAllFlags();
+      expect(allFlags).toHaveLength(2);
+      expect(allFlags[0].name).toBe('feature1');
+      expect(allFlags[1].name).toBe('feature2');
     });
   });
   
-  describe('Verificação de features', () => {
-    it('deve retornar client para verificação', () => {
-      const client = featureFlags.getClient();
-      
-      expect(client).toBeDefined();
-      expect(typeof client.isEnabled).toBe('function');
-      expect(typeof client.isDisabled).toBe('function');
+  describe('Global featureFlags instance', () => {
+    it('should be available globally', () => {
+      expect(featureFlags).toBeDefined();
+      expect(featureFlags).toBeInstanceOf(FeatureFlagsManager);
     });
   });
 });
