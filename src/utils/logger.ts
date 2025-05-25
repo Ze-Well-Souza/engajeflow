@@ -36,14 +36,19 @@ class Logger {
   }
 
   private loadConfig() {
-    if (process.env.NODE_ENV === 'production') {
+    // Verificar se estamos em produção baseado no hostname ou variável de ambiente
+    const isProduction = typeof window !== 'undefined' 
+      ? window.location.hostname !== 'localhost' && !window.location.hostname.includes('lovableproject.com')
+      : false;
+
+    if (isProduction) {
       return productionConfig.logging;
     }
 
     return {
-      level: process.env.LOG_LEVEL || 'debug',
+      level: 'debug',
       enableConsole: true,
-      enableFile: process.env.LOG_FILE === 'true',
+      enableFile: false,
       maxFileSize: '10MB',
       maxFiles: 5,
       enableRemote: false,
@@ -52,7 +57,10 @@ class Logger {
   }
 
   private isProduction(): boolean {
-    return process.env.NODE_ENV === 'production';
+    if (typeof window !== 'undefined') {
+      return window.location.hostname !== 'localhost' && !window.location.hostname.includes('lovableproject.com');
+    }
+    return false;
   }
 
   private generateId(): string {
@@ -105,7 +113,7 @@ class Logger {
       context,
       userId: this.getCurrentUserId(),
       module: this.extractModule(message),
-      environment: process.env.NODE_ENV,
+      environment: this.isProduction() ? 'production' : 'development',
       sessionId: this.sessionId,
       requestId: this.getRequestId(),
       traceId: this.traceId
@@ -259,7 +267,23 @@ class Logger {
     });
     return stats;
   }
+
+  public startOperation(operationName: string) {
+    const startTime = Date.now();
+    this.info(`Iniciando operação: ${operationName}`);
+    
+    return {
+      end: (status: 'success' | 'failure' = 'success', meta: any = {}) => {
+        const duration = Date.now() - startTime;
+        this.info(`Operação finalizada: ${operationName}`, {
+          ...meta,
+          duration,
+          status
+        });
+        return duration;
+      }
+    };
+  }
 }
 
 export default Logger.getInstance();
-
