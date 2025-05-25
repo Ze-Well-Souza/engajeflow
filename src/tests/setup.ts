@@ -1,23 +1,44 @@
-// Arquivo de setup para testes do Vitest
-import { expect } from 'vitest';
-import * as matchers from '@testing-library/jest-dom/matchers';
-import '@testing-library/jest-dom/vitest'; // Importa a extensão para Vitest
 
-// Estende o expect do Vitest com os matchers do jest-dom
+import '@testing-library/jest-dom';
+import { expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import * as matchers from '@testing-library/jest-dom/matchers';
+
+// Adicionar matchers do jest-dom ao expect
 expect.extend(matchers);
 
-// Exemplo: Mock global para localStorage se JSDOM não for suficiente
-// import { vi } from 'vitest';
-// const localStorageMock = (() => {
-//   let store = {};
-//   return {
-//     getItem: (key) => store[key] || null,
-//     setItem: (key, value) => { store[key] = value.toString(); },
-//     removeItem: (key) => { delete store[key]; },
-//     clear: () => { store = {}; }
-//   };
-// })();
-// Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+// Cleanup após cada teste
+afterEach(() => {
+  cleanup();
+});
 
-console.log('Vitest setup file loaded and jest-dom matchers extended.');
+// Mock do ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  constructor(cb: any) {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
+// Mock do IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(cb: any) {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock do matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
