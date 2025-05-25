@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route } from "react-router-dom";
+import { RouteObject } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 // AI Pages
@@ -12,18 +12,37 @@ import ProductRecommendationsPage from "@/pages/ai/ProductRecommendationsPage";
 import TechCareAIPage from "@/pages/ai/TechCareAIPage";
 import TechCareConsultantPage from "@/pages/ai/TechCareConsultantPage";
 
-const AIRoutes: React.FC = () => {
-  return (
-    <>
-      <Route path="/ai/sentiment" element={<DashboardLayout><SentimentAnalysisPage /></DashboardLayout>} />
-      <Route path="/ai/content" element={<DashboardLayout><ContentGeneratorPage /></DashboardLayout>} />
-      <Route path="/ai/forecast" element={<DashboardLayout><SalesForecastPage /></DashboardLayout>} />
-      <Route path="/ai/analytics" element={<DashboardLayout><CampaignAnalyticsPage /></DashboardLayout>} />
-      <Route path="/ai/recommendations" element={<DashboardLayout><ProductRecommendationsPage /></DashboardLayout>} />
-      <Route path="/ai/techcare" element={<DashboardLayout><TechCareAIPage /></DashboardLayout>} />
-      <Route path="/ai/consultant" element={<DashboardLayout><TechCareConsultantPage /></DashboardLayout>} />
-    </>
-  );
+const AIRoutes = (): RouteObject[] => {
+  return [
+    {
+      path: "/ai/sentiment",
+      element: <DashboardLayout><SentimentAnalysisPage /></DashboardLayout>
+    },
+    {
+      path: "/ai/content",
+      element: <DashboardLayout><ContentGeneratorPage /></DashboardLayout>
+    },
+    {
+      path: "/ai/forecast",
+      element: <DashboardLayout><SalesForecastPage /></DashboardLayout>
+    },
+    {
+      path: "/ai/analytics",
+      element: <DashboardLayout><CampaignAnalyticsPage /></DashboardLayout>
+    },
+    {
+      path: "/ai/recommendations",
+      element: <DashboardLayout><ProductRecommendationsPage /></DashboardLayout>
+    },
+    {
+      path: "/ai/techcare",
+      element: <DashboardLayout><TechCareAIPage /></DashboardLayout>
+    },
+    {
+      path: "/ai/consultant",
+      element: <DashboardLayout><TechCareConsultantPage /></DashboardLayout>
+    }
+  ];
 };
 
 export default AIRoutes;

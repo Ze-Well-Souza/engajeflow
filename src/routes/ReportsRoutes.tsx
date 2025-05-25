@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Route } from "react-router-dom";
+import { RouteObject } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Reports Pages
@@ -10,16 +10,29 @@ import ConversionsReportPage from "@/pages/reports/ConversionsReportPage";
 import SocialMediaPerformancePage from "@/pages/reports/SocialMediaPerformancePage";
 import AdvancedAnalyticsPage from "@/pages/reports/AdvancedAnalyticsPage";
 
-const ReportsRoutes: React.FC = () => {
-  return (
-    <>
-      <Route path="/reports" element={<DashboardLayout><ReportsPage /></DashboardLayout>} />
-      <Route path="/reports/custom" element={<DashboardLayout><CustomReportsPage /></DashboardLayout>} />
-      <Route path="/reports/conversions" element={<DashboardLayout><ConversionsReportPage /></DashboardLayout>} />
-      <Route path="/reports/social" element={<DashboardLayout><SocialMediaPerformancePage /></DashboardLayout>} />
-      <Route path="/reports/advanced" element={<DashboardLayout><AdvancedAnalyticsPage /></DashboardLayout>} />
-    </>
-  );
+const ReportsRoutes = (): RouteObject[] => {
+  return [
+    {
+      path: "/reports",
+      element: <DashboardLayout><ReportsPage /></DashboardLayout>
+    },
+    {
+      path: "/reports/custom",
+      element: <DashboardLayout><CustomReportsPage /></DashboardLayout>
+    },
+    {
+      path: "/reports/conversions",
+      element: <DashboardLayout><ConversionsReportPage /></DashboardLayout>
+    },
+    {
+      path: "/reports/social",
+      element: <DashboardLayout><SocialMediaPerformancePage /></DashboardLayout>
+    },
+    {
+      path: "/reports/advanced",
+      element: <DashboardLayout><AdvancedAnalyticsPage /></DashboardLayout>
+    }
+  ];
 };
 
 export default ReportsRoutes;
