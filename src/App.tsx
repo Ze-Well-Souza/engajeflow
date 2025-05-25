@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useRoutes } from "react-router-dom";
 
@@ -26,19 +27,19 @@ const AppRoutes = () => {
       element: <Navigate to="/landing" replace />
     },
     ...AuthRoutes(),
-    ...MainRoutes({}),
-    ...AdminRoutes({}),
-    ...SystemRoutes({}),
-    ...AIRoutes({}),
-    ...GatewayRoutes({}),
-    ...StoreRoutes({}),
-    ...DeveloperRoutes({}),
-    ...LandingRoutes({}),
-    ...ContentRoutes({}),
-    ...AutomationRoutes({}),
-    ...ReportsRoutes({}),
-    ...MiscRoutes({}),
-    ...SocialRoutes({})
+    ...MainRoutes(),
+    ...AdminRoutes(),
+    ...SystemRoutes(),
+    ...AIRoutes(),
+    ...GatewayRoutes(),
+    ...StoreRoutes(),
+    ...DeveloperRoutes(),
+    ...LandingRoutes(),
+    ...ContentRoutes(),
+    ...AutomationRoutes(),
+    ...ReportsRoutes(),
+    ...MiscRoutes(),
+    ...SocialRoutes()
   ];
 
   // Usamos o hook useRoutes para renderizar as rotas
