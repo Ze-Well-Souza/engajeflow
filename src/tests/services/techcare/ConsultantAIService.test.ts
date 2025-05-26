@@ -64,10 +64,8 @@ describe('ConsultantAIService', () => {
     );
 
     expect(result.success).toBe(false);
-    // Type-safe access using 'success' property as discriminator
-    if (result.success === false) {
-      expect(result.error).toContain('API Key não configurada');
-    }
+    expect(result).toHaveProperty('error');
+    expect((result as any).error).toContain('API Key não configurada');
     expect(logger.error).toHaveBeenCalledWith('[ConsultantAIService] API Key não configurada.');
   });
 
@@ -85,12 +83,10 @@ describe('ConsultantAIService', () => {
     );
 
     expect(result.success).toBe(true);
-    // Type-safe access using 'success' property as discriminator
-    if (result.success === true) {
-      expect(result.data).toBeDefined();
-      expect(result.data.summary).toBeTruthy();
-      expect(result.data.recommendations).toBeInstanceOf(Array);
-    }
+    expect(result).toHaveProperty('data');
+    expect((result as any).data).toBeDefined();
+    expect((result as any).data.summary).toBeTruthy();
+    expect((result as any).data.recommendations).toBeInstanceOf(Array);
     expect(logger.startOperation).toHaveBeenCalledWith('generateFinancialConsulting');
     expect(logger.info).toHaveBeenCalled();
     
