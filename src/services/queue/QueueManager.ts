@@ -19,7 +19,7 @@ export class QueueManager {
 
   constructor() {
     logger.info('[QueueManager] Inicializado');
-    this.startProcessing();
+    // Não iniciar processamento automaticamente para melhor controle nos testes
   }
 
   addTask(type: string, data: any, priority: number = 1): string {
@@ -38,6 +38,8 @@ export class QueueManager {
     this.tasks.sort((a, b) => b.priority - a.priority);
     
     logger.info(`[QueueManager] Nova tarefa adicionada: ${task.id}`);
+    // Iniciar processamento quando uma tarefa é adicionada
+    this.startProcessing();
     return task.id;
   }
 
@@ -46,7 +48,7 @@ export class QueueManager {
            Math.random().toString(36).substring(2, 15);
   }
 
-  private startProcessing(): void {
+  public startProcessing(): void {
     if (this.processingInterval) return;
     
     this.processingInterval = setInterval(() => {
@@ -58,7 +60,11 @@ export class QueueManager {
     if (this.isProcessing) return;
 
     const task = this.tasks.find(t => t.status === 'pending');
-    if (!task) return;
+    if (!task) {
+      // Parar processamento se não há tarefas pendentes
+      this.stop();
+      return;
+    }
 
     this.isProcessing = true;
     task.status = 'processing';
@@ -96,10 +102,21 @@ export class QueueManager {
     logger.info('[QueueManager] Tarefas concluídas removidas');
   }
 
+  /**
+   * Método para resetar completamente o estado da fila para testes
+   */
+  public reset(): void {
+    this.stop();
+    this.tasks = [];
+    this.isProcessing = false;
+    logger.info('[QueueManager] Fila resetada');
+  }
+
   stop(): void {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
       this.processingInterval = null;
+      logger.info('[QueueManager] Processamento parado');
     }
   }
 }

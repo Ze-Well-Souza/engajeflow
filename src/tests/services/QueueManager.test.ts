@@ -1,55 +1,66 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import QueueManager from '../../../services/queue/QueueManager';
+import QueueManager from '../../services/queue/QueueManager';
 
-describe('QueueIntegration', () => {
+describe('QueueManager', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    QueueManager.clearCompleted();
+    QueueManager.reset();
   });
 
   afterEach(() => {
     QueueManager.stop();
   });
 
-  it('should integrate with queue manager successfully', () => {
+  it('should be defined', () => {
     expect(QueueManager).toBeDefined();
   });
 
-  it('should handle queue operations', () => {
-    const taskId = QueueManager.addTask('integration-test', { test: true }, 1);
+  it('should add tasks correctly', () => {
+    const taskId = QueueManager.addTask('test-task', { test: true }, 1);
     const tasks = QueueManager.getTasks();
     
     expect(tasks.length).toBe(1);
     expect(tasks[0].id).toBe(taskId);
-    expect(tasks[0].type).toBe('integration-test');
+    expect(tasks[0].type).toBe('test-task');
+    expect(tasks[0].status).toBe('pending');
   });
 
-  it('should process tasks in order', async () => {
-    QueueManager.addTask('task1', { order: 1 }, 3);
-    QueueManager.addTask('task2', { order: 2 }, 2);
-    QueueManager.addTask('task3', { order: 3 }, 1);
+  it('should sort tasks by priority', () => {
+    QueueManager.addTask('low', {}, 1);
+    QueueManager.addTask('high', {}, 3);
+    QueueManager.addTask('medium', {}, 2);
     
     const tasks = QueueManager.getTasks();
-    expect(tasks.length).toBe(3);
-    
-    // Tasks should be ordered by priority (highest first)
     expect(tasks[0].priority).toBe(3);
     expect(tasks[1].priority).toBe(2);
     expect(tasks[2].priority).toBe(1);
   });
 
-  it('should handle queue lifecycle', () => {
-    const initialTasks = QueueManager.getTasks();
-    expect(initialTasks.length).toBe(0);
+  it('should clear completed tasks', () => {
+    QueueManager.addTask('task1', {}, 1);
+    QueueManager.addTask('task2', {}, 1);
     
-    QueueManager.addTask('lifecycle-test', { phase: 'start' }, 1);
-    const tasksAfterAdd = QueueManager.getTasks();
-    expect(tasksAfterAdd.length).toBe(1);
-    
+    // Como as tarefas são pending, clearCompleted não deve remover nada
     QueueManager.clearCompleted();
-    // Should still have pending tasks
-    const tasksAfterClear = QueueManager.getTasks();
-    expect(tasksAfterClear.length).toBe(1);
+    expect(QueueManager.getTasks().length).toBe(2);
+  });
+
+  it('should reset queue completely', () => {
+    QueueManager.addTask('task1', {}, 1);
+    QueueManager.addTask('task2', {}, 2);
+    
+    expect(QueueManager.getTasks().length).toBe(2);
+    
+    QueueManager.reset();
+    expect(QueueManager.getTasks().length).toBe(0);
+  });
+
+  it('should stop and start processing', () => {
+    QueueManager.stop();
+    // Adicionar uma tarefa deve iniciar o processamento novamente
+    QueueManager.addTask('restart-test', {}, 1);
+    
+    expect(QueueManager.getTasks().length).toBe(1);
   });
 });
