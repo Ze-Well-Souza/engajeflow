@@ -64,10 +64,15 @@ export const useClients = () => {
 
       const { data, error } = await supabase
         .from('clients')
-        .insert({
-          ...clientData,
+        .insert([{
+          name: clientData.name,
+          email: clientData.email,
+          phone: clientData.phone,
+          segment: clientData.segment,
+          status: clientData.status,
+          notes: clientData.notes,
           user_id: currentUser.id
-        })
+        }])
         .select()
         .single();
 

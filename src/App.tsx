@@ -14,27 +14,24 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 
-// Landing Pages
-import LandingPage from "@/pages/LandingPage";
-import BeautyLandingPage from "@/pages/segments/BeautyLandingPage";
-import RestaurantLandingPage from "@/pages/segments/RestaurantLandingPage";
-import RealEstateLandingPage from "@/pages/segments/RealEstateLandingPage";
-import FreelancerLandingPage from "@/pages/segments/FreelancerLandingPage";
+// Landing Pages (usando as que existem)
+import LandingPage from "@/pages/landing/LandingPage";
+import BeautyLandingPage from "@/pages/landing/BeautyLandingPage";
+import RealEstateLandingPage from "@/pages/landing/RealEstateLandingPage";
+import FreelancerLandingPage from "@/pages/landing/FreelancerLandingPage";
+import FoodLandingPage from "@/pages/landing/FoodLandingPage";
 
 // Admin Pages
-import AdminPage from "@/pages/admin/AdminPage";
+import AdminPage from "@/pages/admin/AdminDashboardPage";
 import ActivityLogsPage from "@/pages/admin/ActivityLogsPage";
 
 // System Pages
 import MicroservicesPage from "@/pages/system/MicroservicesPage";
 
-// Other pages
-import TeamsPage from "@/pages/TeamsPage";
-import IntegrationsPage from "@/pages/IntegrationsPage";
-import ContentHub from "@/pages/ContentHub";
-import AutomationPage from "@/pages/AutomationPage";
-import ReportsPage from "@/pages/ReportsPage";
-import NotFoundPage from "@/pages/NotFoundPage";
+// Other pages (usando as que existem)
+import AutomationPage from "@/pages/automation/AutomationPage";
+import ReportsPage from "@/pages/reports/ReportsPage";
+import ContentPage from "@/pages/content/ContentPage";
 
 const queryClient = new QueryClient();
 
@@ -80,7 +77,7 @@ const App = () => {
                 {/* Public Routes */}
                 <Route path="/landing" element={<LandingPage />} />
                 <Route path="/beauty" element={<BeautyLandingPage />} />
-                <Route path="/restaurant" element={<RestaurantLandingPage />} />
+                <Route path="/restaurant" element={<FoodLandingPage />} />
                 <Route path="/realestate" element={<RealEstateLandingPage />} />
                 <Route path="/freelancer" element={<FreelancerLandingPage />} />
 
@@ -139,26 +136,10 @@ const App = () => {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/teams" element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <TeamsPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/integrations" element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <IntegrationsPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                } />
-                
                 <Route path="/content" element={
                   <ProtectedRoute>
                     <DashboardLayout>
-                      <ContentHub />
+                      <ContentPage />
                     </DashboardLayout>
                   </ProtectedRoute>
                 } />
@@ -187,8 +168,8 @@ const App = () => {
                   </ProtectedRoute>
                 } />
 
-                {/* 404 */}
-                <Route path="*" element={<NotFoundPage />} />
+                {/* 404 - redirect to dashboard */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </BrowserRouter>
           </LocalizationProvider>
