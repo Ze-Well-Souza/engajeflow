@@ -41,34 +41,34 @@ const LoginPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            TechCare Connect
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4">
+      <Card className="w-full max-w-md bg-gray-900 border-gray-700 text-white">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold text-white">
+            Conexão Engajeflow
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-gray-300">
             Entre com suas credenciais para acessar o sistema
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+              <Alert variant="destructive" className="bg-red-900/50 border-red-700">
+                <AlertDescription className="text-red-200">{error}</AlertDescription>
               </Alert>
             )}
             
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
+              <label htmlFor="email" className="text-sm font-medium text-gray-200">
+                E-mail
               </label>
               <Input
                 id="email"
@@ -78,11 +78,12 @@ const LoginPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500"
               />
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-gray-200">
                 Senha
               </label>
               <div className="relative">
@@ -94,12 +95,13 @@ const LoginPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500 pr-12"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-gray-700 text-gray-400"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
                 >
@@ -114,7 +116,7 @@ const LoginPage: React.FC = () => {
             
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -131,24 +133,24 @@ const LoginPage: React.FC = () => {
           <div className="mt-4 text-center space-y-2">
             <Link
               to="/auth/forgot-password"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
             >
               Esqueceu sua senha?
             </Link>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-400">
               Não tem uma conta?{' '}
               <Link
                 to="/auth/register"
-                className="text-blue-600 hover:underline"
+                className="text-blue-400 hover:text-blue-300 hover:underline"
               >
-                Registre-se aqui
+                Cadastre-se aqui
               </Link>
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Contas de Teste:</h4>
-            <div className="text-xs space-y-1">
+          <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+            <h4 className="font-medium text-sm mb-2 text-gray-200">Contas de Teste:</h4>
+            <div className="text-xs space-y-1 text-gray-300">
               <div>Admin: admin@techcare.com / admin123</div>
               <div>User: user@teste.com / user123</div>
             </div>

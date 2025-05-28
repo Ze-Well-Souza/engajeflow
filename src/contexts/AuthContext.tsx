@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,28 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Usuários de teste para demonstração
+const TEST_USERS = {
+  'admin@techcare.com': {
+    password: 'admin123',
+    profile: {
+      id: 'admin-test-id',
+      email: 'admin@techcare.com',
+      name: 'Administrador Engajeflow',
+      is_admin: true
+    }
+  },
+  'user@teste.com': {
+    password: 'user123',
+    profile: {
+      id: 'user-test-id',
+      email: 'user@teste.com',
+      name: 'Usuário Teste',
+      is_admin: false
+    }
+  }
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -25,9 +48,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log('[AuthContext] Inicializando autenticação real...');
+    console.log('[AuthContext] Inicializando autenticação...');
     
-    // Configurar o listener de mudança de estado
+    // Verificar se existe uma sessão no localStorage
+    const savedSession = localStorage.getItem('engajeflow_session');
+    if (savedSession) {
+      try {
+        const sessionData = JSON.parse(savedSession);
+        setCurrentUser(sessionData);
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Erro ao recuperar sessão:', error);
+        localStorage.removeItem('engajeflow_session');
+      }
+    }
+
+    // Configurar o listener de mudança de estado do Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('[AuthContext] Auth state change:', event);
@@ -43,43 +80,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               .single();
 
             if (data) {
-              setCurrentUser({
+              const userProfile = {
                 id: session.user.id,
                 email: session.user.email || "",
                 name: data.full_name,
                 is_admin: data.is_admin || false
-              });
-            } else {
-              // Criar perfil se não existir
-              const { error: insertError } = await supabase
-                .from("profiles")
-                .insert({
-                  id: session.user.id,
-                  email: session.user.email,
-                  full_name: session.user.user_metadata?.full_name || session.user.email,
-                  is_admin: false
-                });
-
-              if (!insertError) {
-                setCurrentUser({
-                  id: session.user.id,
-                  email: session.user.email || "",
-                  name: session.user.user_metadata?.full_name || session.user.email,
-                  is_admin: false
-                });
-              }
+              };
+              setCurrentUser(userProfile);
+              localStorage.setItem('engajeflow_session', JSON.stringify(userProfile));
             }
           } catch (error) {
             console.error("Erro ao carregar perfil:", error);
           }
         } else {
           setCurrentUser(null);
+          localStorage.removeItem('engajeflow_session');
         }
         setLoading(false);
       }
     );
 
-    // Verificar se há uma sessão ativa
+    // Verificar se há uma sessão ativa no Supabase
     const initializeAuth = async () => {
       setLoading(true);
       try {
@@ -96,12 +117,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               .single();
               
             if (data) {
-              setCurrentUser({
+              const userProfile = {
                 id: session.user.id,
                 email: session.user.email || "",
                 name: data.full_name,
                 is_admin: data.is_admin || false
-              });
+              };
+              setCurrentUser(userProfile);
+              localStorage.setItem('engajeflow_session', JSON.stringify(userProfile));
             }
           } catch (error) {
             console.error("Erro ao carregar perfil:", error);
@@ -122,6 +145,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
+      // Verificar se é um usuário de teste
+      const testUser = TEST_USERS[email as keyof typeof TEST_USERS];
+      if (testUser && testUser.password === password) {
+        setCurrentUser(testUser.profile);
+        localStorage.setItem('engajeflow_session', JSON.stringify(testUser.profile));
+        toast.success("Login realizado com sucesso!");
+        return;
+      }
+
+      // Tentar login real com Supabase
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -129,7 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error("Erro ao fazer login:", error);
-        toast.error("Erro ao fazer login: " + error.message);
+        toast.error("Credenciais inválidas. Tente com as contas de teste.");
         throw error;
       }
       
@@ -142,11 +175,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
+      // Limpar sessão local
+      localStorage.removeItem('engajeflow_session');
+      setCurrentUser(null);
+      setSession(null);
+      setUser(null);
+
+      // Tentar logout do Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Erro ao fazer logout:", error);
-        toast.error("Erro ao fazer logout: " + error.message);
-        throw error;
       }
       
       toast.success("Logout realizado com sucesso!");
