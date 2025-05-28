@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 id: session.user.id,
                 email: session.user.email || "",
                 name: data.full_name,
-                is_admin: data.role === 'admin'
+                is_admin: data.is_admin || false
               });
             } else {
               // Criar perfil se não existir
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   id: session.user.id,
                   email: session.user.email,
                   full_name: session.user.user_metadata?.full_name || session.user.email,
-                  role: 'user'
+                  is_admin: false
                 });
 
               if (!insertError) {
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 id: session.user.id,
                 email: session.user.email || "",
                 name: data.full_name,
-                is_admin: data.role === 'admin'
+                is_admin: data.is_admin || false
               });
             }
           } catch (error) {

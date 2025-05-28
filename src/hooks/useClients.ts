@@ -12,6 +12,7 @@ export interface Client {
   segment?: string;
   status: string;
   notes?: string;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -56,7 +57,7 @@ export const useClients = () => {
     fetchClients();
   }, [fetchClients]);
 
-  const createClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
+  const createClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     try {
       if (!currentUser) {
         throw new Error('Usuário não autenticado');
@@ -64,7 +65,7 @@ export const useClients = () => {
 
       const { data, error } = await supabase
         .from('clients')
-        .insert([{
+        .insert({
           name: clientData.name,
           email: clientData.email,
           phone: clientData.phone,
@@ -72,7 +73,7 @@ export const useClients = () => {
           status: clientData.status,
           notes: clientData.notes,
           user_id: currentUser.id
-        }])
+        })
         .select()
         .single();
 
