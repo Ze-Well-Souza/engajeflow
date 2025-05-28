@@ -9,10 +9,11 @@ export interface Client {
   name: string;
   email?: string;
   phone?: string;
-  segment?: string;
+  document?: string;
+  type: string;
+  address?: string;
   status: string;
-  notes?: string;
-  user_id: string;
+  plan_id?: number;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +37,6 @@ export const useClients = () => {
       const { data, error: fetchError } = await supabase
         .from('clients')
         .select('*')
-        .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -57,7 +57,7 @@ export const useClients = () => {
     fetchClients();
   }, [fetchClients]);
 
-  const createClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+  const createClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       if (!currentUser) {
         throw new Error('Usuário não autenticado');
@@ -69,10 +69,11 @@ export const useClients = () => {
           name: clientData.name,
           email: clientData.email,
           phone: clientData.phone,
-          segment: clientData.segment,
+          document: clientData.document,
+          type: clientData.type,
+          address: clientData.address,
           status: clientData.status,
-          notes: clientData.notes,
-          user_id: currentUser.id
+          plan_id: clientData.plan_id
         })
         .select()
         .single();
@@ -97,7 +98,6 @@ export const useClients = () => {
         .from('clients')
         .update(updates)
         .eq('id', clientId)
-        .eq('user_id', currentUser?.id)
         .select()
         .single();
 
@@ -120,8 +120,7 @@ export const useClients = () => {
       const { error } = await supabase
         .from('clients')
         .delete()
-        .eq('id', clientId)
-        .eq('user_id', currentUser?.id);
+        .eq('id', clientId);
 
       if (error) {
         throw new Error(error.message);
