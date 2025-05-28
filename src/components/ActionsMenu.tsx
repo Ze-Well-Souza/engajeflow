@@ -1,20 +1,20 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Copy, Trash, Play, Pause } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Edit, Copy, Trash2, Power, PowerOff } from 'lucide-react';
 
 interface ActionsMenuProps {
-  onEdit?: () => void;
-  onDuplicate?: () => void;
-  onDelete?: () => void;
-  onToggleActive?: () => void;
-  isActive?: boolean;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onToggleActive: () => void;
+  isActive: boolean;
 }
 
 const ActionsMenu: React.FC<ActionsMenuProps> = ({
@@ -22,34 +22,40 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
   onDuplicate,
   onDelete,
   onToggleActive,
-  isActive = true,
+  isActive
 }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreVertical className="h-4 w-4" />
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={onEdit} className="flex items-center cursor-pointer">
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onEdit}>
           <Edit className="mr-2 h-4 w-4" />
-          <span>Editar</span>
+          Editar
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onDuplicate} className="flex items-center cursor-pointer">
+        <DropdownMenuItem onClick={onDuplicate}>
           <Copy className="mr-2 h-4 w-4" />
-          <span>Duplicar</span>
+          Duplicar
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onToggleActive} className="flex items-center cursor-pointer">
-          {isActive ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
-          <span>{isActive ? "Pausar" : "Ativar"}</span>
+        <DropdownMenuItem onClick={onToggleActive}>
+          {isActive ? (
+            <>
+              <PowerOff className="mr-2 h-4 w-4" />
+              Desativar
+            </>
+          ) : (
+            <>
+              <Power className="mr-2 h-4 w-4" />
+              Ativar
+            </>
+          )}
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={onDelete}
-          className="flex items-center cursor-pointer text-destructive focus:text-destructive"
-        >
-          <Trash className="mr-2 h-4 w-4" />
-          <span>Excluir</span>
+        <DropdownMenuItem onClick={onDelete} className="text-destructive">
+          <Trash2 className="mr-2 h-4 w-4" />
+          Excluir
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

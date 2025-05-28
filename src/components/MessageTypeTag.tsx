@@ -1,50 +1,39 @@
 
-import React from "react";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Badge } from '@/components/ui/badge';
 
-interface MessageTypeProps {
-  type:
-    | "boas-vindas"
-    | "promocao"
-    | "confirmacao"
-    | "agradecimento"
-    | "notificacao"
-    | "instrucoes"
-    | "personalizada";
-  className?: string;
+interface MessageTypeTagProps {
+  type: string;
 }
 
-const typeColors = {
-  "boas-vindas": "bg-message-type-welcome text-white",
-  "promocao": "bg-message-type-promotion text-white",
-  "confirmacao": "bg-message-type-confirmation text-white",
-  "agradecimento": "bg-message-type-thanks text-white",
-  "notificacao": "bg-message-type-notification text-white",
-  "instrucoes": "bg-message-type-instructions text-white",
-  "personalizada": "bg-message-type-personalized text-white",
-};
+const MessageTypeTag: React.FC<MessageTypeTagProps> = ({ type }) => {
+  const getTypeConfig = (type: string) => {
+    switch (type) {
+      case 'boas-vindas':
+        return { variant: 'default', label: 'Boas-vindas' };
+      case 'promocao':
+        return { variant: 'destructive', label: 'Promoção' };
+      case 'confirmacao':
+        return { variant: 'outline', label: 'Confirmação' };
+      case 'agradecimento':
+        return { variant: 'secondary', label: 'Agradecimento' };
+      case 'notificacao':
+        return { variant: 'outline', label: 'Notificação' };
+      case 'instrucoes':
+        return { variant: 'default', label: 'Instruções' };
+      case 'personalizada':
+        return { variant: 'outline', label: 'Personalizada' };
+      default:
+        return { variant: 'secondary', label: type };
+    }
+  };
 
-const typeNames = {
-  "boas-vindas": "Boas-vindas",
-  "promocao": "Promoção",
-  "confirmacao": "Confirmação",
-  "agradecimento": "Agradecimento",
-  "notificacao": "Notificação",
-  "instrucoes": "Instruções",
-  "personalizada": "Personalizada",
-};
+  const config = getTypeConfig(type);
 
-const MessageTypeTag: React.FC<MessageTypeProps> = ({ type, className }) => {
   return (
-    <div
-      className={cn(
-        "px-3 py-1 rounded-md text-xs font-medium inline-block",
-        typeColors[type],
-        className
-      )}
-    >
-      {typeNames[type]}
-    </div>
+    <Badge variant={config.variant as any}>
+      {config.label}
+    </Badge>
   );
 };
 

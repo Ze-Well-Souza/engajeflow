@@ -1,270 +1,171 @@
 
-import React, { useState, useEffect } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle, 
-  CardFooter 
-} from "@/components/ui/card";
-import { 
-  ThumbsUp, 
-  ThumbsDown, 
-  MessageSquare, 
-  AlertCircle, 
-  TrendingUp, 
-  PieChart 
-} from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Brain, Target, Users, TrendingUp } from 'lucide-react';
 
 interface AdvancedSentimentAnalysisProps {
   text: string;
 }
 
-interface SentimentResult {
-  sentiment: "positive" | "negative" | "neutral";
-  score: number;
-  confidence: number;
-  keywords: {
-    word: string;
-    sentiment: "positive" | "negative" | "neutral";
-    strength: number;
-  }[];
-  suggestions: string[];
-}
-
 const AdvancedSentimentAnalysis: React.FC<AdvancedSentimentAnalysisProps> = ({ text }) => {
-  const [result, setResult] = useState<SentimentResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  
+  const [analysis, setAnalysis] = useState<any>(null);
+
   useEffect(() => {
-    analyzeSentiment(text);
+    if (text) {
+      // Simulação de análise avançada
+      const mockAnalysis = {
+        sentiment: {
+          overall: Math.random() > 0.5 ? 'positivo' : 'neutro',
+          score: Math.random() * 2 - 1,
+          confidence: 0.8 + Math.random() * 0.2
+        },
+        audience: {
+          targetAge: ['18-24', '25-34', '35-44'][Math.floor(Math.random() * 3)],
+          interests: ['tecnologia', 'lifestyle', 'negócios'],
+          engagement: Math.random() * 100
+        },
+        recommendations: [
+          'Adicione mais emojis para aumentar o engajamento',
+          'Considere hashtags relacionadas a trending topics',
+          'O horário ideal para publicação é entre 19h-21h'
+        ],
+        keywords: ['inovação', 'qualidade', 'exclusivo', 'tecnologia'],
+        toxicity: Math.random() * 0.1,
+        readability: 0.7 + Math.random() * 0.3
+      };
+      setAnalysis(mockAnalysis);
+    }
   }, [text]);
-  
-  // Em uma implementação real, isso seria uma chamada a uma API de IA
-  const analyzeSentiment = (text: string) => {
-    setLoading(true);
-    
-    // Simulando resposta da API
-    setTimeout(() => {
-      const words = text.toLowerCase().split(/\s+/);
-      
-      const positiveWords = ['bom', 'ótimo', 'excelente', 'perfeito', 'adorei', 'gostei', 'satisfeito', 'feliz', 'contente'];
-      const negativeWords = ['ruim', 'péssimo', 'horrível', 'detestei', 'insatisfeito', 'problema', 'terrível', 'decepcionado'];
-      
-      let positiveCount = 0;
-      let negativeCount = 0;
-      
-      const keywordAnalysis = words.map(word => {
-        const isPositive = positiveWords.some(pw => word.includes(pw));
-        const isNegative = negativeWords.some(nw => word.includes(nw));
-        
-        if (isPositive) positiveCount++;
-        if (isNegative) negativeCount++;
-        
-        if (isPositive) {
-          return {
-            word,
-            sentiment: "positive" as const,
-            strength: Math.random() * 0.5 + 0.5
-          };
-        } else if (isNegative) {
-          return {
-            word,
-            sentiment: "negative" as const,
-            strength: Math.random() * 0.5 + 0.5
-          };
-        }
-        return null;
-      }).filter(Boolean);
-      
-      const totalWords = words.length;
-      const positiveRatio = positiveCount / totalWords;
-      const negativeRatio = negativeCount / totalWords;
-      
-      let sentiment: "positive" | "negative" | "neutral";
-      let score: number;
-      
-      if (positiveRatio > negativeRatio && positiveRatio > 0.05) {
-        sentiment = "positive";
-        score = 0.5 + positiveRatio * 0.5;
-      } else if (negativeRatio > positiveRatio && negativeRatio > 0.05) {
-        sentiment = "negative";
-        score = 0.5 + negativeRatio * 0.5;
-      } else {
-        sentiment = "neutral";
-        score = 0.5;
-      }
-      
-      // Gerar sugestões baseadas no sentimento
-      const suggestions = [];
-      if (sentiment === "negative") {
-        suggestions.push(
-          "Responda à mensagem o mais rápido possível para reverter a experiência negativa",
-          "Ofereça uma solução concreta para o problema relatado",
-          "Considere uma compensação ou desconto como gesto de boa vontade"
-        );
-      } else if (sentiment === "positive") {
-        suggestions.push(
-          "Agradeça ao cliente pelo feedback positivo",
-          "Convide o cliente para um programa de fidelidade",
-          "Solicite que compartilhe sua experiência positiva"
-        );
-      } else {
-        suggestions.push(
-          "Solicite mais informações para entender melhor o cliente",
-          "Ofereça informações adicionais sobre produtos ou serviços",
-          "Siga com uma pesquisa de satisfação para engajar o cliente"
-        );
-      }
-      
-      setResult({
-        sentiment,
-        score,
-        confidence: 0.7 + Math.random() * 0.25,
-        keywords: keywordAnalysis,
-        suggestions
-      });
-      
-      setLoading(false);
-    }, 600);
-  };
-  
-  if (loading) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Analisando sentimento</CardTitle>
-          <CardDescription>Processando texto com IA avançada</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Progress value={45} className="w-full" />
-          <p className="text-sm text-muted-foreground">Analisando contexto e sentimentos...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  if (!result) return null;
-  
+
+  if (!analysis) return null;
+
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between mb-1">
-          <CardTitle className="text-xl flex items-center gap-2">
-            {result.sentiment === "positive" ? (
-              <ThumbsUp className="h-5 w-5 text-green-500" />
-            ) : result.sentiment === "negative" ? (
-              <ThumbsDown className="h-5 w-5 text-red-500" />
-            ) : (
-              <MessageSquare className="h-5 w-5 text-blue-500" />
-            )}
-            Análise Avançada de Sentimento
-          </CardTitle>
-          <div className="text-sm font-medium px-2 py-1 rounded-full bg-secondary">
-            {Math.round(result.confidence * 100)}% confiança
-          </div>
-        </div>
-        <CardDescription>
-          {result.sentiment === "positive" 
-            ? "Sentimento positivo detectado" 
-            : result.sentiment === "negative" 
-              ? "Sentimento negativo detectado" 
-              : "Sentimento neutro"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="text-lg font-semibold mb-2 flex justify-between items-center">
-          <div>
-            Pontuação: {Math.round(result.score * 100)}/100
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowDetails(!showDetails)}
-            >
-              {showDetails ? "Ocultar detalhes" : "Ver detalhes"}
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-8 w-8"
-            >
-              <PieChart className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-          <div className={`p-2 rounded ${result.sentiment === "positive" ? "bg-green-500/20" : "bg-muted"}`}>
-            <ThumbsUp className="h-4 w-4 mx-auto mb-1" />
-            <span className="text-xs font-medium">Positivo</span>
-          </div>
-          <div className={`p-2 rounded ${result.sentiment === "neutral" ? "bg-blue-500/20" : "bg-muted"}`}>
-            <MessageSquare className="h-4 w-4 mx-auto mb-1" />
-            <span className="text-xs font-medium">Neutro</span>
-          </div>
-          <div className={`p-2 rounded ${result.sentiment === "negative" ? "bg-red-500/20" : "bg-muted"}`}>
-            <ThumbsDown className="h-4 w-4 mx-auto mb-1" />
-            <span className="text-xs font-medium">Negativo</span>
-          </div>
-        </div>
-        
-        {showDetails && (
-          <div className="mt-4 space-y-4">
-            <div>
-              <h4 className="font-medium text-sm mb-2">Palavras-chave encontradas</h4>
-              <div className="flex flex-wrap gap-2">
-                {result.keywords.map((keyword, i) => (
-                  <div 
-                    key={i} 
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      keyword.sentiment === "positive" 
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
-                        : keyword.sentiment === "negative"
-                          ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                          : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                    }`}
-                  >
-                    {keyword.word} ({Math.round(keyword.strength * 100)}%)
-                  </div>
-                ))}
-                {result.keywords.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Nenhuma palavra-chave relevante encontrada</p>
-                )}
+    <Tabs defaultValue="sentiment" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
+        <TabsTrigger value="audience">Audiência</TabsTrigger>
+        <TabsTrigger value="recommendations">Sugestões</TabsTrigger>
+        <TabsTrigger value="metrics">Métricas</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="sentiment" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              Análise de Sentimento Avançada
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Sentimento Geral</label>
+                <Badge className="mt-1">{analysis.sentiment.overall}</Badge>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Confiança</label>
+                <div className="mt-1">
+                  <Progress value={analysis.sentiment.confidence * 100} />
+                </div>
               </div>
             </div>
             
             <div>
-              <h4 className="font-medium text-sm mb-2">Trecho analisado</h4>
-              <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
-                <p className="line-clamp-2">"{text}"</p>
+              <label className="text-sm font-medium mb-2 block">Palavras-chave Detectadas</label>
+              <div className="flex flex-wrap gap-2">
+                {analysis.keywords.map((keyword: string, index: number) => (
+                  <Badge key={index} variant="outline">{keyword}</Badge>
+                ))}
               </div>
             </div>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="border-t pt-4">
-        <div className="w-full">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-1">
-            <AlertCircle className="h-4 w-4 text-primary" />
-            Ações recomendadas
-          </h4>
-          <ul className="text-sm space-y-1">
-            {result.suggestions.map((suggestion, i) => (
-              <li key={i} className="flex items-start gap-1.5">
-                <div className="min-w-4 h-4 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center mt-0.5">{i+1}</div>
-                <span>{suggestion}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </CardFooter>
-    </Card>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="audience" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Análise de Audiência
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Faixa Etária Alvo</label>
+                <p className="mt-1 font-semibold">{analysis.audience.targetAge} anos</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Potencial de Engajamento</label>
+                <div className="mt-1">
+                  <Progress value={analysis.audience.engagement} />
+                  <span className="text-sm text-muted-foreground">{Math.round(analysis.audience.engagement)}%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Interesses da Audiência</label>
+              <div className="flex flex-wrap gap-2">
+                {analysis.audience.interests.map((interest: string, index: number) => (
+                  <Badge key={index} variant="secondary">{interest}</Badge>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="recommendations" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Recomendações IA
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {analysis.recommendations.map((rec: string, index: number) => (
+                <li key={index} className="flex items-start gap-2">
+                  <TrendingUp className="h-4 w-4 mt-0.5 text-primary" />
+                  <span className="text-sm">{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="metrics" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Métricas de Qualidade</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm">Legibilidade</span>
+                <span className="text-sm">{Math.round(analysis.readability * 100)}%</span>
+              </div>
+              <Progress value={analysis.readability * 100} />
+            </div>
+            
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm">Toxicidade</span>
+                <span className="text-sm">{Math.round(analysis.toxicity * 100)}%</span>
+              </div>
+              <Progress value={analysis.toxicity * 100} className="bg-red-100" />
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 };
 

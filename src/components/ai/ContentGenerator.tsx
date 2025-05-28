@@ -1,323 +1,226 @@
 
-import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Wand, Copy, CheckCircle, RefreshCcw, MessageSquare, Hash, FileText } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useAiContentGenerator } from "@/hooks/useAiContentGenerator";
-
-type ContentType = "caption" | "hashtags" | "description";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Wand2, Copy, Check } from 'lucide-react';
+import { useAiContentGenerator } from '@/hooks/useAiContentGenerator';
+import { toast } from 'sonner';
 
 interface ContentGeneratorProps {
   defaultProduct?: {
     name: string;
     description?: string;
   };
-  onContentSelected?: (content: string, type: ContentType) => void;
+  onContentSelected?: (content: string, type: string) => void;
 }
 
-const ContentGenerator: React.FC<ContentGeneratorProps> = ({
-  defaultProduct,
-  onContentSelected,
+const ContentGenerator: React.FC<ContentGeneratorProps> = ({ 
+  defaultProduct, 
+  onContentSelected 
 }) => {
-  const [activeTab, setActiveTab] = useState<ContentType>("caption");
-  const [productName, setProductName] = useState(defaultProduct?.name || "");
-  const [productDescription, setProductDescription] = useState(defaultProduct?.description || "");
-  const [copied, setCopied] = useState<ContentType | null>(null);
-  
-  const { toast } = useToast();
+  const [productName, setProductName] = useState(defaultProduct?.name || '');
+  const [productDescription, setProductDescription] = useState(defaultProduct?.description || '');
+  const [platform, setPlatform] = useState('instagram');
+  const [generatedContent, setGeneratedContent] = useState<any>(null);
+  const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
+
   const { generateContent, isGenerating, progress } = useAiContentGenerator();
-  const [generatedContent, setGeneratedContent] = useState<{
-    caption?: string;
-    hashtags?: string[];
-    description?: string;
-  }>({});
-  
+
   const handleGenerate = async () => {
     if (!productName.trim()) {
-      toast({
-        title: "Nome do produto obrigatório",
-        description: "Por favor, insira o nome do produto para gerar conteúdo.",
-        variant: "destructive",
-      });
+      toast.error('Por favor, insira o nome do produto');
       return;
     }
-    
+
     const content = await generateContent(
       productName,
       productDescription,
       undefined,
-      [activeTab]
+      ['caption', 'hashtags', 'description']
     );
-    
+
     if (content) {
-      setGeneratedContent((prev) => ({ ...prev, ...content }));
+      setGeneratedContent(content);
     }
   };
-  
-  const handleCopy = (text: string, type: ContentType) => {
-    navigator.clipboard.writeText(text);
-    setCopied(type);
-    toast({
-      title: "Copiado!",
-      description: "Conteúdo copiado para a área de transferência.",
-    });
-    
-    setTimeout(() => {
-      setCopied(null);
-    }, 2000);
-  };
-  
-  const handleSelect = (text: string, type: ContentType) => {
-    if (onContentSelected) {
-      onContentSelected(text, type);
-      toast({
-        title: "Conteúdo selecionado",
-        description: "O conteúdo foi aplicado com sucesso.",
-      });
-    }
-  };
-  
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Wand className="h-5 w-5 text-primary" />
-          Gerador de Conteúdo com IA
-        </CardTitle>
-        <CardDescription>
-          Crie legendas, hashtags e descrições profissionais para seus produtos
-        </CardDescription>
-      </CardHeader>
+
+  const handleCopy = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedItems(prev => new Set([...prev, type]));
+      toast.success(`${type} copiado para a área de transferência`);
       
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="product-name" className="text-sm font-medium">
-            Nome do Produto
-          </label>
-          <Input
-            id="product-name"
-            placeholder="Ex: Smartphone Galaxy S22"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <label htmlFor="product-description" className="text-sm font-medium">
-            Descrição (opcional)
-          </label>
-          <Textarea
-            id="product-description"
-            placeholder="Adicione mais detalhes sobre o produto..."
-            value={productDescription}
-            onChange={(e) => setProductDescription(e.target.value)}
-            rows={3}
-          />
-        </div>
-        
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ContentType)}>
-          <TabsList className="grid grid-cols-3">
-            <TabsTrigger value="caption" className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4" />
-              Legendas
-            </TabsTrigger>
-            <TabsTrigger value="hashtags" className="flex items-center gap-1">
-              <Hash className="h-4 w-4" />
-              Hashtags
-            </TabsTrigger>
-            <TabsTrigger value="description" className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
-              Descrição
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="caption" className="mt-4 space-y-4">
-            {generatedContent.caption ? (
-              <div className="bg-muted p-3 rounded-md">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-sm font-medium">Legenda gerada</h3>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleCopy(generatedContent.caption!, "caption")}
-                    >
-                      {copied === "caption" ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {onContentSelected && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 px-2 text-xs"
-                        onClick={() => handleSelect(generatedContent.caption!, "caption")}
-                      >
-                        Usar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm">{generatedContent.caption}</p>
-              </div>
-            ) : isGenerating ? (
-              <div className="space-y-2">
-                <Progress value={progress} className="w-full" />
-                <p className="text-xs text-muted-foreground text-center">
-                  Gerando legenda perfeita...
-                </p>
-              </div>
+      setTimeout(() => {
+        setCopiedItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(type);
+          return newSet;
+        });
+      }, 2000);
+
+      if (onContentSelected) {
+        onContentSelected(text, type);
+      }
+    } catch (error) {
+      toast.error('Erro ao copiar para a área de transferência');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wand2 className="h-5 w-5" />
+            Gerador de Conteúdo com IA
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Nome do Produto/Serviço</label>
+              <Input
+                placeholder="Ex: Smartphone XYZ Pro"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Plataforma</label>
+              <Select value={platform} onValueChange={setPlatform}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="facebook">Facebook</SelectItem>
+                  <SelectItem value="youtube">YouTube</SelectItem>
+                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Descrição (Opcional)</label>
+            <Textarea
+              placeholder="Descreva características principais, benefícios, público-alvo..."
+              value={productDescription}
+              onChange={(e) => setProductDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <Button 
+            onClick={handleGenerate} 
+            disabled={isGenerating || !productName.trim()}
+            className="w-full"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Gerando... {Math.round(progress)}%
+              </>
             ) : (
-              <div className="text-center py-6">
-                <p className="text-sm text-muted-foreground">
-                  Clique em "Gerar Conteúdo" para criar uma legenda com IA
-                </p>
-              </div>
+              <>
+                <Wand2 className="mr-2 h-4 w-4" />
+                Gerar Conteúdo
+              </>
             )}
-          </TabsContent>
-          
-          <TabsContent value="hashtags" className="mt-4 space-y-4">
-            {generatedContent.hashtags?.length ? (
-              <div className="bg-muted p-3 rounded-md">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-sm font-medium">Hashtags geradas</h3>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleCopy(generatedContent.hashtags!.join(" "), "hashtags")}
-                    >
-                      {copied === "hashtags" ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {onContentSelected && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 px-2 text-xs"
-                        onClick={() => handleSelect(generatedContent.hashtags!.join(" "), "hashtags")}
-                      >
-                        Usar
-                      </Button>
-                    )}
-                  </div>
+          </Button>
+        </CardContent>
+      </Card>
+
+      {generatedContent && (
+        <div className="space-y-4">
+          {generatedContent.caption && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Legenda Gerada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted/50 p-4 rounded-md mb-3">
+                  <p className="whitespace-pre-wrap">{generatedContent.caption}</p>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {generatedContent.hashtags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="text-sm bg-primary/10 text-primary px-2 py-0.5 rounded-full"
-                    >
-                      {tag}
-                    </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopy(generatedContent.caption, 'Legenda')}
+                  className="flex items-center gap-2"
+                >
+                  {copiedItems.has('Legenda') ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copiedItems.has('Legenda') ? 'Copiado!' : 'Copiar Legenda'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {generatedContent.hashtags && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Hashtags Sugeridas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {generatedContent.hashtags.map((hashtag: string, index: number) => (
+                    <Badge key={index} variant="secondary">
+                      {hashtag}
+                    </Badge>
                   ))}
                 </div>
-              </div>
-            ) : isGenerating ? (
-              <div className="space-y-2">
-                <Progress value={progress} className="w-full" />
-                <p className="text-xs text-muted-foreground text-center">
-                  Gerando hashtags relevantes...
-                </p>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-sm text-muted-foreground">
-                  Clique em "Gerar Conteúdo" para criar hashtags com IA
-                </p>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="description" className="mt-4 space-y-4">
-            {generatedContent.description ? (
-              <div className="bg-muted p-3 rounded-md">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-sm font-medium">Descrição gerada</h3>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleCopy(generatedContent.description!, "description")}
-                    >
-                      {copied === "description" ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {onContentSelected && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 px-2 text-xs"
-                        onClick={() => handleSelect(generatedContent.description!, "description")}
-                      >
-                        Usar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm">{generatedContent.description}</p>
-              </div>
-            ) : isGenerating ? (
-              <div className="space-y-2">
-                <Progress value={progress} className="w-full" />
-                <p className="text-xs text-muted-foreground text-center">
-                  Gerando descrição completa...
-                </p>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-sm text-muted-foreground">
-                  Clique em "Gerar Conteúdo" para criar uma descrição com IA
-                </p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-      
-      <CardFooter>
-        <Button
-          onClick={handleGenerate}
-          disabled={isGenerating || !productName.trim()}
-          className="w-full flex items-center gap-1"
-        >
-          {isGenerating ? (
-            <>
-              <RefreshCcw className="h-4 w-4 animate-spin" />
-              Gerando...
-            </>
-          ) : (
-            <>
-              <Wand className="h-4 w-4" />
-              Gerar Conteúdo
-            </>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopy(generatedContent.hashtags.join(' '), 'Hashtags')}
+                  className="flex items-center gap-2"
+                >
+                  {copiedItems.has('Hashtags') ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copiedItems.has('Hashtags') ? 'Copiado!' : 'Copiar Hashtags'}
+                </Button>
+              </CardContent>
+            </Card>
           )}
-        </Button>
-      </CardFooter>
-    </Card>
+
+          {generatedContent.description && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Descrição do Produto</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted/50 p-4 rounded-md mb-3">
+                  <p>{generatedContent.description}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopy(generatedContent.description, 'Descrição')}
+                  className="flex items-center gap-2"
+                >
+                  {copiedItems.has('Descrição') ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copiedItems.has('Descrição') ? 'Copiado!' : 'Copiar Descrição'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
