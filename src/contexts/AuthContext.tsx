@@ -5,10 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, AuthContextType } from "@/types/auth";
 import { toast } from "sonner";
 
-// Criar o contexto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook para uso do contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -21,42 +19,22 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Provider do contexto de autenticação
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  
-  // Modo de demonstração ativado
-  const [demoMode] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log('[AuthContext] Inicializando...');
+    console.log('[AuthContext] Inicializando autenticação real...');
     
-    // Se o modo de demonstração estiver ativado, criamos um usuário fictício
-    if (demoMode) {
-      const mockUser: UserProfile = {
-        id: "demo-user-id",
-        email: "demo@example.com",
-        name: "Usuário Demonstração",
-        is_admin: true
-      };
-      
-      setCurrentUser(mockUser);
-      setLoading(false);
-      console.log('[AuthContext] Modo demo ativado');
-      return;
-    }
-    
-    // Configurar o listener de mudança de estado (apenas quando não estiver em modo demo)
+    // Configurar o listener de mudança de estado
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('[AuthContext] Auth state change:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Se o usuário estiver logado, carregamos o perfil
         if (session?.user) {
           try {
             const { data } = await supabase
@@ -70,13 +48,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 id: session.user.id,
                 email: session.user.email || "",
                 name: data.full_name,
-                is_admin: data.is_admin || false
+                is_admin: data.role === 'admin'
               });
             } else {
-              setCurrentUser({
-                id: session.user.id,
-                email: session.user.email || ""
-              });
+              // Criar perfil se não existir
+              const { error: insertError } = await supabase
+                .from("profiles")
+                .insert({
+                  id: session.user.id,
+                  email: session.user.email,
+                  full_name: session.user.user_metadata?.full_name || session.user.email,
+                  role: 'user'
+                });
+
+              if (!insertError) {
+                setCurrentUser({
+                  id: session.user.id,
+                  email: session.user.email || "",
+                  name: session.user.user_metadata?.full_name || session.user.email,
+                  is_admin: false
+                });
+              }
             }
           } catch (error) {
             console.error("Erro ao carregar perfil:", error);
@@ -96,7 +88,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Se o usuário estiver logado, carregamos o perfil
         if (session?.user) {
           try {
             const { data } = await supabase
@@ -110,12 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 id: session.user.id,
                 email: session.user.email || "",
                 name: data.full_name,
-                is_admin: data.is_admin || false
-              });
-            } else {
-              setCurrentUser({
-                id: session.user.id,
-                email: session.user.email || ""
+                is_admin: data.role === 'admin'
               });
             }
           } catch (error) {
@@ -129,29 +115,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    if (!demoMode) {
-      initializeAuth();
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
-  }, [demoMode]);
+    initializeAuth();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
-    // No modo de demonstração, simulamos um login bem-sucedido
-    if (demoMode) {
-      const mockUser: UserProfile = {
-        id: "demo-user-id",
-        email: email || "demo@example.com",
-        name: "Usuário Demonstração",
-        is_admin: true
-      };
-      
-      setCurrentUser(mockUser);
-      toast.success("Login realizado com sucesso no modo de demonstração!");
-      return;
-    }
-    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -172,13 +142,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async (): Promise<void> => {
-    // No modo de demonstração, simulamos um logout
-    if (demoMode) {
-      // Não removemos o usuário no modo demo para manter a navegação
-      toast.success("Logout simulado no modo de demonstração!");
-      return;
-    }
-    
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -196,12 +159,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (email: string, password: string, name: string): Promise<void> => {
-    // No modo de demonstração, simulamos um registro bem-sucedido
-    if (demoMode) {
-      toast.success("Conta criada com sucesso no modo de demonstração!");
-      return;
-    }
-    
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -228,12 +185,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const resetPassword = async (email: string): Promise<void> => {
-    // No modo de demonstração, simulamos uma redefinição de senha
-    if (demoMode) {
-      toast.success("Email de redefinição de senha enviado no modo de demonstração!");
-      return;
-    }
-    
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/reset-password',
@@ -251,22 +202,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updatePassword = async (newPassword: string, token?: string): Promise<void> => {
-    // No modo de demonstração, simulamos uma atualização de senha
-    if (demoMode) {
-      toast.success("Senha atualizada com sucesso no modo de demonstração!");
-      return;
-    }
-    
     try {
-      // Se um token for fornecido, usamos para definir a senha após redefinição
-      if (token) {
-        // Esta função não existe diretamente na API do Supabase - ajustamos para usar o fluxo correto
-        console.error("Fluxo de redefinição via token precisa ser implementado com as funções apropriadas");
-        toast.error("Função não implementada");
-        return;
-      }
-      
-      // Atualizar senha quando o usuário já está logado
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -284,7 +220,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Valor do contexto
   const value: AuthContextType = {
     currentUser,
     session,
