@@ -263,6 +263,23 @@
   .animate-slide-in {
     animation: slideIn 0.3s ease-out forwards;
   }
+
+  /* Novas animações espaciais */
+  .animate-shooting-star {
+    animation: shootingStar 3s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+
+  .animate-spin-reverse {
+    animation: spin 15s linear infinite reverse;
+  }
   
   /* Adapta elementos para dispositivos móveis */
   .responsive-padding {
@@ -282,6 +299,38 @@
 @keyframes slideIn {
   from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(-100px) translateY(-100px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 100px)) translateY(100px);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-40px) translateX(-10px) rotate(180deg);
+  }
+  75% {
+    transform: translateY(-20px) translateX(-15px) rotate(270deg);
+  }
 }
 
 /* Melhorias para acessibilidade */
