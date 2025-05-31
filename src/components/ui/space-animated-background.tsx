@@ -62,7 +62,7 @@ const SpaceAnimatedBackground: React.FC = () => {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={`shooting-${i}`}
-            className="absolute h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent animate-shooting-star"
+            className="absolute h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent animate-shooting-star"
             style={{
               left: `-150px`,
               top: `${Math.random() * 100}%`,
@@ -80,17 +80,17 @@ const SpaceAnimatedBackground: React.FC = () => {
         <div 
           className="absolute inset-0 opacity-20"
           style={{
-            background: `radial-gradient(circle at 20% 20%, rgba(139, 69, 194, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 60%, rgba(236, 72, 153, 0.2) 0%, transparent 50%)`
+            background: `radial-gradient(circle at 20% 20%, rgba(234, 88, 12, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(249, 115, 22, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(251, 146, 60, 0.2) 0%, transparent 50%)`
           }}
         />
       </div>
 
       {/* Planet rings */}
       <div className="absolute top-20 right-20 w-32 h-32 opacity-30">
-        <div className="w-full h-full border-2 border-purple-500/40 rounded-full animate-spin-slow"></div>
-        <div className="absolute top-2 left-2 w-28 h-28 border border-blue-500/40 rounded-full animate-spin-reverse"></div>
+        <div className="w-full h-full border-2 border-orange-500/40 rounded-full animate-spin-slow"></div>
+        <div className="absolute top-2 left-2 w-28 h-28 border border-orange-600/40 rounded-full animate-spin-reverse"></div>
       </div>
     </div>
   );

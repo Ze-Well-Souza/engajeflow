@@ -60,27 +60,27 @@ const InitialPage: React.FC = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
       <SpaceAnimatedBackground />
       
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header with Auth Buttons */}
         <header className="flex justify-between items-center p-6">
           <div className="flex items-center gap-2">
-            <Rocket className="h-8 w-8 text-purple-400" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <Rocket className="h-8 w-8 text-orange-500" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent">
               Engajeflow
             </h1>
           </div>
           
           <div className="flex gap-4">
             <Link to="/auth/login">
-              <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400/10">
+              <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500/10">
                 Entrar
               </Button>
             </Link>
             <Link to="/auth/register">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
                 Cadastrar
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -93,12 +93,12 @@ const InitialPage: React.FC = () => {
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Hero Section */}
             <div className="space-y-6">
-              <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-500/30 px-4 py-1">
+              <Badge variant="secondary" className="bg-orange-600/20 text-orange-300 border-orange-500/30 px-4 py-1">
                 <Zap className="mr-2 h-4 w-4" />
                 Powered by AI
               </Badge>
               
-              <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent leading-tight">
+              <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent leading-tight">
                 Automação que
                 <br />
                 <span className="text-white">Gera Resultados</span>
@@ -113,15 +113,15 @@ const InitialPage: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-400">+245%</div>
+                <div className="text-3xl font-bold text-orange-400">+245%</div>
                 <div className="text-gray-400">Engajamento</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-400">12.5K</div>
+                <div className="text-3xl font-bold text-orange-500">12.5K</div>
                 <div className="text-gray-400">Leads Gerados</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-400">89%</div>
+                <div className="text-3xl font-bold text-orange-600">89%</div>
                 <div className="text-gray-400">Mais Conversões</div>
               </div>
             </div>
@@ -129,7 +129,7 @@ const InitialPage: React.FC = () => {
             {/* CTA */}
             <div className="space-y-4">
               <Link to="/auth/register">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg">
+                <Button size="lg" className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-8 py-4 text-lg">
                   <Rocket className="mr-2 h-5 w-5" />
                   Começar Agora Grátis
                 </Button>
@@ -158,14 +158,14 @@ const InitialPage: React.FC = () => {
                 <Card key={index} className="bg-gray-800/30 border-gray-700 backdrop-blur-sm hover:bg-gray-800/50 transition-all duration-300 group">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="p-2 rounded-lg bg-purple-600/20">
-                        <service.icon className="h-6 w-6 text-purple-400" />
+                      <div className="p-2 rounded-lg bg-orange-600/20">
+                        <service.icon className="h-6 w-6 text-orange-400" />
                       </div>
-                      <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-500/30">
+                      <Badge variant="secondary" className="bg-orange-600/20 text-orange-300 border-orange-500/30">
                         {service.badge}
                       </Badge>
                     </div>
-                    <h3 className="text-white font-semibold mb-2 group-hover:text-purple-400 transition-colors">
+                    <h3 className="text-white font-semibold mb-2 group-hover:text-orange-400 transition-colors">
                       {service.title}
                     </h3>
                     <p className="text-gray-300 text-sm">

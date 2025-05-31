@@ -155,6 +155,14 @@ const App = () => {
                     </DashboardLayout>
                   </ProtectedRoute>
                 } />
+
+                <Route path="/admin/config" element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <AdminConfigPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                } />
                 
                 <Route path="/admin/logs" element={
                   <ProtectedRoute>
@@ -168,6 +176,15 @@ const App = () => {
                   <ProtectedRoute>
                     <DashboardLayout>
                       <MicroservicesPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                } />
+
+                {/* WhatsApp QR Integration Route */}
+                <Route path="/whatsapp/connect" element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <WhatsAppQRConnector />
                     </DashboardLayout>
                   </ProtectedRoute>
                 } />
