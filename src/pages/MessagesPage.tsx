@@ -1,378 +1,301 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PlusCircle, Search, Filter, Plus } from "lucide-react";
-import StatusBadge from "@/components/StatusBadge";
-import MessageTypeTag from "@/components/MessageTypeTag";
-import ActionsMenu from "@/components/ActionsMenu";
-import { toast } from "sonner";
-import SentimentAnalysis from "@/components/ai/SentimentAnalysis";
-import AdvancedSentimentAnalysis from "@/components/ai/AdvancedSentimentAnalysis";
-import ContentGenerator from "@/components/ai/ContentGenerator";
-import ThemeSelector from "@/components/ThemeSelector";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CustomerServiceAutomation from "@/components/ai/CustomerServiceAutomation";
-
-// Define the message data type
-interface MessageData {
-  id: string;
-  title: string;
-  type: "boas-vindas" | "promocao" | "confirmacao" | "agradecimento" | "notificacao" | "instrucoes" | "personalizada";
-  status: "ativo" | "inativo" | "recurring";
-  scheduled: boolean;
-  createdAt: string;
-  channels: string[];
-  text?: string;
-}
-
-// Sample data
-const initialMessages: MessageData[] = [
-  {
-    id: "1",
-    title: "Mensagem de Boas-vindas",
-    type: "boas-vindas",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["whatsapp", "email"],
-    text: "Olá! Seja bem-vindo à nossa plataforma. Estamos muito felizes em ter você conosco!"
-  },
-  {
-    id: "2",
-    title: "Promoção do Dia",
-    type: "promocao",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["whatsapp", "sms", "email"],
-    text: "Aproveite nossa promoção especial! Todos os produtos com 30% de desconto hoje."
-  },
-  {
-    id: "3",
-    title: "Confirmação de Compra",
-    type: "confirmacao",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp"],
-    text: "Sua compra foi confirmada e está sendo processada. Obrigado pela preferência!"
-  },
-  {
-    id: "4",
-    title: "Agradecimento",
-    type: "agradecimento",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email"],
-    text: "Agradecemos a sua compra! Esperamos que você aproveite o produto."
-  },
-  {
-    id: "5",
-    title: "Lembrete de Produtos",
-    type: "notificacao",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["whatsapp", "sms"],
-    text: "Lembre-se dos produtos em seu carrinho! Finalize sua compra hoje mesmo."
-  },
-  {
-    id: "6",
-    title: "Instruções de Uso",
-    type: "instrucoes",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email"],
-    text: "Confira as instruções de uso do seu produto para aproveitar ao máximo."
-  },
-  {
-    id: "7",
-    title: "Mensagem de Aniversário",
-    type: "personalizada",
-    status: "recurring",
-    scheduled: true,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp"],
-    text: "Feliz aniversário! 🎉 Aproveite um desconto especial em sua próxima compra."
-  },
-  {
-    id: "8",
-    title: "Oferta Exclusiva de Eletrônicos",
-    type: "promocao",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp", "sms"],
-    text: "Oferta exclusiva! Eletrônicos com até 50% de desconto. Não perca!"
-  },
-  {
-    id: "9",
-    title: "Mensagem de Boas-vindas",
-    type: "boas-vindas",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07", 
-    channels: ["whatsapp"],
-    text: "Bem-vindo! Estamos felizes por você se juntar à nossa comunidade."
-  },
-  {
-    id: "10",
-    title: "Promoção do Dia",
-    type: "promocao",
-    status: "ativo",
-    scheduled: false,
-    createdAt: "14 de maio de 2025, 15:07",
-    channels: ["email", "whatsapp"],
-    text: "Promoção imperdível! Produtos selecionados com preços incríveis."
-  }
-];
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  MessageSquare, 
+  Send, 
+  Search, 
+  Filter,
+  MessageCircle,
+  Clock,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 
 const MessagesPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [messages, setMessages] = useState<MessageData[]>(initialMessages);
-  const [selectedMessage, setSelectedMessage] = useState<MessageData | null>(null);
-  const [activeTab, setActiveTab] = useState("messages");
-  const [analysisMode, setAnalysisMode] = useState<"basic" | "advanced">("advanced");
-  
-  const handleNewMessage = () => {
-    toast.success("Criando nova mensagem automatizada...");
-    // This would open a form to create a new message
-  };
-  
-  const handleEdit = (id: string) => {
-    const message = messages.find(msg => msg.id === id);
-    if (message) {
-      setSelectedMessage(message);
-      setActiveTab("analysis");
-      toast("Analisando mensagem: " + message.title);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [newMessage, setNewMessage] = useState('');
+
+  // Mock data para demonstração
+  const conversations = [
+    {
+      id: '1',
+      name: 'Maria Silva',
+      avatar: '/placeholder.svg',
+      lastMessage: 'Oi! Gostaria de saber mais sobre os serviços.',
+      timestamp: '10:30',
+      unread: 2,
+      status: 'online',
+      platform: 'WhatsApp'
+    },
+    {
+      id: '2',
+      name: 'João Santos',
+      avatar: '/placeholder.svg',
+      lastMessage: 'Perfeito! Quando podemos agendar?',
+      timestamp: '09:15',
+      unread: 0,
+      status: 'offline',
+      platform: 'Instagram'
+    },
+    {
+      id: '3',
+      name: 'Ana Costa',
+      avatar: '/placeholder.svg',
+      lastMessage: 'Obrigada pelo atendimento!',
+      timestamp: 'Ontem',
+      unread: 1,
+      status: 'away',
+      platform: 'Facebook'
     }
-    // This would open an edit form
-  };
-  
-  const handleDuplicate = (id: string) => {
-    toast.success("Mensagem duplicada com sucesso!");
-    const messageToDuplicate = messages.find(msg => msg.id === id);
-    if (messageToDuplicate) {
-      const newMessage = {
-        ...messageToDuplicate,
-        id: Date.now().toString(),
-        title: `${messageToDuplicate.title} (cópia)`,
-      };
-      setMessages([...messages, newMessage]);
+  ];
+
+  const messages = selectedChat ? [
+    {
+      id: '1',
+      sender: 'Maria Silva',
+      content: 'Oi! Gostaria de saber mais sobre os serviços.',
+      timestamp: '10:25',
+      isMe: false
+    },
+    {
+      id: '2',
+      sender: 'Você',
+      content: 'Olá Maria! Claro, ficarei feliz em ajudar. Sobre qual serviço você gostaria de saber?',
+      timestamp: '10:26',
+      isMe: true
+    },
+    {
+      id: '3',
+      sender: 'Maria Silva',
+      content: 'Estou interessada nos serviços de automação para Instagram.',
+      timestamp: '10:30',
+      isMe: false
+    }
+  ] : [];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online': return 'bg-green-500';
+      case 'away': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
     }
   };
-  
-  const handleDelete = (id: string) => {
-    toast.success("Mensagem excluída com sucesso!");
-    setMessages(messages.filter(message => message.id !== id));
-  };
-  
-  const handleToggleActive = (id: string) => {
-    setMessages(messages.map(message => {
-      if (message.id === id) {
-        const newStatus = message.status === "ativo" ? "inativo" : "ativo";
-        toast.success(`Mensagem ${newStatus === "ativo" ? "ativada" : "desativada"} com sucesso!`);
-        return { ...message, status: newStatus as "ativo" | "inativo" };
-      }
-      return message;
-    }));
-  };
-  
-  const handleContentSelected = (content: string, type: string) => {
-    if (selectedMessage) {
-      const updatedMessage = { ...selectedMessage, text: content };
-      setSelectedMessage(updatedMessage);
-      setMessages(prev => prev.map(msg => msg.id === selectedMessage.id ? updatedMessage : msg));
-      toast.success(`Conteúdo de ${type} aplicado à mensagem!`);
-    } else {
-      toast.error("Selecione uma mensagem primeiro");
+
+  const getPlatformColor = (platform: string) => {
+    switch (platform) {
+      case 'WhatsApp': return 'bg-green-600';
+      case 'Instagram': return 'bg-pink-600';
+      case 'Facebook': return 'bg-blue-600';
+      default: return 'bg-gray-600';
     }
   };
-  
-  const filteredMessages = messages.filter(message => 
-    message.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  const handleSendMessage = () => {
+    if (newMessage.trim()) {
+      // Aqui seria implementada a lógica para enviar a mensagem
+      console.log('Enviando mensagem:', newMessage);
+      setNewMessage('');
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="flex flex-col space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Mensagens</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Mensagens</h1>
           <p className="text-muted-foreground">
-            Gerenciamento de mensagens automatizadas do bot
+            Gerencie todas suas conversas em um só lugar
           </p>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <ThemeSelector />
-          <Button onClick={handleNewMessage} className="transition-all flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nova Mensagem</span>
-            <span className="sm:hidden">Adicionar</span>
+        <div className="flex gap-3">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+          </Button>
+          <Button size="sm">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Nova Conversa
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="messages">Mensagens</TabsTrigger>
-          <TabsTrigger value="analysis" disabled={!selectedMessage}>Análise</TabsTrigger>
-          <TabsTrigger value="generator">Gerador de Conteúdo</TabsTrigger>
-          <TabsTrigger value="automation">Automação</TabsTrigger>
-        </TabsList>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Não Lidas</CardTitle>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-xs text-muted-foreground">mensagens</p>
+          </CardContent>
+        </Card>
         
-        <TabsContent value="messages" className="space-y-6">
-          <div className="bg-card rounded-lg overflow-hidden border shadow-sm">
-            <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border gap-4">
-              <div className="relative w-full sm:w-80">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar mensagens"
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtros
-              </Button>
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Respondidas</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">hoje</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tempo Resposta</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2.5min</div>
+            <p className="text-xs text-muted-foreground">média</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Conversões</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">68%</div>
+            <p className="text-xs text-muted-foreground">taxa</p>
+          </CardContent>
+        </Card>
+      </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-xs border-b border-border">
-                    <th className="px-4 py-3 font-medium">Título</th>
-                    <th className="px-4 py-3 font-medium">Tipo</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Agendamento</th>
-                    <th className="px-4 py-3 font-medium">Criado em</th>
-                    <th className="px-4 py-3 font-medium text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMessages.map((message) => (
-                    <tr key={message.id} className="border-b border-border hover:bg-muted/40">
-                      <td className="px-4 py-3">{message.title}</td>
-                      <td className="px-4 py-3">
-                        <MessageTypeTag type={message.type} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={message.status} />
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {message.scheduled ? 'Agendado' : 'Não agendado'}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{message.createdAt}</td>
-                      <td className="px-4 py-3 text-right">
-                        <ActionsMenu 
-                          onEdit={() => handleEdit(message.id)} 
-                          onDuplicate={() => handleDuplicate(message.id)} 
-                          onDelete={() => handleDelete(message.id)} 
-                          onToggleActive={() => handleToggleActive(message.id)} 
-                          isActive={message.status === "ativo"}
-                        />
-                      </td>
-                    </tr>
+      {/* Chat Interface */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
+        {/* Conversations List */}
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Conversas
+            </CardTitle>
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar conversas..." className="pl-8" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="space-y-1 max-h-[450px] overflow-y-auto">
+              {conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`p-3 cursor-pointer hover:bg-muted/50 transition-colors ${
+                    selectedChat === conversation.id ? 'bg-muted' : ''
+                  }`}
+                  onClick={() => setSelectedChat(conversation.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={conversation.avatar} />
+                        <AvatarFallback>{conversation.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(conversation.status)}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium truncate">{conversation.name}</p>
+                        <span className="text-xs text-muted-foreground">{conversation.timestamp}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground truncate">{conversation.lastMessage}</p>
+                        <div className="flex items-center gap-1">
+                          <Badge className={`text-xs px-1 py-0 ${getPlatformColor(conversation.platform)}`}>
+                            {conversation.platform}
+                          </Badge>
+                          {conversation.unread > 0 && (
+                            <Badge variant="destructive" className="text-xs px-1 py-0">
+                              {conversation.unread}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Chat Messages */}
+        <Card className="md:col-span-2">
+          {selectedChat ? (
+            <>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {conversations.find(c => c.id === selectedChat)?.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col h-[500px]">
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.isMe ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[70%] rounded-lg p-3 ${
+                          message.isMe
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}
+                      >
+                        <p className="text-sm">{message.content}</p>
+                        <p className={`text-xs mt-1 ${
+                          message.isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        }`}>
+                          {message.timestamp}
+                        </p>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="analysis" className="space-y-6">
-          {selectedMessage && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h3 className="text-xl font-semibold">Análise de Sentimento: {selectedMessage.title}</h3>
-                <div className="flex items-center gap-3">
-                  <div className="text-sm text-muted-foreground">Modo de análise:</div>
-                  <div className="flex gap-1">
-                    <Button 
-                      size="sm" 
-                      variant={analysisMode === "basic" ? "default" : "outline"}
-                      onClick={() => setAnalysisMode("basic")}
-                    >
-                      Básico
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant={analysisMode === "advanced" ? "default" : "outline"}
-                      onClick={() => setAnalysisMode("advanced")}
-                    >
-                      Avançado
-                    </Button>
-                  </div>
                 </div>
-              </div>
-              
-              <div className="p-4 bg-muted/40 border rounded-md">
-                <h4 className="font-medium mb-2">Texto da Mensagem:</h4>
-                <div className="p-3 bg-card rounded border">
-                  {selectedMessage.text}
+
+                {/* Message Input */}
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Digite sua mensagem..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    className="flex-1 min-h-[40px] max-h-[120px]"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                  <Button onClick={handleSendMessage} size="sm">
+                    <Send className="h-4 w-4" />
+                  </Button>
                 </div>
+              </CardContent>
+            </>
+          ) : (
+            <CardContent className="flex items-center justify-center h-full">
+              <div className="text-center text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Selecione uma conversa para começar</p>
               </div>
-              
-              {analysisMode === "basic" ? (
-                <SentimentAnalysis text={selectedMessage.text || ""} />
-              ) : (
-                <AdvancedSentimentAnalysis text={selectedMessage.text || ""} />
-              )}
-            </div>
+            </CardContent>
           )}
-        </TabsContent>
-        
-        <TabsContent value="generator" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <ContentGenerator 
-                defaultProduct={selectedMessage ? { 
-                  name: selectedMessage.title,
-                  description: selectedMessage.text 
-                } : undefined}
-                onContentSelected={handleContentSelected}
-              />
-            </div>
-            
-            <div>
-              <div className="bg-card border rounded-lg p-4 space-y-4">
-                <h3 className="font-medium">Mensagem Atual</h3>
-                {selectedMessage ? (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">{selectedMessage.title}</h4>
-                    <div className="text-sm p-3 bg-muted/40 rounded border">
-                      {selectedMessage.text || "Sem conteúdo"}
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedMessage.channels.map((channel, i) => (
-                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                          {channel}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <p className="mb-2">Nenhuma mensagem selecionada</p>
-                    <Button variant="outline" size="sm" onClick={() => setActiveTab("messages")}>
-                      Selecionar mensagem
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="automation" className="space-y-6">
-          <CustomerServiceAutomation />
-        </TabsContent>
-      </Tabs>
+        </Card>
+      </div>
     </div>
   );
 };

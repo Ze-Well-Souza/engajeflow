@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 
 // Pages
+import InitialPage from "@/pages/InitialPage";
 import DashboardLayout from "@/components/DashboardLayout";
 import Dashboard from "@/components/dashboard/Dashboard";
 import AgendamentosContent from "@/components/agendamentos/AgendamentosContent";
@@ -14,24 +16,22 @@ import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 
-// Landing Pages (usando as que existem)
+// Content Pages
+import ContentPage from "@/pages/content/ContentPage";
+import AutomationPage from "@/pages/automation/AutomationPage";
+import ReportsPage from "@/pages/reports/ReportsPage";
+
+// System Pages
+import MicroservicesPage from "@/pages/system/MicroservicesPage";
+import AdminPage from "@/pages/admin/AdminDashboardPage";
+import ActivityLogsPage from "@/pages/admin/ActivityLogsPage";
+
+// Landing Pages
 import LandingPage from "@/pages/landing/LandingPage";
 import BeautyLandingPage from "@/pages/landing/BeautyLandingPage";
 import RealEstateLandingPage from "@/pages/landing/RealEstateLandingPage";
 import FreelancerLandingPage from "@/pages/landing/FreelancerLandingPage";
 import FoodLandingPage from "@/pages/landing/FoodLandingPage";
-
-// Admin Pages
-import AdminPage from "@/pages/admin/AdminDashboardPage";
-import ActivityLogsPage from "@/pages/admin/ActivityLogsPage";
-
-// System Pages
-import MicroservicesPage from "@/pages/system/MicroservicesPage";
-
-// Other pages (usando as que existem)
-import AutomationPage from "@/pages/automation/AutomationPage";
-import ReportsPage from "@/pages/reports/ReportsPage";
-import ContentPage from "@/pages/content/ContentPage";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +44,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   if (!currentUser) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/welcome" replace />;
   }
 
   return <>{children}</>;
@@ -59,7 +59,7 @@ const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (currentUser) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
@@ -74,7 +74,11 @@ const App = () => {
             <Toaster />
             <BrowserRouter>
               <Routes>
-                {/* Public Routes */}
+                {/* Initial Welcome Route */}
+                <Route path="/welcome" element={<InitialPage />} />
+                <Route path="/" element={<Navigate to="/welcome" replace />} />
+
+                {/* Public Landing Pages */}
                 <Route path="/landing" element={<LandingPage />} />
                 <Route path="/beauty" element={<BeautyLandingPage />} />
                 <Route path="/restaurant" element={<FoodLandingPage />} />
@@ -103,8 +107,8 @@ const App = () => {
                   </AuthRoute>
                 } />
 
-                {/* Protected Routes */}
-                <Route path="/" element={
+                {/* Protected Dashboard Routes */}
+                <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <DashboardLayout>
                       <Dashboard />
@@ -116,22 +120,6 @@ const App = () => {
                   <ProtectedRoute>
                     <DashboardLayout>
                       <AgendamentosContent />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <AdminPage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/admin/logs" element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <ActivityLogsPage />
                     </DashboardLayout>
                   </ProtectedRoute>
                 } />
@@ -160,6 +148,22 @@ const App = () => {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/admin" element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <AdminPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/logs" element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <ActivityLogsPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/system/microservices" element={
                   <ProtectedRoute>
                     <DashboardLayout>
@@ -168,8 +172,8 @@ const App = () => {
                   </ProtectedRoute>
                 } />
 
-                {/* 404 - redirect to dashboard */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Fallback for any other routes */}
+                <Route path="*" element={<Navigate to="/welcome" replace />} />
               </Routes>
             </BrowserRouter>
           </LocalizationProvider>
