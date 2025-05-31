@@ -24,7 +24,11 @@ import ReportsPage from "@/pages/reports/ReportsPage";
 // System Pages
 import MicroservicesPage from "@/pages/system/MicroservicesPage";
 import AdminPage from "@/pages/admin/AdminDashboardPage";
+import AdminConfigPage from "@/pages/admin/AdminConfigPage";
 import ActivityLogsPage from "@/pages/admin/ActivityLogsPage";
+
+// WhatsApp Components
+import WhatsAppQRConnector from "@/components/whatsapp/WhatsAppQRConnector";
 
 // Landing Pages
 import LandingPage from "@/pages/landing/LandingPage";
