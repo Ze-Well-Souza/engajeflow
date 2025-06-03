@@ -1,0 +1,138 @@
+version: '3.8'
+services:
+  # Serviço principal do TechCare Automator - Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPERATION_MODE=dashboard
+      - TZ=America/Sao_Paulo
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-techcare_redis_pass}
+      - LOG_LEVEL=info
+      - API_PORT=3000
+      - API_SECRET=${API_SECRET:-change_this_in_production}
+      - API_RATE_LIMIT=100
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./data:/app/data
+    networks:
+      - techcare-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Serviço para processamento de automações
+  automator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPERATION_MODE=automator
+      - TZ=America/Sao_Paulo
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-techcare_redis_pass}
+      - MAX_CONCURRENCY=5
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./data:/app/data
+    networks:
+      - techcare-network
+    depends_on:
+      - redis
+      - dashboard
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('fs').accessSync('/app/logs/automator.log')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Serviço para agendamento de tarefas
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - OPERATION_MODE=scheduler
+      - TZ=America/Sao_Paulo
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-techcare_redis_pass}
+      - MAX_CONCURRENCY=1
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./data:/app/data
+    networks:
+      - techcare-network
+    depends_on:
+      - redis
+      - dashboard
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('fs').accessSync('/app/logs/scheduler.log')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Redis para fila e cache
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-techcare_redis_pass}
+    volumes:
+      - redis-data:/data
+    networks:
+      - techcare-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-techcare_redis_pass}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Serviço de monitoramento (opcional)
+  monitoring:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - techcare-network
+    depends_on:
+      - dashboard
+      - automator
+      - scheduler
+    profiles:
+      - monitoring
+
+networks:
+  techcare-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  prometheus-data:

@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - techcare-network
+    depends_on:
+      - dashboard
+      - automator
+      - scheduler
+  
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-dashboard.json:/etc/grafana/provisioning/dashboards/techcare-dashboard.json
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    ports:
+      - "3001:3000"
+    networks:
+      - techcare-network
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=techcare_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+
+networks:
+  techcare-network:
+    external: true
+
+volumes:
+  prometheus-data:
+  grafana-data:

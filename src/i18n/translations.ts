@@ -1,0 +1,135 @@
+// Tipos para as traduções
+export type SupportedLocale = 'pt-BR' | 'en-US';
+export const DefaultLocale: SupportedLocale = 'pt-BR';
+
+// Arquivo de traduções
+export const translations = {
+  'pt-BR': {
+    common: {
+      register: 'Registrar',
+      login: 'Entrar',
+      logout: 'Sair',
+      email: 'Email',
+      password: 'Senha',
+      name: 'Nome',
+      save: 'Salvar',
+      cancel: 'Cancelar',
+      confirm: 'Confirmar',
+      delete: 'Excluir',
+      edit: 'Editar',
+      create: 'Criar',
+      search: 'Buscar',
+      filter: 'Filtrar',
+      sort: 'Ordenar',
+      next: 'Próximo',
+      previous: 'Anterior',
+      back: 'Voltar',
+      loading: 'Carregando...',
+      error: 'Erro',
+      success: 'Sucesso',
+      warning: 'Aviso',
+      info: 'Informação'
+    },
+    auth: {
+      registerTitle: 'Criar Conta',
+      registerButton: 'Registrar',
+      loginTitle: 'Entrar',
+      loginButton: 'Entrar',
+      forgotPassword: 'Esqueceu a senha?',
+      resetPassword: 'Redefinir senha',
+      confirmPassword: 'Confirmar senha',
+      alreadyHaveAccount: 'Já tem uma conta?',
+      dontHaveAccount: 'Não tem uma conta?',
+      registerSuccess: 'Conta criada com sucesso!',
+      registerError: 'Erro ao criar conta',
+      loginSuccess: 'Login realizado com sucesso!',
+      loginError: 'Erro ao fazer login',
+      logoutSuccess: 'Logout realizado com sucesso!',
+      logoutError: 'Erro ao fazer logout',
+      resetPasswordSuccess: 'Email de redefinição enviado com sucesso!',
+      resetPasswordError: 'Erro ao enviar email de redefinição',
+      passwordsDontMatch: 'As senhas não conferem',
+      passwordTooShort: 'A senha deve ter pelo menos 6 caracteres',
+      invalidEmail: 'Email inválido',
+      requiredField: 'Campo obrigatório'
+    },
+    dashboard: {
+      title: 'Dashboard',
+      welcome: 'Bem-vindo',
+      overview: 'Visão geral',
+      statistics: 'Estatísticas',
+      recentActivity: 'Atividade recente',
+      notifications: 'Notificações',
+      settings: 'Configurações',
+      profile: 'Perfil',
+      account: 'Conta',
+      help: 'Ajuda',
+      support: 'Suporte'
+    }
+  },
+  'en-US': {
+    common: {
+      register: 'Register',
+      login: 'Login',
+      logout: 'Logout',
+      email: 'Email',
+      password: 'Password',
+      name: 'Name',
+      save: 'Save',
+      cancel: 'Cancel',
+      confirm: 'Confirm',
+      delete: 'Delete',
+      edit: 'Edit',
+      create: 'Create',
+      search: 'Search',
+      filter: 'Filter',
+      sort: 'Sort',
+      next: 'Next',
+      previous: 'Previous',
+      back: 'Back',
+      loading: 'Loading...',
+      error: 'Error',
+      success: 'Success',
+      warning: 'Warning',
+      info: 'Information'
+    },
+    auth: {
+      registerTitle: 'Create Account',
+      registerButton: 'Register',
+      loginTitle: 'Login',
+      loginButton: 'Login',
+      forgotPassword: 'Forgot password?',
+      resetPassword: 'Reset password',
+      confirmPassword: 'Confirm password',
+      alreadyHaveAccount: 'Already have an account?',
+      dontHaveAccount: 'Don\'t have an account?',
+      registerSuccess: 'Account created successfully!',
+      registerError: 'Error creating account',
+      loginSuccess: 'Login successful!',
+      loginError: 'Error logging in',
+      logoutSuccess: 'Logout successful!',
+      logoutError: 'Error logging out',
+      resetPasswordSuccess: 'Reset email sent successfully!',
+      resetPasswordError: 'Error sending reset email',
+      passwordsDontMatch: 'Passwords don\'t match',
+      passwordTooShort: 'Password must be at least 6 characters',
+      invalidEmail: 'Invalid email',
+      requiredField: 'Required field'
+    },
+    dashboard: {
+      title: 'Dashboard',
+      welcome: 'Welcome',
+      overview: 'Overview',
+      statistics: 'Statistics',
+      recentActivity: 'Recent Activity',
+      notifications: 'Notifications',
+      settings: 'Settings',
+      profile: 'Profile',
+      account: 'Account',
+      help: 'Help',
+      support: 'Support'
+    }
+  }
+};
+
+export default translations;
