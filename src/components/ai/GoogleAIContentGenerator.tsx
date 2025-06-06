@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Sparkles, Copy, Clock } from 'lucide-react';
-import GoogleAIService from '@/services/GoogleAIService';
+import { GoogleAIService } from '@/services/GoogleAIService';
 import { toast } from 'sonner';
 
 interface GoogleAIContentGeneratorProps {
@@ -37,31 +37,26 @@ const GoogleAIContentGenerator: React.FC<GoogleAIContentGeneratorProps> = ({
     try {
       const result = await GoogleAIService.generateContent({
         prompt,
+        type: 'post',
         platform,
-        segment,
-        tone,
-        maxTokens: 500
+        context: `Segmento: ${segment}, Tom: ${tone}`
       });
 
-      if (result.success) {
-        const content = {
-          content: result.content,
-          hashtags: result.hashtags,
-          bestTime: result.bestTime
-        };
-        
-        setGeneratedContent(content);
-        
-        if (onContentGenerated) {
-          onContentGenerated(content.content, content.hashtags, content.bestTime);
-        }
-        
-        toast.success('Conteúdo gerado com sucesso!');
-      } else {
-        toast.error(result.error || 'Erro ao gerar conteúdo');
+      const content = {
+        content: result.content,
+        hashtags: result.hashtags || [],
+        bestTime: 'Entre 18h-20h' // Placeholder
+      };
+      
+      setGeneratedContent(content);
+      
+      if (onContentGenerated) {
+        onContentGenerated(content.content, content.hashtags, content.bestTime);
       }
+      
+      toast.success('Conteúdo gerado com sucesso!');
     } catch (error) {
-      toast.error('Erro ao conectar com a IA');
+      toast.error('Erro ao gerar conteúdo');
     } finally {
       setIsGenerating(false);
     }

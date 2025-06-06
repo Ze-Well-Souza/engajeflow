@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,9 +16,9 @@ interface Automation {
   name: string;
   description: string;
   trigger_type: string;
-  trigger_config: any;
+  trigger_config: Record<string, any>;
   actions: any[];
-  conditions: any;
+  conditions: Record<string, any>;
   is_active: boolean;
   execution_count: number;
   last_executed_at: string | null;
@@ -54,7 +53,23 @@ const SmartAutomations: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAutomations(data || []);
+      
+      // Transformar dados do Supabase para o formato esperado
+      const transformedData: Automation[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description || '',
+        trigger_type: item.trigger_type,
+        trigger_config: typeof item.trigger_config === 'object' ? item.trigger_config as Record<string, any> : {},
+        actions: Array.isArray(item.actions) ? item.actions : [],
+        conditions: typeof item.conditions === 'object' ? item.conditions as Record<string, any> : {},
+        is_active: item.is_active,
+        execution_count: item.execution_count || 0,
+        last_executed_at: item.last_executed_at,
+        created_at: item.created_at
+      }));
+      
+      setAutomations(transformedData);
     } catch (error) {
       console.error('Erro ao carregar automações:', error);
       toast.error('Erro ao carregar automações');

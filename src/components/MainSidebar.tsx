@@ -56,20 +56,20 @@ const MainSidebar: React.FC = () => {
       <SidebarContent className="px-2">
         {navigationItems.map((group, index) => (
           <NavigationGroup 
-            key={`${group.group}-${index}`}
-            title={group.group}
-            defaultOpen={group.items.some(item => currentPath.startsWith(item.href))}
+            key={`${group.title}-${index}`}
+            title={group.title}
+            defaultOpen={group.items.some(item => currentPath.startsWith(item.url || ''))}
           >
             {group.items.map((item) => {
-              const isActive = currentPath.startsWith(item.href);
+              const isActive = currentPath.startsWith(item.url || '');
               
               return (
                 <NavigationItem
                   key={item.title}
-                  to={item.href}
+                  to={item.url || '#'}
                   active={isActive}
                   collapsed={isCollapsed}
-                  icon={item.icon}
+                  icon={item.icon!}
                 >
                   {item.title}
                 </NavigationItem>
