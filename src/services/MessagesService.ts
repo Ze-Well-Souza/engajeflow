@@ -18,9 +18,13 @@ export interface Message {
 export class MessagesService {
   // Buscar mensagens do usuário
   static async getMessages(platform?: string, status?: string): Promise<Message[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
     let query = supabase
       .from('messages')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (platform) {
@@ -42,9 +46,9 @@ export class MessagesService {
       senderName: msg.sender_name,
       senderPhone: msg.sender_phone,
       content: msg.content,
-      messageType: msg.message_type,
-      status: msg.status,
-      metadata: msg.metadata,
+      messageType: msg.message_type as 'sent' | 'received',
+      status: msg.status as 'read' | 'unread' | 'replied',
+      metadata: msg.metadata as Record<string, any>,
       createdAt: msg.created_at,
       updatedAt: msg.updated_at,
     }));
@@ -72,9 +76,13 @@ export class MessagesService {
 
   // Enviar resposta
   static async sendReply(conversationId: string, platform: string, content: string, recipientName: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
     const { data, error } = await supabase
       .from('messages')
       .insert({
+        user_id: user.id,
         platform,
         conversation_id: conversationId,
         sender_name: 'Você',
@@ -91,9 +99,13 @@ export class MessagesService {
 
   // Obter estatísticas de mensagens
   static async getMessageStats() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
     const { data, error } = await supabase
       .from('messages')
-      .select('status, platform, created_at');
+      .select('status, platform, created_at')
+      .eq('user_id', user.id);
     
     if (error) throw error;
     

@@ -6,8 +6,10 @@ export interface AuthUser {
   id: string;
   email: string;
   fullName?: string;
+  name?: string; // Adicionar campo name para compatibilidade
   avatarUrl?: string;
   isAdmin: boolean;
+  is_admin?: boolean; // Adicionar para compatibilidade
   planType: string;
   subscriptionStatus: string;
 }
@@ -108,8 +110,10 @@ export class AuthService {
       id: data.id,
       email: data.email,
       fullName: data.full_name,
+      name: data.full_name, // Compatibilidade
       avatarUrl: data.avatar_url,
       isAdmin: data.is_admin,
+      is_admin: data.is_admin, // Compatibilidade
       planType: data.plan_type,
       subscriptionStatus: data.subscription_status,
     };
@@ -120,9 +124,9 @@ export class AuthService {
     const { data, error } = await supabase
       .from('profiles')
       .update({
-        full_name: updates.fullName,
+        full_name: updates.fullName || updates.name,
         avatar_url: updates.avatarUrl,
-        display_name: updates.fullName,
+        display_name: updates.fullName || updates.name,
       })
       .eq('id', userId);
     

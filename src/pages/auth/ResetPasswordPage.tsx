@@ -44,7 +44,7 @@ const ResetPasswordPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      await updatePassword(password, token);
+      await updatePassword(password);
       toast.success("Senha atualizada com sucesso!");
       navigate("/login");
     } catch (error: any) {
@@ -117,7 +117,7 @@ const ResetPasswordPage: React.FC = () => {
           <CardFooter className="flex justify-center">
             <p className="text-sm text-gray-400">
               Lembrou sua senha?{" "}
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to="/auth/login" className="text-primary hover:underline">
                 Voltar para Login
               </Link>
             </p>

@@ -26,7 +26,7 @@ jest.mock('@/integrations/supabase/client', () => ({
 
 // Componente de teste para acessar o contexto
 const TestComponent = () => {
-  const { currentUser, login, logout, register } = useAuth();
+  const { currentUser, signIn, signOut, signUp } = useAuth();
   
   return (
     <div>
@@ -35,19 +35,19 @@ const TestComponent = () => {
       </div>
       <button 
         data-testid="login-button" 
-        onClick={() => login('test@example.com', 'password')}
+        onClick={() => signIn('test@example.com', 'password')}
       >
         Login
       </button>
       <button 
         data-testid="logout-button" 
-        onClick={() => logout()}
+        onClick={() => signOut()}
       >
         Logout
       </button>
       <button 
         data-testid="register-button" 
-        onClick={() => register('test@example.com', 'password', 'Test User')}
+        onClick={() => signUp('test@example.com', 'password', 'Test User')}
       >
         Register
       </button>

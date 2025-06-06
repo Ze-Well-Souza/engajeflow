@@ -9,9 +9,12 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>; // Alias para compatibilidade
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  register: (email: string, password: string, fullName: string) => Promise<void>; // Alias para compatibilidade
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>; // Alias para compatibilidade
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   updateProfile: (updates: Partial<AuthUser>) => Promise<void>;
@@ -137,9 +140,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     loading,
     signIn,
+    login: signIn, // Alias para compatibilidade
     signUp,
+    register: signUp, // Alias para compatibilidade
     signInWithGoogle,
     signOut,
+    logout: signOut, // Alias para compatibilidade
     resetPassword,
     updatePassword,
     updateProfile,

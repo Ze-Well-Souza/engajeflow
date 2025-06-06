@@ -12,26 +12,30 @@ type SidebarUserFooterProps = {
 };
 
 const SidebarUserFooter: React.FC<SidebarUserFooterProps> = ({ isCollapsed }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, signOut } = useAuth();
   const navigate = useNavigate();
   
-  // Removido o handleLogout pois estamos em modo de teste sem autenticação
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/welcome");
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   };
   
-  const userInitials = currentUser?.name 
-    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
+  const userInitials = currentUser?.name || currentUser?.fullName
+    ? (currentUser.name || currentUser.fullName)!.split(' ').map(n => n[0]).join('').toUpperCase()
     : currentUser?.email?.substring(0, 2).toUpperCase() || 'TZ';
   
-  const userDisplayName = currentUser?.name || currentUser?.email || 'Usuário de Teste';
-  const userRole = currentUser?.is_admin ? 'Administrador' : 'Usuário';
+  const userDisplayName = currentUser?.name || currentUser?.fullName || currentUser?.email || 'Usuário de Teste';
+  const userRole = currentUser?.isAdmin || currentUser?.is_admin ? 'Admin' : 'Usuário';
   
   if (isCollapsed) {
     return (
       <SidebarFooter className="px-2 pt-2 pb-4 flex flex-col items-center justify-center">
         <Avatar className="h-8 w-8 border-2 border-sidebar-accent cursor-pointer hover-scale">
-          <AvatarImage src="" alt={userDisplayName} />
+          <AvatarImage src={currentUser?.avatarUrl || ""} alt={userDisplayName} />
           <AvatarFallback>{userInitials}</AvatarFallback>
         </Avatar>
         <Button 
@@ -51,7 +55,7 @@ const SidebarUserFooter: React.FC<SidebarUserFooterProps> = ({ isCollapsed }) =>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-sidebar-accent cursor-pointer hover-scale">
-            <AvatarImage src="" alt={userDisplayName} />
+            <AvatarImage src={currentUser?.avatarUrl || ""} alt={userDisplayName} />
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
