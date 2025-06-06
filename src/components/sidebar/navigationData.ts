@@ -1,50 +1,148 @@
-
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  Calendar, 
-  ShoppingCart, 
-  Users, 
-  Settings, 
-  Bell, 
-  BarChart2,
-  Star,
-  Globe,
-  Share2
+import {
+  LayoutDashboard,
+  Calendar,
+  MessageSquare,
+  Bell,
+  BarChart3,
+  Settings,
+  Users,
+  Shield,
+  Activity,
+  HelpCircle,
+  Brain,
+  Link,
+  Zap,
+  UserCheck,
+  Palette,
+  FileVideo2,
+  FileImage,
+  LucideIcon,
 } from "lucide-react";
 
-export const navigationItems = [
+interface NavItem {
+  title: string;
+  url?: string;
+  icon?: LucideIcon;
+  disabled?: boolean;
+  external?: boolean;
+  label?: string;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+export const navigationItems: NavSection[] = [
   {
-    group: "Principal",
+    title: "Principal",
     items: [
-      { title: "Dashboard", href: "/index", icon: LayoutDashboard },
-      { title: "Mensagens", href: "/messages", icon: MessageSquare },
-      { title: "Agendamentos", href: "/agendamentos", icon: Calendar },
-      { title: "Notificações", href: "/notificacoes", icon: Bell },
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
+        title: "IA & Automação",
+        url: "/ai",
+        icon: Brain,
+      },
+      {
+        title: "Conexões Sociais",
+        url: "/social",
+        icon: Link,
+      },
     ],
   },
   {
-    group: "Analytics",
+    title: "Gestão",
     items: [
-      { title: "Relatórios", href: "/relatorios", icon: BarChart2 },
-      { title: "Social Media", href: "/social-media", icon: Share2 },
-      { title: "Avaliações", href: "/ratings", icon: Star },
+      {
+        title: "Agendamentos",
+        url: "/agendamentos",
+        icon: Calendar,
+      },
+      {
+        title: "Mensagens",
+        url: "/messages",
+        icon: MessageSquare,
+      },
+      {
+        title: "Notificações",
+        url: "/notificacoes",
+        icon: Bell,
+      },
     ],
   },
   {
-    group: "E-commerce",
+    title: "Conteúdo",
     items: [
-      { title: "Vendas", href: "/store/vendas", icon: ShoppingCart },
-      { title: "Clientes", href: "/store/clientes", icon: Users },
+      {
+        title: "Posts",
+        url: "/posts",
+        icon: FileImage,
+      },
+      {
+        title: "Vídeos",
+        url: "/videos",
+        icon: FileVideo2,
+      },
     ],
   },
   {
-    group: "Sistema",
+    title: "Análises",
     items: [
-      { title: "Gateway", href: "/gateway", icon: Globe },
-      { title: "Configurações", href: "/configuracoes", icon: Settings },
-      { title: "Landing Pages", href: "/landing", icon: Globe },
-      { title: "Planos", href: "/landing/pricing", icon: Star },
+      {
+        title: "Relatórios",
+        url: "/relatorios",
+        icon: BarChart3,
+      },
+      {
+        title: "Avaliações",
+        url: "/ratings",
+        icon: UserCheck,
+      },
+    ],
+  },
+  {
+    title: "Administração",
+    items: [
+      {
+        title: "Usuários",
+        url: "/usuarios",
+        icon: Users,
+      },
+      {
+        title: "Planos",
+        url: "/planos",
+        icon: Shield,
+        label: "Novo",
+      },
+      {
+        title: "Configurações",
+        url: "/configuracoes",
+        icon: Settings,
+      },
+    ],
+  },
+  {
+    title: "Outros",
+    items: [
+      {
+        title: "Atividades",
+        url: "/atividades",
+        icon: Activity,
+      },
+      {
+        title: "Aparência",
+        url: "/aparencia",
+        icon: Palette,
+      },
+      {
+        title: "Suporte",
+        url: "/suporte",
+        icon: HelpCircle,
+      },
     ],
   },
 ];
